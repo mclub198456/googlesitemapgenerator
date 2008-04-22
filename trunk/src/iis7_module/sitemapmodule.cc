@@ -49,11 +49,15 @@ REQUEST_NOTIFICATION_STATUS SitemapModule::OnLogRequest(
 
   // Ignore URLs requires authentication.
   if (statuscode == 200) {
+    PCSTR auth = request->GetHeader(HttpHeaderAuthorization);
     if (auth != NULL) {
+      DLog(EVENT_IMPORTANT, "Some url is ignored for Authorization");
       return RQ_NOTIFICATION_CONTINUE;
     }
 
+    auth = request->GetHeader(HttpHeaderProxyAuthorization);
     if (auth != NULL) {
+      DLog(EVENT_IMPORTANT, "Some url is ignored for ProxyAuthorization");
       return RQ_NOTIFICATION_CONTINUE;
     }
   }

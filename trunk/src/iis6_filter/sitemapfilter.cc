@@ -133,13 +133,17 @@ DWORD SitemapFilter::Process(HTTP_FILTER_CONTEXT *context,
     // Content-Length, Last-Modified, and last-write time of file on disk
     // are only required for a successful status code.
     if (record.statuscode == 200) {      
+      // Get Authorization header.
       size = kBufferSize;
+      suc = sendresponse->GetHeader(context, "Authorization:", buffer, &size);
       if (suc && size > 0) {
         DLog(EVENT_IMPORTANT, "Some WWW-Authenticate url is ignored.");
         return SF_STATUS_REQ_NEXT_NOTIFICATION;
       }
 
+      // Get Proxy-Authorization header.
       size = kBufferSize;
+      suc = sendresponse->GetHeader(context, "Proxy-Authorization:", buffer, &size);
       if (suc && size > 0) {
         DLog(EVENT_IMPORTANT, "Some Proxy-Authenticate url is ignored.");
         return SF_STATUS_REQ_NEXT_NOTIFICATION;
