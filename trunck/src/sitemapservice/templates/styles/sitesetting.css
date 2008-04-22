@@ -1,0 +1,493 @@
+body, td, a, p, div {
+  font-family: arial,sans-serif;
+  font-size: 12px;
+}
+
+body {  
+  text-align:center;
+}
+
+.popup {
+  position:absolute;
+  background-color:#FDFCDC;
+  border:1px solid;
+  padding:2px 4px 2px 4px;
+}
+  
+.p { margin: 0 0 15px 0; }
+
+.error {
+  color:red;  
+}
+
+.hidden {
+  display:none;
+}
+
+.display {
+  display:block;
+}
+
+.readonly {
+  color:black;  
+}
+
+.loginPage {
+  text-align:center;
+  height: 600px;
+  vertical-align:middle;  
+}
+
+.loginPage table {
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 200px;
+}
+
+#loginUsername {
+  width:150px;
+}
+
+#loginPassword {
+  width:150px;
+}
+
+.loginPage table td {
+  text-align:right;
+}
+
+
+#inputNewPassword {
+  width:150px;
+}
+
+#inputPasswordAgain {
+  width:150px;
+}
+
+.changePasswordPage {
+  border-color:black;  
+  border-style: solid;
+  border-width: 1px 1px 1px 1px;
+}
+
+.changePasswordPage table td {
+  text-align:right;
+}
+
+input.invalid {
+  background-color: #fa0;
+}
+/* runtime page update button */
+input.internalButton {
+  margin:20px 20px 0 0;
+  float:right;
+}
+
+/* buttons on top-right */
+input.cmdbutton {
+  width: 100px;
+}
+
+div.templates {
+  display:none;
+  position:absolute;
+  left:0;
+  top:0;
+}
+
+/* input classes */
+input.text {
+  width: 100px;
+}
+
+input.spaceval {
+  width: 80px;
+  text-align: right;  
+  color: black;
+}
+
+.runtimeinfo {
+  display:block;
+  width: 200px;
+  text-align: right;  
+  color: black;
+}
+
+input.filename {
+  width:300px;
+}
+
+input.date {
+}
+
+input.url {
+  width:400px;
+}
+
+input.urlpattern {  
+  width:250px;
+}
+
+input.urlreplace {
+  width:100px;
+}
+
+td.runtimeLabel {
+  width: 300px;
+  padding-left:20px;
+}
+
+tr.runtimeInfoBG0 {
+  background-color:#F6F9ED;
+}
+tr.runtimeInfoBG1 {
+  background-color:#FDFDF0;
+}
+
+/* for IE */
+.vmiddle {
+  vertical-align:middle;
+}
+
+/* http result classes */
+.saveSuccess {
+  color: #19FF8C;
+}
+
+.saveFailed {
+  color: red;
+}
+
+.copyright {
+text-align:center;
+}
+
+    
+.container {
+  text-align: left;
+  width: 970px;
+  margin-left: auto;
+  margin-right: auto;
+}
+    
+/* for top title and logo space */
+.container table.top {
+  height:80px;
+  width: 100%;
+  border-width: 0;
+  margin: 0;
+  padding: 0;
+  border-collapse: collapse;
+}  
+
+.container table.top td.first {
+  vertical-align:top;
+  width: 200px;    
+}
+  
+.container table.top td.middle {
+  text-align: center;
+  vertical-align:middle;
+  font-size: 30px;
+  font-weight: bolder;
+}
+  
+.container table.top td.last {
+  vertical-align:middle;
+  width: 220px;
+}
+
+.bottom {
+  border-width: 0;
+  border:none;
+  border-collapse: collapse;
+  margin: 0;
+  padding: 0;
+}
+
+.left {
+  width: 200px;
+  vertical-align: top;
+  border-width: 0;
+  border:none;
+  border-collapse: collapse;
+  margin: 0;
+  padding: 0;
+}
+
+.right {
+  width: 770px;
+  vertical-align: top;
+  border-width: 0;
+  border:none;
+  border-collapse: collapse;
+  margin: 0;
+  padding: 0;
+}
+
+.divError {
+  color:Red;
+}
+
+.saveResult {
+}
+
+.content {
+  overflow: visible; 
+  width: 770px;
+  height: 700px;
+  border-left: 1px solid #d0d0d0;
+  border-right: 1px solid #d0d0d0;
+  border-bottom: 1px solid #d0d0d0;
+  border-collapse: collapse;
+}
+
+.siteListTitleContainer {
+  text-align: center;
+  font-size: 20px;
+}
+
+.sitesListContainer {
+  width: 100%;
+}
+
+.sitesList a.global {
+  color: blue;    
+}
+
+.activeSite {
+  font-weight:bold;
+  color:#EFEFEF;
+  text-align:left;
+  vertical-align:middle;
+  border-width: 0;
+  margin: 0;
+  padding: 0;
+  border-collapse: collapse;
+  width: 100%;
+  background-color:#CC9966;
+}
+
+.activeSite tr {
+  border-width: 0;
+  margin: 0;
+  padding: 0;
+  border-collapse: collapse;
+}
+
+.activeSite .activeSpace {
+  height: 10px;
+  background-color:white;
+}
+
+.activeSite td {
+  border-width: 0;
+  margin: 0;
+  padding: 0;
+  border-collapse: collapse;
+}
+
+
+.activeSite .active1 {
+  background:transparent url(ul.gif) no-repeat scroll left top;
+  height:4px;
+  width: 4px;
+}
+
+.activeSite .active2 {
+}
+
+.activeSite .active3 {
+  background:transparent url(ub.gif) no-repeat scroll left bottom;
+  height:4px;
+  width: 4px;
+}
+
+.activeSite .activeText {
+  color:#FFFFFF;
+  width: 190px;
+  /*word-wrap: break-word;*/
+}
+
+.activeSite a {
+  text-decoration: none;
+  color: White;
+}
+
+.activeSite a:hover {
+  color: red;
+}
+
+.inactiveSite {
+  font-weight:bold;
+  color:#EFEFEF;
+  text-align:left;
+  vertical-align:middle;
+  border-width: 0;
+  margin: 0;
+  padding: 0;
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.inactiveSite tr {
+  background-color:#EFEFEF;
+  border-width: 0;
+  margin: 0;
+  padding: 0;
+  border-collapse: collapse;
+}
+
+.inactiveSite .activeSpace {
+  height: 10px;
+  background-color:white;
+}
+
+.inactiveSite td {
+  border-width: 0;
+  margin: 0;
+  padding: 0;
+  border-collapse: collapse;
+}
+
+.inactiveSite .active1 {
+  background:transparent url(ulborder.gif) no-repeat scroll left top;
+  height:4px;
+  width: 4px;
+}
+
+.inactiveSite .active2 {
+  border-left:1px solid #C6CED7;
+}
+
+.inactiveSite .active3 {
+  background: transparent url(ubborder.gif) no-repeat scroll left bottom;
+  height: 4px;
+  width: 4px;
+}
+
+.inactiveSite .activeText {
+  color: #FFFFFF;
+  width: 190px;
+  /*word-wrap: break-word;*/
+}
+
+.inactiveSite a {
+  text-decoration: none;
+}
+
+.inactiveSite a:hover {
+  color: red;
+}
+
+.activeSpace {
+  width: 5px;
+  background-color:white;
+}
+
+.activeTab {
+  background-color: #6699CC;
+  font-weight: bold;
+  color :#EFEFEF;
+  text-align: center;
+  vertical-align: top;
+}
+
+.activeTab .active1 {
+  background: transparent url(ul.gif) no-repeat scroll left top;
+  height: 4px;
+}
+
+.activeTab .active2 {
+  background: transparent url(ur.gif) no-repeat scroll right top;
+  height: 4px;
+  padding: 1px 6px;
+}
+
+.activeTab .active3 {
+}
+
+.activeTab .activeText {
+  color: #FFFFFF;
+  padding: 0px 1em 2px;
+  white-space: nowrap;
+}
+
+.activeTab a {
+  text-decoration: none;
+  color: white;
+}
+
+.activeTab a:hover{
+  color: red;
+}
+
+.inactiveTab {
+  background-color: #EFEFEF;
+  cursor: pointer;
+  color: #EFEFEF;
+  text-align: center;
+  vertical-align: top;
+}
+
+.inactiveTab .active1 {
+  background: transparent url(ulborder.gif) no-repeat scroll left top;
+  height: 4px;
+}
+
+.inactiveTab .active2 {
+  background: transparent url(urborder.gif) no-repeat scroll right top;
+  height: 4px;
+  padding: 1px 6px;
+}
+
+.inactiveTab .active3 {
+  border-top: 1px solid #C6CED7;
+}
+
+.inactiveTab .activeText {
+  border-left: 1px solid #C6CED7;
+  border-right: 1px solid #C6CED7;
+  color: blue;
+  padding: 0px 1em 2px;
+  white-space: nowrap;
+}
+
+.inactiveTab a {
+  text-decoration: none;
+}
+
+.inactiveTab a:hover {
+  color: red;
+}
+
+.contentPane {
+  padding-left: 10px;
+}
+
+.sitemapContainer {
+  width: 100%;
+  position: relative;
+  left: 0;
+  top: 0;
+}
+  
+.sitemapDiv {
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+.sitemapDiv .title {
+  text-align: left;    
+  font-size: 20px;
+}
+  
+.sitemapDiv .subtitle {
+  text-align: left;    
+  font-size: 12px;
+  font-weight: bold;
+}
+  
+.textLabel {
+}

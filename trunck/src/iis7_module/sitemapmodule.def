@@ -1,0 +1,6 @@
+;LIBRARY	"SitemapModule"
+;DESCRIPTION  'Google Sitemap Generator Module'
+
+EXPORTS
+    DllMain
+    RegisterModule

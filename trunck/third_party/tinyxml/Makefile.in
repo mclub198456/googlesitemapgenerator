@@ -1,0 +1,37 @@
+
+CC = @CC@
+CXX = @CXX@
+RANLIB = @RANLIB@
+AR = ar
+
+CXXCOMPILE = @CXX@ @DEFS@ @CPPFLAGS@ @CXXFLAGS@
+
+SRCS = tinystr.cpp tinyxml.cpp tinyxmlerror.cpp tinyxmlparser.cpp
+
+OBJS = $(SRCS:.cpp=.o)
+DEPS = $(SRCS:.cpp=.P)
+
+.SUFFIXES:
+.SUFFIXES: .o .cpp
+.cpp.o:
+	@$(CXXCOMPILE) -M $< -o $(*F).d; \
+	 cp -f $(*F).d $(*F).P; \
+	 sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
+	     -e '/^$$/ d' -e 's/$$/ :/' < $(*F).d >> $(*F).P; \
+	 rm -f $(*F).d
+	$(CXXCOMPILE) -o $@ -c $<
+
+all: libtinyxml.a
+
+libtinyxml.a: $(OBJS)
+	-rm -f libtinyxml.a
+	$(AR) cru libtinyxml.a $(OBJS)
+	$(RANLIB) libtinyxml.a
+
+-include $(DEPS)
+
+.PHONY: clean
+clean:
+	@rm -f *.o
+	@rm -f *.P
+	@rm -f libtinyxml.a

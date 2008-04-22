@@ -1,0 +1,10 @@
+;LIBRARY      SitemapFilter
+
+;DESCRIPTION  'Google Sitemap Generator Filter'
+
+EXPORTS
+    DllMain
+    HttpFilterProc
+    GetFilterVersion
+    TerminateFilter
+
