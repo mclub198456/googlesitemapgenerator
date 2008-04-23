@@ -17,78 +17,42 @@
 
 #include <math.h>
 
-using namespace std;
+#include "common/util.h"
 
-bool HttpLanguageHeaderParser::strSplit(const std::string& str, 
-                                        const std::string& split, 
-                                        std::string* first, 
-                                        std::string* second) {
-  static const std::basic_string <char>::size_type npos = -1;
-  std::basic_string <char>::size_type indexCh;
-
-  indexCh = str.find_first_of(split);
-  if (indexCh != npos) {
-    if (first != NULL) 
-      *first = str.substr(0, indexCh);
-    if (second != NULL)
-      *second = str.substr(indexCh+1, str.length()-(indexCh+1));
-    return true;
-  } else {
-    if (first != NULL) 
-      *first = "";
-    if (second != NULL)
-      *second = "";
-    return false;
-  }
-}
-
-void HttpLanguageHeaderParser::addLanguage(Map* map, 
-                                           const std::string& language_range) {
-  //  en-us;q=0.7
-  std::string language, quality, quality_value;
-  if (strSplit(language_range, ";", &language, &quality)) {
-    if (!strSplit(quality, "=", NULL, &quality_value))
-      quality_value = "1";
-  } else {
-    // default quality value is 1
-    language = language_range;
-    quality_value = "1";
-  }
-
-  char* stop;
-  double qvalue = strtod(quality_value.c_str(), &stop);
-  if (qvalue == HUGE_VAL || qvalue == -HUGE_VAL || qvalue == 0) 
-    qvalue = 1;// default value
-
-  (*map)[language] = qvalue;
-}
 
 void HttpLanguageHeaderParser::getAllLanguages(Map* lang_map, 
                                                const std::string& accept_lang) {
-  static const std::basic_string <char>::size_type npos = -1;
-  // it's used to find the ',' position
-  std::basic_string <char>::size_type indexCh = 0; 
-
-  // it's used to remember the last found ',' position
-  std::basic_string <char>::size_type searchStart = 0; 
-
   lang_map->clear();
 
   // zh-cn, en-us;q=0.7, en;q=0.3
-  indexCh = accept_lang.find_first_of(",", searchStart);
-  while (indexCh != npos) {
-    if (indexCh > searchStart) { 
-      addLanguage(lang_map, 
-          accept_lang.substr(searchStart, indexCh - searchStart));
-    }
-    searchStart = indexCh+1;
-    indexCh = accept_lang.find_first_of(",", searchStart);
-  }
+  Util::StringVector segments;
+  Util::StrSplit(accept_lang, ',', &segments);
 
-  if (searchStart < accept_lang.length() - 1) {
-    addLanguage(lang_map, 
-        accept_lang.substr(searchStart, indexCh - searchStart));
-  }
+
+  //  en-us;q=0.7
+  for (size_t i = 0; i < segments.size(); i++) {
+    std::string language, quality_value;
+    Util::StringVector res, res1;
+    if (Util::StrSplit(segments[i], ';', &res) == 2) {
+      language = res[0];
+      if (Util::StrSplit(res[1], '=', &res1) == 2) {
+        quality_value = res1[1];
+      } else {
+        quality_value = "1";
+      }
+    } else {
+      // default quality value is 1
+      language = segments[i];
+      quality_value = "1";
+    }
+
+    char* stop;
+    double qvalue = strtod(quality_value.c_str(), &stop);
+    if (qvalue == HUGE_VAL || qvalue == -HUGE_VAL || qvalue == 0) 
+      qvalue = 1;// default value
+
+    (*lang_map)[language] = qvalue;
+  }  
 }
 
 bool HttpLanguageHeaderParser::isSupportedLanguage(const std::string& lang) {
@@ -118,7 +82,7 @@ void HttpLanguageHeaderParser::filterLanguages(Map* map) {
   //}
 
   // second:
-  for(Map::iterator it = map->begin();it != map->end();) {
+  for (Map::iterator it = map->begin();it != map->end();) {
     if (!isSupportedLanguage(it->first))
       map->erase(it++);
     else

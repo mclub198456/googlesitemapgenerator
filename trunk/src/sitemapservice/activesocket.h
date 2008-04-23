@@ -59,36 +59,60 @@ inline void closesocket(int socket) {
 
 #include <string>
 
+// cross-platform functions
+
+// Returns error number
 int MyGetLastError();
+
+// set socket ioctl
 int SetIoctl(SOCKET s, int cmd, int* arg);
+
+// Reuses the socket
 void ReuseSocket(SOCKET sk);
 
 class ActiveSocket{
 public:
-
+  // constructor
   ActiveSocket(SOCKET s);
+
+  // destructor
   virtual ~ActiveSocket();
+
+  // copy constructor
   ActiveSocket(const ActiveSocket&);
+
+  // assign operator override
   ActiveSocket& operator=(const ActiveSocket&);
 
+  // Receives a line from client
   std::string ReceiveLine() const;
+
+  // Receives the number of bytes from client
   std::string ReceiveBytes(int len = -1) const;
 
+  // Sends a line to client
   int SendLine(const std::string&) const;
+
+  // Sends the number of bytes to client
   int SendBytes(const char * buffer, int length) const;
 
+  // Returns the string of remote IP
   char* GetRemoteIp() const;
+
+  // Returns the string of local IP
   char* GetLocalIp() const;
 
-  void SetSockAddr(sockaddr_in* addr) {remote_addr_ = addr;}
+  // Sets remote client socket address
+  void SetClientSockAddr(sockaddr_in* addr) {remote_addr_ = addr;}
 
 private:
+  // Copy the member of the object
   void DeepCopy(const ActiveSocket& o);
+
   ActiveSocket(); // default constructor
 
-  SOCKET socket_;
-  sockaddr_in* remote_addr_;
-  int* ref_counter_;
+  SOCKET socket_; // The socket that connects to remote client
+  sockaddr_in* remote_addr_; // The remote client's address
+  int* ref_counter_;  // the reference count of the object
 };
-
 #endif

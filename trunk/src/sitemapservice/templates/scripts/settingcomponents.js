@@ -546,7 +546,7 @@ SimpleSettingComponent.prototype.setAccess = function(readonly, reason) {
  * component
  */
 function CustomizeSettingComponent(htmlId, owner) {
-  this.parent.constructor.call(this, 'customizeComponent', htmlId, null,
+  this.parent.constructor.call(this, 'customizeComponent', htmlId,
                                SimpleSettingComponent.types.BOOLEAN);
   this.owner_ = owner;
 }

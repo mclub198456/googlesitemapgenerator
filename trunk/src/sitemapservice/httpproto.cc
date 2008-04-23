@@ -12,7 +12,6 @@ HttpProto::HttpProto() : range_first_(-1),
 range_last_(-1),
 content_length_(-1),
 answer_callback_(NULL),
-answer_callback_context_(0),
 answer_content_length_(-1) {
 }
 
@@ -154,14 +153,14 @@ bool HttpProto::ProcessRequest(const ActiveSocket& s) {
   std::string::size_type pos = url_.find("?");
   if (pos != std::string::npos) {    
     path_ = url_.substr(0, pos);
-    HttpProto::ParseParams(url_.substr(pos+1), params_);
+    ParseParams(url_.substr(pos+1));
   } else {
     path_ = url_;
   }
 
   /* get params in post content */
   if(method_.compare("POST") == 0) {
-    HttpProto::ParseParams(s.ReceiveBytes(content_length_), params_);
+    ParseParams(s.ReceiveBytes(content_length_));
   }
 
 
@@ -170,7 +169,7 @@ bool HttpProto::ProcessRequest(const ActiveSocket& s) {
   // appends after the params of url
   pos = referer_.find("?");
   if (pos != std::string::npos) {
-    HttpProto::ParseParams(referer_.substr(pos+1), params_);
+    ParseParams(referer_.substr(pos+1));
   }
 
   return true;
@@ -230,21 +229,7 @@ bool HttpProto::ProcessResponse(const ActiveSocket& s) {
   return true;
 }
 
-int HttpProto::Split(const std::string& str, char split, 
-                     std::vector<std::string>* res) {
-  res->clear();
-  std::string oriStr = str;
 
-  std::string::size_type pos = oriStr.find_first_of(split);
-  while(pos != std::string::npos) {
-    res->push_back(oriStr.substr(0, pos));
-    oriStr = oriStr.substr(pos + 1);
-    pos = oriStr.find_first_of(split);
-  }
-  res->push_back(oriStr);
-  
-  return (int)res->size();
-}
 
 void HttpProto::UnescapeWhitespace(std::string* val) {
   // replace '+' to ' '
@@ -254,13 +239,12 @@ void HttpProto::UnescapeWhitespace(std::string* val) {
   }
 }
 
-void HttpProto::ParseParams(std::string paramStr,
-                            std::map<std::string, std::string>& params) {
-  std::vector<std::string> name_value_pairs;
-  Split(paramStr, '&', &name_value_pairs);
+void HttpProto::ParseParams(std::string paramStr) {
+  Util::StringVector name_value_pairs;
+  Util::StrSplit(paramStr, '&', &name_value_pairs);
   for (size_t i = 0; i < name_value_pairs.size(); i++) {
-    std::vector<std::string> name_value;
-    if (Split(name_value_pairs[i], '=', &name_value) != 2) {
+    Util::StringVector name_value;
+    if (Util::StrSplit(name_value_pairs[i], '=', &name_value) != 2) {
       return;// wrong param
     }
     std::string nam = name_value[0];
@@ -272,7 +256,7 @@ void HttpProto::ParseParams(std::string paramStr,
     Url::UnescapeUrl(val.c_str(), &unencoded);
 
     // insert params
-    params.insert(
+    params_.insert(
         std::map<std::string,std::string>::value_type(nam, unencoded));
   }
 }

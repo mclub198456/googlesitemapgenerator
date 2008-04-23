@@ -31,9 +31,8 @@ const char* SiteSettings::kDefaultFilePath =
   "/etc/google-sitemap-generator/sitesettings.xml";
 #endif
 
-
 SiteSettings::SiteSettings() : BaseSetting("SiteSettings"),
-  global_setting_("GlobalSetting") {
+global_setting_("GlobalSetting") {
   ResetToDefault();
 }
 
@@ -51,7 +50,11 @@ void SiteSettings::ResetToDefault() {
   admin_name_ = "admin";
 
   // Default password is "admin". Here is the encrypted string.
+#ifdef WIN32
   admin_password_ = "21232f297a57a5a743894a0e4a801fc3";
+#else
+  admin_password_ = "4f0386056e1b2f0052a60100250d0000";
+#endif
 
   logging_level_ = EVENT_IMPORTANT;
   apache_conf_ = "";
@@ -88,7 +91,7 @@ bool SiteSettings::UpdateSiteSettings() {
 }
 
 bool SiteSettings::BackupDefaultSettingFile() {
-  #ifdef WIN32
+#ifdef WIN32
   std::string backup_dir(Util::GetApplicationDir());
 #else
   std::string backup_dir("/etc/google-sitemap-generator");
@@ -96,7 +99,7 @@ bool SiteSettings::BackupDefaultSettingFile() {
   backup_dir.append("/settings_backup");
   if (!FileUtil::CreateDir(backup_dir.c_str())) {
     Util::Log(EVENT_ERROR, "Failed to create settings bakcup dir [%s].",
-              backup_dir.c_str());
+      backup_dir.c_str());
     return false;
   }
 
@@ -115,7 +118,7 @@ bool SiteSettings::BackupDefaultSettingFile() {
   // Backup current setting file.
   if (!FileUtil::CopyFile(GetDefaultFilePath().c_str(), backup_file.c_str())) {
     Util::Log(EVENT_ERROR, "Failed to backup current settings to [%s]",
-              backup_file.c_str());
+      backup_file.c_str());
     return false;
   }
 
@@ -232,7 +235,7 @@ bool SiteSettings::LoadSetting() {
   std::set<TiXmlElement*> obsoleted_sitenode;
   for (TiXmlElement* itr = xml_node_->FirstChildElement("SiteSetting");
     itr; itr = itr->NextSiblingElement("SiteSetting")) {
-    obsoleted_sitenode.insert(itr);
+      obsoleted_sitenode.insert(itr);
   }
 
   for (size_t i = 0; i < webserver_config_.site_ids().size(); i ++) {
@@ -242,22 +245,22 @@ bool SiteSettings::LoadSetting() {
     // Find the SiteSetting which matches site_id.
     for (TiXmlElement* itr = xml_node_->FirstChildElement("SiteSetting");
       itr; itr = itr->NextSiblingElement("SiteSetting")) {
-      // Copy global value from global_setting.
-      site_setting = global_setting_;
+        // Copy global value from global_setting.
+        site_setting = global_setting_;
 
-      site_setting.set_xml_node(itr);
-      if (!site_setting.LoadSetting()) {
-        Util::Log(EVENT_ERROR, "Loading SiteSetting (site_id=%s) failed!",
-                  site_setting.site_id().c_str());
-        return false;
-      }
+        site_setting.set_xml_node(itr);
+        if (!site_setting.LoadSetting()) {
+          Util::Log(EVENT_ERROR, "Loading SiteSetting (site_id=%s) failed!",
+            site_setting.site_id().c_str());
+          return false;
+        }
 
-      // Check if site_id matches
-      if (site_setting.site_id() == webserver_config_.site_ids()[i]) {
-        found = true;
-        obsoleted_sitenode.erase(itr);
-        break;
-      }
+        // Check if site_id matches
+        if (site_setting.site_id() == webserver_config_.site_ids()[i]) {
+          found = true;
+          obsoleted_sitenode.erase(itr);
+          break;
+        }
     }
 
     // If site_id is found or auto_add_ is true, we should add this site.
@@ -285,7 +288,7 @@ bool SiteSettings::LoadSetting() {
       if (site_setting.host_url().host().size() == 0
         && webserver_config_.host_urls()[i].size() != 0)
         site_setting.set_host_url(
-          Url(webserver_config_.host_urls()[i].c_str()));
+        Url(webserver_config_.host_urls()[i].c_str()));
       site_settings_.push_back(site_setting);
     }
   }
@@ -332,14 +335,14 @@ bool SiteSettings::SaveToFile(const char *xml_file_name) {
   return true;
 }
 
-bool SiteSettings::SaveToString(std::string &xml_string) {
+bool SiteSettings::SaveToString(std::string *xml_string) {
   TIXML_OSTREAM out;
 
   SaveSetting();
   // Save doc to a xml std::string.
   xml_document_.StreamOut(&out);
 
-  xml_string = out.c_str();
+  xml_string->assign(out.c_str());
   return true;
 }
 
@@ -368,8 +371,8 @@ bool SiteSettings::Validate() const {
   // Validate each site setting.
   for (std::vector<SiteSetting>::const_iterator it = site_settings_.begin();
     it != site_settings_.end(); ++it) {
-    if (!it->Validate())
-      return false;
+      if (!it->Validate())
+        return false;
   }
 
   return true;

@@ -425,6 +425,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\httpmanager.cc"
+				>
+			</File>
+			<File
 				RelativePath=".\httpproto.cc"
 				>
 			</File>
@@ -541,11 +545,23 @@
 				>
 			</File>
 			<File
+				RelativePath=".\securitymanager.cc"
+				>
+			</File>
+			<File
 				RelativePath=".\servicecontroller.cc"
 				>
 			</File>
 			<File
 				RelativePath=".\servicerunner.cc"
+				>
+			</File>
+			<File
+				RelativePath=".\sessionmanager.cc"
+				>
+			</File>
+			<File
+				RelativePath=".\settingmanager.cc"
 				>
 			</File>
 			<File
@@ -598,6 +614,10 @@
 			</File>
 			<File
 				RelativePath=".\videositemapservice.cc"
+				>
+			</File>
+			<File
+				RelativePath=".\webpagemanager.cc"
 				>
 			</File>
 			<File
@@ -668,6 +688,10 @@
 			</File>
 			<File
 				RelativePath=".\httplanguageheaderparser.h"
+				>
+			</File>
+			<File
+				RelativePath=".\httpmanager.h"
 				>
 			</File>
 			<File
@@ -755,6 +779,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\securitymanager.h"
+				>
+			</File>
+			<File
 				RelativePath=".\servicecontroller.h"
 				>
 			</File>
@@ -764,6 +792,14 @@
 			</File>
 			<File
 				RelativePath=".\servicerunner.h"
+				>
+			</File>
+			<File
+				RelativePath=".\sessionmanager.h"
+				>
+			</File>
+			<File
+				RelativePath=".\settingmanager.h"
 				>
 			</File>
 			<File
@@ -820,6 +856,10 @@
 			</File>
 			<File
 				RelativePath=".\visitingrecord.h"
+				>
+			</File>
+			<File
+				RelativePath=".\webpagemanager.h"
 				>
 			</File>
 			<File

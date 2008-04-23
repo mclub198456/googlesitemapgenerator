@@ -19,27 +19,31 @@
 #include <map>
 #include <string>
 
+// Parses the HTTP 'accept-language' header content
 class HttpLanguageHeaderParser {
+  // The type of maps for language name and its weight
   typedef std::map<std::string, double> Map;
 
- public:
+public:
+  // Returns the language which has the heaviest weight in the "accept_lang". 
+  // "accept_lang" is the 'accept-language' header content
   static std::string getPreferLanguage(const std::string& accept_lang);
-  static bool strSplit(const std::string& str, 
-                       const std::string& split, 
-                       std::string* first, 
-                       std::string* second);
 
+  // Returns true if the "lang" is supported by the Generator
   static bool isSupportedLanguage(const std::string& lang);
 
+  // Returns the formal name of the language that used in the Generator
   static std::string getLanguageRegularName(const std::string& language);
- 
- private:
-  static void addLanguage(Map* map, const std::string& language_range);
 
+private:
+  // Parses all the language in the "accept_lang" and 
+  // put them into the "lang_map"
   static void getAllLanguages(Map* lang_map, const std::string& accept_lang);
 
+  // Removes all the unsupported language out of the "map"
   static void filterLanguages(Map* map);
 
+  // Returns the the language which has the heaviest weight in the "map"
   static std::string findPreferLanguage(Map* map);
 
 };

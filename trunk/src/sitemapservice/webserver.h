@@ -24,25 +24,37 @@
 class HttpProto;
 class webserver {
 public:
+  // destructor
   ~webserver();
+
   // singleton factory
   static webserver* getInstance();
 
+  // The type of the callback function to deal with the HTTP request
   typedef void (*request_func) (HttpProto*); 
 
+  // Start the webserver listening, will block the thread or return false
+  // if some error occur.
   bool Start(unsigned int port_to_listen, request_func, bool singleThread);
+
+  // Parses the HTTP request and call the callback function to deal with it,
+  // then pack the response and send it back to the client.
   void ProcessRequest(const ActiveSocket& s);
 
 private:
-  // static member
+  // The singleton
   static webserver* instance_;
 
-  // method
+  // Initializes the listening socket
   bool StartListen(int port, int connections, bool isBlocking = true);
+
+  // Accepts the connection
   ActiveSocket* Accept();
 
-  // member
+  // The listening socket
   SOCKET listen_socket_;
+
+  // The callback function
   request_func request_func_;
 };
 #endif

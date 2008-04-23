@@ -47,7 +47,7 @@ typedef ApacheConfig LocalWebServerConfig;
 class TiXmlDocument;
 
 class SiteSettings : public BaseSetting {
- public:
+public:
   SiteSettings();
   virtual ~SiteSettings();
 
@@ -110,7 +110,7 @@ class SiteSettings : public BaseSetting {
 
   // Save current settings to a string.
   // Returns false if saving failed.
-  bool SaveToString(std::string &xml_string);
+  bool SaveToString(std::string *xml_string);
 
   // Getter/setter for setting values.
   const std::vector<SiteSetting>& site_settings() const {
@@ -165,7 +165,7 @@ class SiteSettings : public BaseSetting {
     SaveAttribute("admin_password", admin_password_);
   }
   bool ChangeAdminPassword(const char* password);
-  
+
   int logging_level() const { return logging_level_; }
   void set_logging_level(int logging_level) {
     logging_level_ = logging_level;
@@ -185,7 +185,7 @@ class SiteSettings : public BaseSetting {
     webserver_config_ = webserver_config;
   }
 
- protected:
+protected:
   // Defines the most backup copies of default setting file.
   static const int kMaxBackupSettings = 10;
 
@@ -230,9 +230,10 @@ class SiteSettings : public BaseSetting {
   LocalWebServerConfig                     webserver_config_;
 
 #ifdef __linux__
- private:
+private:
   static const char* kDefaultFilePath;
 #endif
 };
+
 
 #endif  // COMMON_SITESETTINGS_H__

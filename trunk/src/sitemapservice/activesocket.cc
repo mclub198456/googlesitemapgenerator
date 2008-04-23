@@ -42,21 +42,21 @@ void ReuseSocket(SOCKET sk) {
 #ifdef WIN32
   char on = 1;
   if (SOCKET_ERROR == 
-      setsockopt(sk, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on))) {
-    Util::Log(EVENT_ERROR, "reuse socket error (%d)", MyGetLastError());
+    setsockopt(sk, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on))) {
+      Util::Log(EVENT_ERROR, "reuse socket error (%d)", MyGetLastError());
   }
 #else
   int on = 1;
   if (SOCKET_ERROR == 
-      setsockopt(sk, SOL_SOCKET, SO_REUSEADDR, (const void*)&on, sizeof(on))) {
-    Util::Log(EVENT_ERROR, "reuse socket error (%d)", MyGetLastError());
+    setsockopt(sk, SOL_SOCKET, SO_REUSEADDR, (const void*)&on, sizeof(on))) {
+      Util::Log(EVENT_ERROR, "reuse socket error (%d)", MyGetLastError());
   }
 #endif
 }
 
 ///////////////////////////////////////////////////////
 
-/* constructor */
+// constructor 
 ActiveSocket::ActiveSocket(SOCKET s) : 
 socket_(s), 
 remote_addr_(NULL), 
@@ -64,7 +64,7 @@ ref_counter_(new int(1)) {
 
 };
 
-/* destructor */
+// destructor
 ActiveSocket::~ActiveSocket() {
   if (! --(*ref_counter_)) {
     closesocket(socket_);
