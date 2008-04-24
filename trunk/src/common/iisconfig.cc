@@ -59,9 +59,9 @@ bool IisConfig::InstallFilter() {
   std::string plugin_name(Util::GetApplicationDir());
   plugin_name.append("\\");
   if (iis_version == 7) {
-    plugin_name.append("SitemapModule");
+    plugin_name.append("IIS7_Module");
   } else if (iis_version == 6) {
-    plugin_name.append("SitemapFilter");
+    plugin_name.append("IIS6_Filter");
   } else {
     Util::Log(EVENT_ERROR, "IIS Version can't be determined.(%d)", iis_version);
     return false;
