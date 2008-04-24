@@ -87,14 +87,11 @@ bool ApacheConfig::Readline(std::ifstream* fout, std::string* line) {
       buffer.erase(pos, 1);
     }
 
-    if (buffer.length() == 0) continue;
-
-    if (buffer[buffer.length() - 1] == '\\') {
+    if (buffer.length() > 0 && buffer[buffer.length() - 1] == '\\') {
       line->append(buffer.substr(0, buffer.length() - 1));
-      continue;
     } else {
       line->append(buffer);
-      break;
+      if (line->length() != 0) break;
     }
   }
 
@@ -105,13 +102,20 @@ bool ApacheConfig::Readline(std::ifstream* fout, std::string* line) {
 
   // find the place of '#', for comment
   int i = 0;
-  while (i < line->length() && (*line)[i] != '#') ++i;
-  *line = line->substr(0, i);
+  while (i < line->length() && (*line)[i] != '#' && isspace((*line)[i])) {
+    if (isspace((*line)[i]) != 0) {
+      ++i;
+    } else if ((*line)[i] == '#') {
+      line->clear();
+    } else {
+      break;
+    }
+  }
 
   return true;
 }
 
-// Split by whitespace, with consideration of quote
+// Split by space, with consideration of quote
 // WARN: Currently, no apache official doc on this issue,
 //       idea from ${apache2-src}/server/util.c#ap_getword_conf)
 std::vector<std::string> ApacheConfig::Split(const std::string& str) {
@@ -119,7 +123,7 @@ std::vector<std::string> ApacheConfig::Split(const std::string& str) {
   int len = static_cast<int>(str.length());
 
   for (int i = 0; i < len;) {
-    while (i < len && IsSpace(str[i])) ++i;
+    while (i < len && isspace(str[i])) ++i;
     if (i == len) break;
 
     int j;
@@ -136,7 +140,7 @@ std::vector<std::string> ApacheConfig::Split(const std::string& str) {
       }
     } else {
       j = i;
-      while (j < len && !IsSpace(str[j])) ++j;
+      while (j < len && !isspace(str[j])) ++j;
     }
 
     result.push_back(str.substr(i, j - i));

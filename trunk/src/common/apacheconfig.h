@@ -30,15 +30,15 @@ class ApacheConfig : public WebserverConfig {
     // and this vhost contains _default_ or * addresss,
     // ServerName for mainserver will be used as default
     std::string servername;
-    
+
     // from DocumentRoot
     // if not present, DocumentRoot from mainserver is used as default
     std::string documentroot;
-    
+
     // from <VirtualHost address1, [:address2...]>
     // So it may represent zero or more single address
     std::string address;
-    
+
     // From CustomLog directive, represents the log path.
     std::string customlog;
   };
@@ -55,7 +55,7 @@ class ApacheConfig : public WebserverConfig {
   virtual bool Load();
 
   bool Load(const char* configfile);
-  
+
   static void SetConfFilePath(const char* path) { conf_file_path_ = path; }
   static std::string GetConfFilePath() { return conf_file_path_; }
 
@@ -66,16 +66,12 @@ class ApacheConfig : public WebserverConfig {
 
   static std::string GetLocalHost();
 
-  inline static bool IsSpace(char c) {
-    return c == ' ' || c == '\t';
-  }
-
   // default apache configuration path for Load() method.
   static std::string conf_file_path_;
 
   // Handle [ServerName] directive
   bool NormalizeServerName(std::string* servername);
-  
+
   // process a configuration file
   bool ProcessFile(const char* filename);
 
@@ -92,7 +88,7 @@ class ApacheConfig : public WebserverConfig {
   // default value: HTTPD_ROOT, ap_server_root
   // /usr/local/apache2
   std::string serverroot_;
-  
+
   // default value for documentroot: DOCUMENT_LOCATION, "/htdocs"
   VHostConfig mainserver_;
 
