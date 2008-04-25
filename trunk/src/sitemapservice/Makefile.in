@@ -19,7 +19,8 @@ SRCS = asteriskfilter.cc recordfileio.cc sitemapwriter.cc \
   robotstxtfilter.cc sitedatamanager.cc servicerunner.cc httpgetter.cc \
   urlfprintio.cc newsdatamanager.cc backupservice.cc urlreceivethread.cc \
   settingupdatelistener.cc daemon.cc main.cc \
-  activesocket.cc httpproto.cc webserver.cc
+  activesocket.cc httpproto.cc webserver.cc \
+  settingmanager.cc httpmanager.cc securitymanager.cc webpagemanager.cc sessionmanager.cc
 
 OBJS = $(SRCS:.cc=.o)
 DEPS = $(SRCS:.cc=.P)

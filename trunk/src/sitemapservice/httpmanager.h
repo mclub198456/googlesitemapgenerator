@@ -15,6 +15,8 @@
 #ifndef WEBSITE_TOOLS_SITEMAP_SITEMAPSERVICE_HTTPMANAGER_H__
 #define WEBSITE_TOOLS_SITEMAP_SITEMAPSERVICE_HTTPMANAGER_H__
 
+#include <string>
+
 class HttpManager {
 public:
   // HTTP parameters names

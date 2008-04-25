@@ -14,7 +14,10 @@
 
 #include "sitemapservice/securitymanager.h"
 
+#ifdef WIN32
 #include <Wincrypt.h>
+#endif
+
 #include <sstream>
 
 #include "common/util.h"

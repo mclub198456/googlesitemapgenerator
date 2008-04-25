@@ -15,6 +15,8 @@
 #ifndef WEBSITE_TOOLS_SITEMAP_SITEMAPSERVICE_SECURITYMANAGER_H__
 #define WEBSITE_TOOLS_SITEMAP_SITEMAPSERVICE_SECURITYMANAGER_H__
 
+#include <string>
+
 class HttpProto;
 class SessionManager;
 class SettingManager;
