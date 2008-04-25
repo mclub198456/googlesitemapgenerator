@@ -46,27 +46,28 @@ int Util::log_level_ = EVENT_IMPORTANT;
 
 std::string Util::application_dir_ = "";
 
+
 int Util::StrSplit(const std::string& str, char split, 
                    std::vector<std::string>* res) {
-                     res->clear();
-                     std::string oriStr = str;
+	res->clear();
+	std::string oriStr = str;
 
-                     std::string::size_type pos = oriStr.find_first_of(split);
-                     while(pos != std::string::npos) {
-                       res->push_back(oriStr.substr(0, pos));
-                       oriStr = oriStr.substr(pos + 1);
-                       pos = oriStr.find_first_of(split);
-                     }
-                     res->push_back(oriStr);
+	std::string::size_type pos = oriStr.find_first_of(split);
+	while(pos != std::string::npos) {
+	res->push_back(oriStr.substr(0, pos));
+	oriStr = oriStr.substr(pos + 1);
+	pos = oriStr.find_first_of(split);
+	}
+	res->push_back(oriStr);
 
-                     return (int)res->size();
+	return (int)res->size();
 }
 
 // pos == -1 means match from end
-bool Util::Match(const std::string& str, int pos, const std::string& substr) { 
+bool Util::Match(const std::string& str, int pos, const std::string& substr) {
   size_t len = str.length();
   size_t sublen = substr.length();
-  if (len < sublen) 
+  if (len < sublen)
     return false;
 
   if (pos < 0)
@@ -101,7 +102,7 @@ bool Util::InitFlags() {
   // Load application level settings.
   std::string settingspath = SiteSettings::GetDefaultFilePath();
   Util::Log(EVENT_IMPORTANT, "[%s] is used as init global flags.",
-    settingspath.c_str());
+                             settingspath.c_str());
 
   SiteSettings settings;
   if (!settings.LoadFromFile(settingspath.c_str())) {
@@ -115,9 +116,9 @@ bool Util::InitFlags() {
 #ifdef __linux__
   // Set apache conf root.
   if (settings.apache_conf().length() == 0 &&
-    ApacheConfig::GetConfFilePath().length() == 0) {
-      Util::Log(EVENT_ERROR, "Apache conf shouldn't be empty.");
-      return false;
+      ApacheConfig::GetConfFilePath().length() == 0) {
+    Util::Log(EVENT_ERROR, "Apache conf shouldn't be empty.");
+    return false;
   }
   if (ApacheConfig::GetConfFilePath().length() == 0) {
     ApacheConfig::SetConfFilePath(settings.apache_conf().c_str());
@@ -126,7 +127,7 @@ bool Util::InitFlags() {
 
   // Print a starting message.
   Util::Log(EVENT_CRITICAL, "== Google Sitemap Generator [%s] ==",
-    SITEMAP_VERSION1);
+            SITEMAP_VERSION1);
 
   return true;
 }
@@ -181,14 +182,14 @@ void Util::Log(int event_type, const char *event_pattern, ...) {
     if (h != NULL) {
       // Report the event.
       ReportEventA(h,                       // event log handle
-        windows_event_type,      // event type
-        0,                       // event category
-        1,                       // event identifier
-        NULL,                    // no user security identifier
-        1,                       // number of strings
-        0,                       // no data
-        &event_message_pointer,  // pointer to strings
-        NULL);                   // no data
+                   windows_event_type,      // event type
+                   0,                       // event category
+                   1,                       // event identifier
+                   NULL,                    // no user security identifier
+                   1,                       // number of strings
+                   0,                       // no data
+                   &event_message_pointer,  // pointer to strings
+                   NULL);                   // no data
       DeregisterEventSource(h);
     }
   }
@@ -206,25 +207,25 @@ void Util::Log(int event_type, const char *event_pattern, ...) {
     } else {
 #ifdef _DEBUG
       fprintf(stderr, "%s: Can not open log file (%d) to write.\n",
-        FormatW3CTime(time(NULL)).c_str(), errno);
+              FormatW3CTime(time(NULL)).c_str(), errno);
 #endif
     }
   } else {
 #ifdef _DEBUG
     fprintf(stderr, "%s: Can not create log file (%d)\n",
-      FormatW3CTime(time(NULL)).c_str(), errno);
+            FormatW3CTime(time(NULL)).c_str(), errno);
 #endif
   }
 
   // Output to console if it's in debugging mode.
 #ifdef _DEBUG
   fprintf(stderr, "%s: %s\n",
-    FormatW3CTime(time(NULL)).c_str(), event_message);
+          FormatW3CTime(time(NULL)).c_str(), event_message);
 #else
   // This is for unittest. In production code, this value is never negative.
   if (log_level_ < 0) {
     fprintf(stderr, "%s: %s\n",
-      FormatW3CTime(time(NULL)).c_str(), event_message);
+            FormatW3CTime(time(NULL)).c_str(), event_message);
   }
 #endif
 }
@@ -253,7 +254,7 @@ bool Util::GZip(const char* src, const char* dest) {
     result = true;
     while (!feof(srcfile)) {
       int count = static_cast<int>(
-        fread(buffer, sizeof(buffer[0]), kBufferSize, srcfile));
+          fread(buffer, sizeof(buffer[0]), kBufferSize, srcfile));
       if (ferror(srcfile)) {
         result = false;
         break;
@@ -325,12 +326,12 @@ bool Util::CreateLogFile() {
 
   SID_NAME_USE snu;
   if (!LookupAccountNameA(NULL, "Everyone",
-    psid, &sidbuffer_size,
-    domainbuffer, &domainbuffer_size,
-    &snu))
-    return false;
+                          psid, &sidbuffer_size,
+                          domainbuffer, &domainbuffer_size,
+                          &snu))
+     return false;
 
-  // Build a ACL and allow Everyone's full control.
+   // Build a ACL and allow Everyone's full control.
   char aclbuffer[1024];
   PACL pacl = reinterpret_cast<PACL>(aclbuffer);
 
@@ -394,21 +395,21 @@ bool Util::MD5Encrypt(const char* original, std::string* encrypted) {
   while (true) {
     if(!CryptAcquireContext(&cryptprov, NULL, NULL, PROV_RSA_FULL, CRYPT_VERIFYCONTEXT)) {
       Util::Log(EVENT_ERROR, "Failed to acquire crypt context (0x%x).",
-        GetLastError());
+                GetLastError());
       break;
     }
 
     if(!CryptCreateHash(cryptprov, CALG_MD5, 0, 0, &hash)) {
       Util::Log(EVENT_ERROR, "Failed to create hash (0x%x).",
-        GetLastError());
+                GetLastError());
       break;
     }
 
     if (!CryptHashData(hash, reinterpret_cast<BYTE*>(const_cast<char*>(original)),
-      static_cast<DWORD>(strlen(original)), 0)) {
-        Util::Log(EVENT_ERROR, "Failed to hash data. (0x%x).",
-          GetLastError());
-        break;
+                       static_cast<DWORD>(strlen(original)), 0)) {
+      Util::Log(EVENT_ERROR, "Failed to hash data. (0x%x).",
+                GetLastError());
+      break;
     }
 
     // MD5 always has a 128 bit hash value
@@ -416,7 +417,7 @@ bool Util::MD5Encrypt(const char* original, std::string* encrypted) {
     DWORD bufferlen = 20;
     if (!CryptGetHashParam(hash, HP_HASHVAL, buffer, &bufferlen, 0)) {
       Util::Log(EVENT_ERROR, "Failed to get hash value (0x%x).",
-        GetLastError());
+                GetLastError());
       break;
     }
 
@@ -546,7 +547,7 @@ bool Util::RunWithApacheGroup() {
   group* group_struct = getgrnam(group_name.c_str());
   if (group_struct == NULL) {
     Util::Log(EVENT_ERROR, "Failed retrieve group id for [%s].",
-      group_name.c_str());
+              group_name.c_str());
     return false;
   } else {
     group_id = group_struct->gr_gid;
@@ -559,7 +560,7 @@ bool Util::RunWithApacheGroup() {
   }
 
   Util::Log(EVENT_CRITICAL, "Process group is changed to [%s].",
-    group_name.c_str());
+            group_name.c_str());
   return true;
 }
 
@@ -575,7 +576,7 @@ bool Util::CreateLogFile() {
 
   // Try to create the file.
   int filed = open(log_file_name_.c_str(), O_WRONLY | O_CREAT | O_APPEND,
-    S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
+                   S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
   if (filed == -1) {
     fprintf(stderr, "Can't open log file (%s).", log_file_name_.c_str());
     return false;
@@ -604,24 +605,19 @@ std::string Util::GetApplicationDir() {
 
 
 bool Util::MD5Encrypt(const char* original, std::string* encrypted) {
-  unsigned char buffer[20];
+  unsigned char digest[16];
+  md5_state_t state;
 
-  // Mock MD5
-  int len = static_cast<int>(strlen(original));
-  for (int i = 0; i < 4; ++i) {
-    const char* to_hash = original + (i >= len ? len : i);
-    uint64 value = ::FingerPrint(to_hash);
-    for (int j = 0; j < 4; ++j) {
-      buffer[i * 4 + j] = static_cast<unsigned char>(value & 255);
-      value >>= 8;
-    }
-  }
+  md5_init(&state);
+  md5_append(&state, reinterpret_cast<const unsigned char*>(original),
+             static_cast<int>(strlen(original)));
+  md5_finish(&state, digest);
 
   encrypted->clear();
   for (int i = 0; i < 16; ++i) {
-    int val = static_cast<int>(buffer[i]) / 16;
+    int val = static_cast<int>(digest[i]) / 16;
     encrypted->push_back(Util::int_to_hex_digit_low(val));
-    val = static_cast<int>(buffer[i]) % 16;
+    val = static_cast<int>(digest[i]) % 16;
     encrypted->push_back(Util::int_to_hex_digit_low(val));
   }
   return true;
@@ -639,6 +635,5 @@ bool Util::UTF8ToSystem(const char* utf8, std::string* system) {
   system->append(utf8);
   return true;
 }
-
 
 #endif

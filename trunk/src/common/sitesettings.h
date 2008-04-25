@@ -47,7 +47,7 @@ typedef ApacheConfig LocalWebServerConfig;
 class TiXmlDocument;
 
 class SiteSettings : public BaseSetting {
-public:
+ public:
   SiteSettings();
   virtual ~SiteSettings();
 
@@ -165,7 +165,7 @@ public:
     SaveAttribute("admin_password", admin_password_);
   }
   bool ChangeAdminPassword(const char* password);
-
+  
   int logging_level() const { return logging_level_; }
   void set_logging_level(int logging_level) {
     logging_level_ = logging_level;
@@ -185,7 +185,7 @@ public:
     webserver_config_ = webserver_config;
   }
 
-protected:
+ protected:
   // Defines the most backup copies of default setting file.
   static const int kMaxBackupSettings = 10;
 
@@ -230,10 +230,9 @@ protected:
   LocalWebServerConfig                     webserver_config_;
 
 #ifdef __linux__
-private:
+ private:
   static const char* kDefaultFilePath;
 #endif
 };
-
 
 #endif  // COMMON_SITESETTINGS_H__

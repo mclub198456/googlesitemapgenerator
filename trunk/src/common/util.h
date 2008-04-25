@@ -45,7 +45,7 @@
 
 
 class Util {
-public:
+ public:
   // Convert a hex digit to integer.
   // -1 is returned for invalid digit.
   inline static int hex_digit_to_int(char c) {
@@ -101,7 +101,7 @@ public:
 
   // Initialize flags for the application,
   // like log-level, log-file-path, and etc. 
-  static bool InitFlags();
+  static bool InitFlags();  
 
   // Returns true if the "substr" is found at the "pos" of the "str"
   static bool Match(const std::string& str, int pos, const std::string& substr);
@@ -128,7 +128,7 @@ public:
   static bool RunWithApacheGroup();
 #endif
 
-private:
+ private:
   // Private constructor to prevent instantiation
   Util() {}
 
@@ -136,7 +136,7 @@ private:
   // Filter also needs read/write this file.
   static bool CreateLogFile();
 
-private:
+ private:
   // Cache application directory value.
   static std::string application_dir_;
 
