@@ -38,14 +38,14 @@ HttpGetter::HttpGetter() {
 bool HttpGetter::Get(const char* host, int port, const char *path) {
 
   BOOL  result = FALSE;
-  HINTERNET  session_handle = NULL, 
+  HINTERNET  session_handle = NULL,
              connect_handle = NULL,
              request_handle = NULL;
 
   // Use WinHttpOpen to obtain a session handle.
   session_handle = WinHttpOpen(L"Simple Http Getter",
                                WINHTTP_ACCESS_TYPE_DEFAULT_PROXY,
-                               WINHTTP_NO_PROXY_NAME, 
+                               WINHTTP_NO_PROXY_NAME,
                                WINHTTP_NO_PROXY_BYPASS, 0);
 
   // Specify an HTTP server.
@@ -54,7 +54,7 @@ bool HttpGetter::Get(const char* host, int port, const char *path) {
     if (Util::MultiByteToWideChar(host, &wide_host)) {
       connect_handle = WinHttpConnect(session_handle,
                                       wide_host.c_str(),
-                                      port, 
+                                      port,
                                       0);
     }
   }
@@ -65,8 +65,8 @@ bool HttpGetter::Get(const char* host, int port, const char *path) {
     if (Util::MultiByteToWideChar(path, &wide_path)) {
       request_handle = WinHttpOpenRequest(connect_handle, L"GET",
                                           wide_path.c_str(),
-                                          NULL, WINHTTP_NO_REFERER, 
-                                          WINHTTP_DEFAULT_ACCEPT_TYPES, 
+                                          NULL, WINHTTP_NO_REFERER,
+                                          WINHTTP_DEFAULT_ACCEPT_TYPES,
                                           0);
     }
   }
@@ -75,7 +75,7 @@ bool HttpGetter::Get(const char* host, int port, const char *path) {
   if (request_handle != NULL) {
     result = WinHttpSendRequest(request_handle,
                                 WINHTTP_NO_ADDITIONAL_HEADERS, 0,
-                                WINHTTP_NO_REQUEST_DATA, 0, 
+                                WINHTTP_NO_REQUEST_DATA, 0,
                                 0, 0 );
   }
 
@@ -194,6 +194,8 @@ bool HttpGetter::Get(const char* host, int port, const char *path) {
     }
 
     // Receive response.
+    bool header_found = false;
+    status_ = -1;
     content_.clear();
     memset(buffer, 0, sizeof(buffer));
     int recv_result = -1, content_length = -1;
@@ -201,15 +203,23 @@ bool HttpGetter::Get(const char* host, int port, const char *path) {
       content_.append(buffer, buffer + recv_result);
 
       // Parse the header.
-      std::string::size_type text_pos = content_.find("\r\n\r\n");
-      if (text_pos == std::string::npos) {
-        text_pos = content_.find("\n\n");
+      std::string::size_type text_pos = std::string::npos;
+      int split_length = 4;
+      if (header_found == false) {
+        text_pos = content_.find("\r\n\r\n");
+
+        // Accommodate to non-standard behavior.
+        if (text_pos == std::string::npos) {
+          text_pos = content_.find("\n\n");
+          split_length = 2;
+        }
       }
 
       if (text_pos != std::string::npos) {
+        header_found = true;
         std::string header = content_.substr(0, text_pos);
-        content_.erase(0, text_pos + 4);
-        
+        content_.erase(0, text_pos + split_length);
+
         // Pasrse status code.
         if (header.length() < 12) {
           status_ = -1;
@@ -253,7 +263,7 @@ bool HttpGetter::Get(const char* host, int port, const char *path) {
 
   shutdown(socketfd, SHUT_RDWR);
   close(socketfd);
-  
+
   if (result != 0) {
     Util::Log(EVENT_ERROR, "Failed to do http Get. (%d)", result);
     return false;
@@ -263,4 +273,3 @@ bool HttpGetter::Get(const char* host, int port, const char *path) {
 }
 
 #endif
-
