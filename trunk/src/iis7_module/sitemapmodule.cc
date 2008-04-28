@@ -135,11 +135,11 @@ REQUEST_NOTIFICATION_STATUS SitemapModule::OnLogRequest(
   }
 
   // Get http url, which is encoded already.
-  PCWSTR wideurl = httpcontext->GetScriptName();
-  size_t converted = wcstombs(record.url, wideurl, kMaxUrlLength);
-  if (converted == -1 || converted == kMaxUrlLength) {
+  HTTP_REQUEST* raw_request = request->GetRawHttpRequest();
+  if (raw_request->RawUrlLength >= kMaxUrlLength) {
     return RQ_NOTIFICATION_CONTINUE;
   }
+  strcpy(record.url, raw_request->pRawUrl);
 
   Util::Log(EVENT_NORMAL,
             "Record generated:[url:%s|host:%s|siteid:%s|content:%lld|"
