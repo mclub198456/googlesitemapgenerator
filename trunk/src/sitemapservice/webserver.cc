@@ -59,50 +59,50 @@ webserver::~webserver() {
 bool webserver::Start(unsigned int port_to_listen, request_func r,
                       bool singleThread) {
 #ifdef WIN32
-                        WSADATA info;  
-                        if (WSAStartup(MAKEWORD(2,0), &info)) {
-                          Util::Log(EVENT_ERROR, "fail to startup WSA (%d).", MyGetLastError());
-                          return false;
-                        }
+  WSADATA info;  
+  if (WSAStartup(MAKEWORD(2,0), &info)) {
+    Util::Log(EVENT_ERROR, "fail to startup WSA (%d).", MyGetLastError());
+    return false;
+  }
 #endif
 
-                        if (!StartListen(port_to_listen,5)) {
-                          Util::Log(EVENT_ERROR, "fail to listen (%d).", MyGetLastError());
-                          return false;
-                        }
+  if (!StartListen(port_to_listen,5)) {
+    Util::Log(EVENT_ERROR, "fail to listen (%d).", MyGetLastError());
+    return false;
+  }
 
-                        request_func_ = r;
+  request_func_ = r;
 
-                        while (1) {
-                          ActiveSocket* sock = Accept();
-                          if (sock == NULL) {
-                            Util::Log(EVENT_ERROR, "accept failed (%d).", MyGetLastError());
-                            return false;
-                          }
+  while (1) {
+    ActiveSocket* sock = Accept();
+    if (sock == NULL) {
+      Util::Log(EVENT_ERROR, "accept failed (%d).", MyGetLastError());
+      return false;
+    }
 
-                          if (singleThread) {
-                            ProcessRequest(*sock);
-                          } else {
-                            bool failed;
+    if (singleThread) {
+      ProcessRequest(*sock);
+    } else {
+      bool failed;
 #ifdef WIN32
-                            DWORD dwThreadId;
-                            failed = CreateThread(NULL, 0, 
-                              (LPTHREAD_START_ROUTINE )ProcessRequestThread,
-                              (void*)sock, 0, &dwThreadId) == INVALID_HANDLE_VALUE;
+      DWORD dwThreadId;
+      failed = CreateThread(NULL, 0, 
+        (LPTHREAD_START_ROUTINE )ProcessRequestThread,
+        (void*)sock, 0, &dwThreadId) == INVALID_HANDLE_VALUE;
 #else
-                            pthread_t th_head;
-                            failed = pthread_create(&th_head, NULL, 
-                              &ProcessRequestThread,(void*)sock) != 0;
+      pthread_t th_head;
+      failed = pthread_create(&th_head, NULL, 
+        &ProcessRequestThread,(void*)sock) != 0;
 #endif
-                            if (failed) {
-                              Util::Log(EVENT_ERROR, 
-                                "fail to create thread to process webserver request (%d).", 
-                                MyGetLastError());
-                              return false;
-                            }
-                          }
-                        }
-                        return true;
+      if (failed) {
+        Util::Log(EVENT_ERROR, 
+          "fail to create thread to process webserver request (%d).", 
+          MyGetLastError());
+        return false;
+      }
+    }
+  }
+  return true;
 }
 
 

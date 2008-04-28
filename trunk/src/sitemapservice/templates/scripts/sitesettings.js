@@ -528,7 +528,7 @@ function SiteSetting(xpath) {
 
   this.addComponent_(new SimpleSettingComponent(
       '@add_generator_info', 'addGeneratorInfo',
-      SimpleSettingComponent.types.STRING));
+      SimpleSettingComponent.types.BOOLEAN));
 
   // add list
   this.addComponent_(new ListSettingComponent(

@@ -54,9 +54,9 @@ int Util::StrSplit(const std::string& str, char split,
 
 	std::string::size_type pos = oriStr.find_first_of(split);
 	while(pos != std::string::npos) {
-	res->push_back(oriStr.substr(0, pos));
-	oriStr = oriStr.substr(pos + 1);
-	pos = oriStr.find_first_of(split);
+	  res->push_back(oriStr.substr(0, pos));
+	  oriStr = oriStr.substr(pos + 1);
+	  pos = oriStr.find_first_of(split);
 	}
 	res->push_back(oriStr);
 
