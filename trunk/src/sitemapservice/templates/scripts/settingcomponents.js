@@ -65,7 +65,7 @@ SpaceConvertComponent.prototype.listeningCallback = function(comp, type) {
  * @private
  */
 SpaceConvertComponent.prototype.setValueToHTML_ = function(value) {
-  this.html_.value = value;
+  this.html_.innerHTML = value;
 };
 
 

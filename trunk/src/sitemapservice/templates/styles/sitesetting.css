@@ -101,10 +101,10 @@ input.text {
   width: 100px;
 }
 
-input.spaceval {
-  width: 80px;
+.spaceval {
+  min-width: 80px;
   text-align: right;  
-  color: black;
+  color:gray;
 }
 
 .runtimeinfo {
