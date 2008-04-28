@@ -54,7 +54,8 @@ public:
   static void AccessAggregateJSFile(HttpProto *r);
 
   // Gets main.html file and set param in main HTML page.
-  static bool GetMainFile(std::string* html_string, const std::string& session_id, bool need_login);
+  static bool GetMainFile(std::string* html_string, 
+                          const std::string& session_id, bool need_login);
 
 private:
   // Returns the paths of all the JavaScript files that will be included in the 

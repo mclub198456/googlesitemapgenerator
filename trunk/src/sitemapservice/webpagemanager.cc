@@ -106,7 +106,8 @@ void WebPageManager::AccessStaticFile(HttpProto* r) {
   }
 
 
-  DLog(EVENT_IMPORTANT, "File path: %s", Util::EscapeLogMessage(filename.c_str()).c_str());
+  DLog(EVENT_IMPORTANT, "File path: %s", 
+       Util::EscapeLogMessage(filename.c_str()).c_str());
 
   // cache control
   if (!Util::Match(r->path_, -1, "language.js")) {  
@@ -135,25 +136,29 @@ void WebPageManager::AccessStaticFile(HttpProto* r) {
         r->answer_content_type_ = "text/css";
       }
       r->answer_ = contentstring;
-      DLog(EVENT_IMPORTANT, "Send response: SUCCESS, size %d", r->answer_.length());
+      DLog(EVENT_IMPORTANT, 
+           "Send response: SUCCESS, size %d", r->answer_.length());
 
     } else {
       r->answer_status_ = "404 Not Found"; 
       r->answer_ = "can't load the file";
-      Util::Log(EVENT_ERROR, "!!Failed to load the file: %s", Util::EscapeLogMessage(filename.c_str()).c_str());
+      Util::Log(EVENT_ERROR, "!!Failed to load the file: %s", 
+                Util::EscapeLogMessage(filename.c_str()).c_str());
       DLog(EVENT_IMPORTANT, "Send response: %s", r->answer_.c_str());
     }
   } else {
     r->answer_status_ = "404 Not Found"; 
     r->answer_ = "File not found";
-    Util::Log(EVENT_ERROR, "!!Failed to find the file: %s", Util::EscapeLogMessage(filename.c_str()).c_str());
+    Util::Log(EVENT_ERROR, "!!Failed to find the file: %s", 
+              Util::EscapeLogMessage(filename.c_str()).c_str());
     DLog(EVENT_IMPORTANT, "Send response: %s", r->answer_.c_str());
   }    
 }
 
 
 void WebPageManager::AccessAggregateJSFile(HttpProto* r) {
-  DLog(EVENT_IMPORTANT, "Get request: %s", Util::EscapeLogMessage(r->path_.c_str()).c_str());
+  DLog(EVENT_IMPORTANT, "Get request: %s", 
+       Util::EscapeLogMessage(r->path_.c_str()).c_str());
 
   // get last modify timestamp, it's the latest file time of all the js files
   std::string filename;
@@ -162,7 +167,8 @@ void WebPageManager::AccessAggregateJSFile(HttpProto* r) {
   std::vector<std::string>::const_iterator itr = jsfiles.begin();
   for (;itr!=jsfiles.end();itr++) {
     filename = GetLocalPath() + "scripts/" + *itr;
-    DLog(EVENT_IMPORTANT, "File path: %s", Util::EscapeLogMessage(filename.c_str()).c_str());
+    DLog(EVENT_IMPORTANT, "File path: %s", 
+         Util::EscapeLogMessage(filename.c_str()).c_str());
 
     FileAttribute file_attr;
     if(!FileUtil::GetFileAttribute(filename.c_str(), &file_attr)) {
@@ -199,21 +205,24 @@ void WebPageManager::AccessAggregateJSFile(HttpProto* r) {
       } else {
         r->answer_status_ = "404 Not Found"; 
         r->answer_ = "can't load the file";
-        Util::Log(EVENT_ERROR, "!!Failed to load the file: %s", Util::EscapeLogMessage(filename.c_str()).c_str());
+        Util::Log(EVENT_ERROR, "!!Failed to load the file: %s", 
+                  Util::EscapeLogMessage(filename.c_str()).c_str());
         DLog(EVENT_IMPORTANT, "Send response: %s", r->answer_.c_str());
         return;
       }
     } else {
       r->answer_status_ = "404 Not Found"; 
       r->answer_ = "File not found";
-      Util::Log(EVENT_ERROR, "!!Failed to find the file: %s", Util::EscapeLogMessage(filename.c_str()).c_str());
+      Util::Log(EVENT_ERROR, "!!Failed to find the file: %s", 
+                Util::EscapeLogMessage(filename.c_str()).c_str());
       DLog(EVENT_IMPORTANT, "Send response: %s", r->answer_.c_str());
       return;
     }
   }
 
   r->answer_ = allcontent;
-  DLog(EVENT_IMPORTANT, "Send response: SUCCESS, size %d", r->answer_.length());
+  DLog(EVENT_IMPORTANT, "Send response: SUCCESS, size %d", 
+       r->answer_.length());
 }
 
 
@@ -361,7 +370,9 @@ int WebPageManager::StringReplace(std::string* strBig,
   return count;
 }
 
-bool WebPageManager::GetMainFile(std::string* html_string, const std::string& session_id, bool need_login) {
+bool WebPageManager::GetMainFile(std::string* html_string, 
+                                 const std::string& session_id, 
+                                 bool need_login) {
   std::string filename = GetLocalPath() + kMainFile;
   if (!FileUtil::LoadFile(filename.c_str(), html_string)) {
     Util::Log(EVENT_ERROR,

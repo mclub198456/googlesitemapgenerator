@@ -151,7 +151,8 @@ bool SettingManager::SaveXml(const std::string& xml_string) {
   // save settings_ to file
   bool save_result = SaveSettingToFile();
   isSettingsLoadedFromFile_ = save_result;
-  if (!settingListener_->PostUpdateSetting(oldsettings, settings_, save_result)) {
+  if (!settingListener_->PostUpdateSetting(oldsettings, settings_, 
+                                           save_result)) {
     Util::Log(EVENT_ERROR, "Post-update setting failed. (Ignore).");
   }
 

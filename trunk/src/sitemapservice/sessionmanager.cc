@@ -37,7 +37,8 @@ SessionManager::SessionInfo* SessionManager::GetSession(HttpProto *r) {
     it->second->last_access = time(NULL);
     return it->second;
   }
-  Util::Log(EVENT_ERROR, "!!invalid session %s", Util::EscapeLogMessage(session_id.c_str()).c_str()); 
+  Util::Log(EVENT_ERROR, "!!invalid session %s", 
+            Util::EscapeLogMessage(session_id.c_str()).c_str()); 
   return NULL;
 }
 

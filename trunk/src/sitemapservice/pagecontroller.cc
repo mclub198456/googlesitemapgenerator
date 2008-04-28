@@ -61,12 +61,14 @@ const std::string PageController::kChangePasswordAction = "/chpswd";
 const std::string PageController::kUnittestPostAction = "/unittest/post";
 const std::string PageController::kUnittestGetAction = "/unittest/get";
 const std::string PageController::kUnittestCrashAction = "/unittest/crash";
-const std::string PageController::kUnittestLongtimeAction = "/unittest/longtime";
+const std::string PageController::kUnittestLongtimeAction = 
+    "/unittest/longtime";
 const std::string PageController::kMainAction = "/main";
 
 
 
-const std::string PageController::kUnittestPostAndGetContentPath = "/unittest/postcontent.txt";
+const std::string PageController::kUnittestPostAndGetContentPath = 
+    "/unittest/postcontent.txt";
 
 
 
@@ -285,7 +287,8 @@ void PageController::AccessMainPage(HttpProto* r) {
   std::string htmlstring;
 
   // load file
-  if (WebPageManager::GetMainFile(&htmlstring, session_id_encrypt, need_login)) {
+  if (WebPageManager::GetMainFile(&htmlstring, session_id_encrypt, 
+                                  need_login)) {
     r->answer_ = htmlstring;
     DLog(EVENT_IMPORTANT, "Send response: SUCCESS, size %d", 
       r->answer_.length());
@@ -315,7 +318,9 @@ bool PageController::UnittestProcess(HttpProto* r) {
     DLog(EVENT_IMPORTANT, "post type: %s, content: %s", 
       r->content_type_.c_str(), teststring.c_str());
 
-    if (FileUtil::WriteFile((WebPageManager::GetLocalPath() + kUnittestPostAndGetContentPath).c_str(), teststring)) {
+    if (FileUtil::WriteFile(
+            (WebPageManager::GetLocalPath() + 
+            kUnittestPostAndGetContentPath).c_str(), teststring)) {
       r->answer_ = "Success";
     } else {
       r->answer_status_ = "500 Internal Server Error"; 
@@ -323,8 +328,8 @@ bool PageController::UnittestProcess(HttpProto* r) {
       ret = false;
     }
 
-    DLog(EVENT_IMPORTANT, 
-      "Send response (UNITTEST post): %s", r->answer_.c_str());
+    DLog(EVENT_IMPORTANT, "Send response (UNITTEST post): %s", 
+         r->answer_.c_str());
 
     // UNITTEST get
   } else if (r->path_ == kUnittestGetAction) {
@@ -332,14 +337,17 @@ bool PageController::UnittestProcess(HttpProto* r) {
     DLog(EVENT_IMPORTANT, "Get request (UNITTEST get)");
 
     std::string xmlstring;
-    if (!FileUtil::LoadFile((WebPageManager::GetLocalPath() + kUnittestPostAndGetContentPath).c_str(), &xmlstring)) {
+    if (!FileUtil::LoadFile(
+            (WebPageManager::GetLocalPath() + 
+            kUnittestPostAndGetContentPath).c_str(), &xmlstring)) {
       Util::Log(EVENT_ERROR, "!!Failed to load xml setting.");
       xmlstring = "";
     }
 
     r->answer_content_type_ = "text/xml";
     r->answer_ = xmlstring;
-    DLog(EVENT_IMPORTANT, "Send response (UNITTEST get): %s", r->answer_.c_str());
+    DLog(EVENT_IMPORTANT, "Send response (UNITTEST get): %s", 
+         r->answer_.c_str());
 
     // UNITTEST crash
   } else if (r->path_ == kUnittestCrashAction) {
@@ -347,7 +355,8 @@ bool PageController::UnittestProcess(HttpProto* r) {
     DLog(EVENT_IMPORTANT, "Get request (UNITTEST crash)");
 
     exit(0);
-    DLog(EVENT_IMPORTANT, "Send response (UNITTEST crash): %s", r->answer_.c_str());
+    DLog(EVENT_IMPORTANT, "Send response (UNITTEST crash): %s", 
+         r->answer_.c_str());
 
     // UNITTEST longtime wait
   } else if (r->path_ == kUnittestLongtimeAction) {
@@ -356,7 +365,8 @@ bool PageController::UnittestProcess(HttpProto* r) {
 
     Sleep(10000); // 10 sec
     r->answer_ = "Success";
-    DLog(EVENT_IMPORTANT, "Send response (UNITTEST longtime): %s", r->answer_.c_str());
+    DLog(EVENT_IMPORTANT, "Send response (UNITTEST longtime): %s", 
+         r->answer_.c_str());
     // restart server
   }
 
@@ -411,12 +421,18 @@ bool PageController::RestartServer() {
   std::string args = needRestartAll ? "all" : "";
 #ifdef WIN32
   std::string cmd = Util::GetApplicationDir().append("/").append("restart.bat");
-  HINSTANCE h = ShellExecuteA(NULL, "open", cmd.c_str(), args.c_str(), NULL, SW_SHOWNORMAL);
+  HINSTANCE h = ShellExecuteA(NULL, 
+                              "open",        // action
+                              cmd.c_str(),   // file name
+                              args.c_str(),  // params
+                              NULL, 
+                              SW_SHOWNORMAL);
   Util::Log(EVENT_CRITICAL, "restart the server!! %d", h);
   return h > (HINSTANCE)32 ? true : false;
 #else
   pid_t pid;
-  // vfork will not copy content from parent process, the child process must call exec immediately
+  // The 'vfork' function will not copy content from parent process, the child 
+  // process must call exec immediately.
   // the parent process will not run util the child process call exec
   std::string cmd = Util::GetApplicationDir().append("/").append("restart.sh");
   int ret = 0;
@@ -426,9 +442,9 @@ bool PageController::RestartServer() {
   } else if (pid == 0) { // child process
     DLog(EVENT_IMPORTANT, "start exec restart.sh...");
     ret = execl(cmd.c_str(), // filepath
-      cmd.c_str(), // arg0, must be the filepath
-      args.c_str(), // arg1, the 'all' flag
-      (char *)0); // teminator of the args list
+                cmd.c_str(), // arg0, must be the filepath
+                args.c_str(), // arg1, the 'all' flag
+                (char *)0); // teminator of the args list
     if (ret < 0) {
       Util::Log(EVENT_ERROR, "exec restart.sh failed!! %d", errno);
     }
