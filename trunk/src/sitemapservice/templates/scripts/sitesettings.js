@@ -896,7 +896,7 @@ NormalSiteSetting.prototype.load = function(xml) {
   this.name_ = this.getComponent_('name').getValueFromXML_();
   this.id_ = this.getComponent_('site_id').getValueFromXML_();
 
-  this.customize_.load(!this.isCustomizedXML());
+  this.customize_.loadValue(!this.isCustomizedXML());
 };
 
 //////////// Class ServiceType /////////////////
@@ -1066,7 +1066,7 @@ SitemapSetting.prototype.settingTabType = function() {
 SitemapSetting.prototype.load = function(xml) {
   SitemapSetting.prototype.parent.load.call(this, xml);
   if (this.customize_) {
-    this.customize_.load(!this.isCustomizedXML());
+    this.customize_.loadValue(!this.isCustomizedXML());
   }
 };
 

@@ -611,12 +611,17 @@ CustomizeSettingComponent.prototype.initHtml_ = function() {
  * 
  * @param {Boolean} value  The value of this setting
  */
-CustomizeSettingComponent.prototype.load = function(value) {
-  if (value == null)
-    return; // normal load process
-
+CustomizeSettingComponent.prototype.loadValue = function(value) {
   this.setValueToHTML_(value);
   this.owner_.setInherit(value);
+};
+
+/**
+ * Override the inherited load function.
+ * @param {XmlManager} xml  The xml node of the context setting
+ */
+CustomizeSettingComponent.prototype.load = function(xml) {
+  // do nothing
 };
 
 /**
