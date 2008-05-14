@@ -58,6 +58,17 @@ void SiteSetting::ResetToDefault() {
   log_parser_setting_.ResetToDefault();
 }
 
+bool SiteSetting::LoadSettingForFilter() {
+  LoadAttribute("enabled", enabled_);
+  LoadAttribute("site_id", site_id_);
+
+  // Load url provider settings.
+  webserver_filter_setting_.Load(xml_node_);
+
+  return true;
+}
+
+
 bool SiteSetting::LoadSetting() {
   LoadAttribute("enabled", enabled_);
   LoadAttribute("site_id", site_id_);

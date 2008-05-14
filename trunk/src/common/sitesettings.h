@@ -97,6 +97,9 @@ class SiteSettings : public BaseSetting {
   // be ignored.
   bool LoadFromFile(const char *xml_file_name);
 
+  // TODO: Replace this method with a better design aproach.
+  bool LoadFromFileForFilter(const char* xml_file_name);
+
   // Load settings from xml string.
   // Only sites contained in webserver_config_ can be loaded.
   // Note, LoadWebserverConfig must be called before this one. Otherwise, only

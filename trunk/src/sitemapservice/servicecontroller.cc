@@ -54,8 +54,8 @@ struct ParamSet {
 static void* SiteSettingThread(void* param) {
   ParamSet* realparam = (ParamSet*) param;
   Util::Log(EVENT_IMPORTANT, "Web server start: port %d", realparam->param1);
-  if (!webserver::getInstance()->Start(
-          realparam->param1, (webserver::request_func)realparam->function,
+  if (!WebServer::GetInstance()->Start(
+          realparam->param1, (WebServer::request_func)realparam->function,
           true /* Single thread */ )) {
     Util::Log(EVENT_ERROR, "Web server start failed");
   } 
@@ -245,7 +245,7 @@ bool ServiceController::Initialize() {
     Util::Log(EVENT_ERROR, "Failed to intialize setting update listener.");
     return false;
   }
-  PageController::getInstance()->setUpdateListener(update_listener_);
+  PageController::GetInstance()->SetUpdatelistener(update_listener_);
   
   // Change firewall setting according to remote_admin flag.
   if (!ChangeFirewallSetting(settings_.remote_admin())) {

@@ -123,6 +123,8 @@ class Util {
   static bool GetModuleDir(HMODULE module, std::string* dir);
   static bool GetModulePath(HMODULE module, std::string* path);
 
+  static bool AllowEveryoneAccess(const std::string& file);
+
 #elif defined(__linux__)
   // Change current process' effective group to apache group.
   static bool RunWithApacheGroup();

@@ -43,14 +43,16 @@ var TRANSMARK_ATTRNAME = 'transmark';
 var CONFIG_XML_GET_ACTION = 'getxml';
 var RUNTIME_XML_GET_ACTION = 'getruntimeinfo';
 var XML_SET_ACTION = 'postxml';
-var SAVE_RESTART_ACTION = 'saverestart';
+var RESTART_ACTION = 'restart';
 var LOGOUT_ACTION = 'logout';
 var LOGIN_ACTION = 'login';
 var CHANGE_PSWD_ACTION = 'chpswd';
 
 // server response message
 var SAVE_FAIL_MSG_FROM_SERVER = 'Save Failed';
+var SAVE_WARN_MSG_FROM_SERVER = 'Settings is out-of-date';
 var RESTART_FAIL_MSG_FROM_SERVER = 'Restart Failed';
+var RESTART_WARN_MSG_FROM_SERVER = 'Need restart webserver';
 
 var TAB_CONTAINER_NAME = 'tabpage';
 var TAB_COOKIE = 'sitemapsetting';
@@ -62,6 +64,8 @@ var USERNAME_PARAM_NAME = 'username';
 var PASSWORD_PARAM_NAME = 'password';
 var OLD_PASSWORD_PARAM_NAME = 'opswd';
 var NEW_PASSWORD_PARAM_NAME = 'npswd';
+var TS_PARAM_NAME = 'ts';
+var FORCE_PARAM_NAME = 'force';
 
 var SERVER_RESTART_DELAY = 30000;
 

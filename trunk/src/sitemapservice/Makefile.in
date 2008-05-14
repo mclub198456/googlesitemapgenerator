@@ -1,8 +1,7 @@
 CC = @CC@
-CXX = @CXX@
 
 CFLAGS = @CFLAGS@
-CXXCOMPILE = @CXX@ @DEFS@ @CPPFLAGS@ @CXXFLAGS@
+CCOMPILE = @CC@ @DEFS@ @CPPFLAGS@ @CFLAGS@
 LDFLAGS = @LDFLAGS@
 
 SRCS = asteriskfilter.cc recordfileio.cc sitemapwriter.cc \
@@ -34,12 +33,12 @@ DEP_LIBS = ../common/libcommon.a \
 .SUFFIXES:
 .SUFFIXES: .o .cc
 .cc.o:
-	@$(CXXCOMPILE) -M $< -o $(*F).d; \
+	@$(CCOMPILE) -M $< -o $(*F).d; \
 	 cp -f $(*F).d $(*F).P; \
 	 sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	     -e '/^$$/ d' -e 's/$$/ :/' < $(*F).d >> $(*F).P; \
 	 rm -f $(*F).d
-	$(CXXCOMPILE) -o $@ -c $<
+	$(CCOMPILE) -o $@ -c $<
 
 all: sitemap-daemon
 

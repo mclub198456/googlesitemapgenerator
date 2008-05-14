@@ -43,11 +43,9 @@
  *   the list container and the list template element.
  * @param {ListSettingComponent} owner  The setting component that manage the
  *   list
- * @param {HTMLDocument} opt_dom  The HTML document that contain the list and
- *   the related elements
  * @constructor
  */
-function DynamicInputList(htmlId, owner, opt_dom) {
+function DynamicInputList(htmlId, owner) {
   /**
    * this.htmlId_.containerId,
    * this.htmlId_.listTplId, ;
@@ -60,15 +58,9 @@ function DynamicInputList(htmlId, owner, opt_dom) {
   this.ownerListSetting_ = owner;
 
   /**
-   * @type {Document|Node}
-   */
-  this.dom_ = opt_dom || document;
-
-  /**
    * @type {Element}
    */
-  this.container_ =
-      Util.checkElemExistInDomAndReturn(this.dom_, this.htmlId_.containerId);
+  this.container_ = Util.checkElemExistAndReturn(this.htmlId_.containerId);
 
   /**
    * The list items
@@ -80,8 +72,7 @@ function DynamicInputList(htmlId, owner, opt_dom) {
   // initial the template if necessary
   var listTpl = DynamicInputList.Tpl[this.htmlId_.listTplId];
   if (!listTpl) {
-    listTpl =
-        Util.checkElemExistInDomAndReturn(this.dom_, this.htmlId_.listTplId);
+    listTpl = Util.checkElemExistAndReturn(this.htmlId_.listTplId);
 
     // the first direct DIV under the list tpl DIV is the list item tpl DIV
     listTpl.listItemTpl =
@@ -114,7 +105,7 @@ function DynamicInputList(htmlId, owner, opt_dom) {
     // click 'add' button will trigger the list onchange event
     Util.event.add(addButton, 'click', function(e, target){
       target.ownerContainer_.currentOwnerList_.addItem([]); // add empty line
-      PageManager.getInstance().adjustPageHeight();
+      TabManager.getInstance().tabHeightChanged();
       // trigger the onChange function
       Util.event.send('change', target);
     });
@@ -130,6 +121,29 @@ function DynamicInputList(htmlId, owner, opt_dom) {
    */
   this.addButton_ = this.container_.addbtn;
 }
+
+DynamicInputList.prototype.releaseHtml = function() {
+  if (this.listItems_) {
+    // call the sub items' releaseHtml
+    this.clear();
+    this.listItems_ = null;
+  }
+  if (this.container_) {
+    if (this.container_.addbtn) {
+      this.container_.addbtn.ownerContainer_ = null;
+      this.container_.addbtn = null;
+      this.container_.currentOwnerList_ = null;
+    }
+    this.addButton_ = null;
+    this.container_ = null;
+  }
+  if (DynamicInputList.Tpl[this.htmlId_.listTplId]) {
+    DynamicInputList.Tpl[this.htmlId_.listTplId] = null;
+  }
+  if (this.listItemTpl_) {
+    this.listItemTpl_ = null;
+  }
+};
 
 /**
  * The list templates dictionary, records the list templates that have been 
@@ -282,9 +296,12 @@ DynamicInputList.prototype.applyToInputs_ = function(type, param) {
  * Removes all the items in 'this' list.
  */
 DynamicInputList.prototype.clear = function() {
-  // Notes: don't using applyToArray to remove node
-  while (this.listItems_.length > 0) {
+  // Notes: don't using applyToArray to remove node  
+  while (true) {
     var item = this.listItems_.pop();
+    if (!item) {
+      break;
+    }
     // item node must be the direct child of list container
     item.removeSelf();
   }
@@ -320,9 +337,8 @@ function ListItem(item, owner, value) {
    * the first button INPUT under the list item DIV is the delete button
    * @type {Element}
    */
-  this.delButton_ = Util.DOM.getFirstDescentdantdantByTagNameAndType(this.item_, 
-                                                                'INPUT', 
-                                                                'button');
+  this.delButton_ = Util.DOM.getFirstDescentdantdantByTagNameAndType(
+                        this.item_, 'INPUT', 'button');
 
   this.delButton_.value = DELETE_BUTTON_VALUE;
 
@@ -330,7 +346,7 @@ function ListItem(item, owner, value) {
   Util.event.add(this.delButton_, 'click', function() {
     // let the list deal with the change
     that.ownerList_.removeItem(that);
-    PageManager.getInstance().adjustPageHeight();
+    TabManager.getInstance().tabHeightChanged();
   });
 
   /**
@@ -364,6 +380,31 @@ function ListItem(item, owner, value) {
   this.setValue(value);
 }
 
+ListItem.prototype.releaseHtml = function() {
+  // Haven't add any reference on the elements
+  this.item_ = null;
+  this.delButton_ = null;
+};
+
+/**
+ * Release the resources and references of the list item.
+ */
+ListItem.prototype.removeSelf = function() {
+  this.ownerList_ = null;
+  this.item_.parentNode.removeChild(this.item_);
+  this.releaseHtml();
+
+  // Notes: don't using applyToArray to remove node
+  while (true) {
+    var field = this.fields_.pop();
+    if (!field) {
+      break;
+    }
+    // item node must be the direct child of list container
+    field.removeSelf();
+  }
+};
+
 /**
  * Gets input elements of this list item.
  * @return {Array.<Element>} The input elements of this list item
@@ -389,22 +430,6 @@ ListItem.prototype.setValue = function(value) {
   Util.array.applyToMultiple(this.fields_, value, function(field, val) {
     field.setValue(val);
   });
-};
-
-/**
- * Release the resources and references of the list item.
- */
-ListItem.prototype.removeSelf = function() {
-  this.ownerList_ = null;
-  this.item_.parentNode.removeChild(this.item_);
-  this.item_ = null;
-
-  // Notes: don't using applyToArray to remove node
-  while (this.fields_.length > 0) {
-    var field = this.fields_.pop();
-    // item node must be the direct child of list container
-    field.removeSelf();
-  }
 };
 
 /**
@@ -494,9 +519,14 @@ function ComplexField(elem, owner, validator) {
    */
   this.inputs_ =
       Util.DOM.getAllDescentdantByTagNameAndType(this.elem_, 'INPUT', 'text');
+
   var that = this;
   Util.array.apply(this.inputs_, function(input) {
     input.ownerField_ = that;
+    var range = that.validator_.range();
+    if (range && input.tip) {
+      input.tip += ' Range=' + range;
+    }
   });
 
   /**
@@ -528,15 +558,26 @@ ComplexField.prototype.validator = function() {
   return this.validator_;
 };
 
+ComplexField.prototype.releaseHtml = function() {
+  if (this.inputs_) {
+    while (true) {
+      var input = this.inputs_.pop();
+      if (!input) {
+        break;
+      }
+      input.ownerField_ = null;
+    }
+  }
+  if (this.spans_) {
+    while (this.spans_.pop());
+  }
+};
 /**
  * Release the resources and references of the field.
  */
 ComplexField.prototype.removeSelf = function() {
   this.ownerListItem_ = null;
-  var that = this;
-  Util.array.apply(this.inputs_, function(input) {
-    input.ownerField_ = null;
-  });
+  this.releaseHtml();
 };
 
 /**
@@ -756,25 +797,35 @@ ReplaceComplexField.prototype.regenerate = function(findValue, opt_repVal) {
   this.spans_ = [];
   Util.DOM.removeAllChildren(this.elem_);
   for (var i = 0; i < spanVals.length - 1; i++) {
-    var newSpanElem = this.spanElemTpl_.cloneNode(true);
-    newSpanElem.innerHTML = spanVals[i] ? spanVals[i] : '';
-    this.spans_.push(newSpanElem);
-    this.elem_.appendChild(newSpanElem);
-
-    var newInputElem = this.inputElemTpl_.cloneNode(true);
-    newInputElem.ownerField_ = this;
-    this.inputs_.push(newInputElem);
-    this.elem_.appendChild(newInputElem);
+    this.addSpan_(spanVals[i] ? spanVals[i] : '');
+    this.addInput_();
   }
-  newSpanElem = this.spanElemTpl_.cloneNode(true);
-  newSpanElem.innerHTML = spanVals[i] ? spanVals[i] : '';
-  this.spans_.push(newSpanElem);
-  this.elem_.appendChild(newSpanElem);
+  this.addSpan_(spanVals[i] ? spanVals[i] : '');
 
   if (opt_repVal) {
     // get the replace inputs values according to replace field value
     this.setValueToHTML_(repVal);
   }
+};
+
+ReplaceComplexField.prototype.addSpan_ = function(text){
+  var newSpanElem = this.spanElemTpl_.cloneNode(true);
+  newSpanElem.innerHTML = text;
+  this.spans_.push(newSpanElem);
+  this.elem_.appendChild(newSpanElem);
+};
+
+ReplaceComplexField.prototype.addInput_ = function() {
+  var newInputElem = this.inputElemTpl_.cloneNode(true);
+  newInputElem.ownerField_ = this;
+  this.inputs_.push(newInputElem);
+  this.elem_.appendChild(newInputElem);
+};
+
+ReplaceComplexField.prototype.releaseHtml = function() {
+  ReplaceComplexField.prototype.parent.releaseHtml();
+  this.spanElemTpl_ = null;
+  this.inputElemTpl_ = null;
 };
 
 /**

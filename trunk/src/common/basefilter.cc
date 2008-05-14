@@ -34,11 +34,7 @@ BaseFilter::~BaseFilter() {
 bool BaseFilter::Initialize(const char* settingfile) {
   // Load site settings from file and webserver.
   SiteSettings settings;
-  if (!settings.LoadWebserverConfig()) {
-    Util::Log(EVENT_ERROR, "Failed to load webserver config.");
-    return false;
-  }
-  if (!settings.LoadFromFile(settingfile)) {
+  if (!settings.LoadFromFileForFilter(settingfile)) {
     Util::Log(EVENT_ERROR, "Failed to load setting from file.");
     return false;
   }
@@ -67,42 +63,40 @@ bool BaseFilter::BuildSiteIdMap() {
   site_ids_.clear();
   const std::vector<SiteSetting>& sites = settings_.site_settings();
 
+  default_enabled_ = settings_.auto_add() &&
+    settings_.global_setting().enabled()&&
+    settings_.global_setting().webserver_filter_setting().enabled();
+
   for (int i = 0, isize = static_cast<int>(sites.size());
     i < isize; ++i) {
-    // Ignore un-enabled site.
-    if (sites[i].enabled() == false) continue;
-
-    // Ignore site, which doesn't get url from webserver plugin.
-    if (sites[i].webserver_filter_setting().enabled() == false) continue;
-
     if (sites[i].site_id().length() == 0) {
       Util::Log(EVENT_ERROR, "Site id can't be empty.");
       return false;
     }
 
-    if (site_ids_.find(sites[i].site_id()) != site_ids_.end()) {
-      Util::Log(EVENT_ERROR, "Duplicated site id: %s.", sites[i].site_id().c_str());
-      return false;
+    // Ignore un-enabled site.
+    bool enabled = sites[i].enabled() &&
+      sites[i].webserver_filter_setting().enabled();
+    if (enabled != default_enabled_) {
+      site_ids_.insert(sites[i].site_id());
     }
-
-    site_ids_[sites[i].site_id()] = i;
   }
 
-  Util::Log(EVENT_IMPORTANT, "[%d] sites are enabled in filter.",
-            site_ids_.size());
+  Util::Log(EVENT_IMPORTANT, "[%d] sites are [%s] in filter.",
+    site_ids_.size(), (default_enabled_ ? "disabled" : "enabled"));
   return true;
 }
 
-int BaseFilter::MatchSite(const char* siteid) {
-  std::map<std::string, int>::iterator itr = site_ids_.find(siteid);
-  if (itr == site_ids_.end()) {
-    return -1;
+bool BaseFilter::MatchSite(const char* siteid) {
+  std::set<std::string>::iterator itr = site_ids_.find(siteid);
+  if (default_enabled_) {
+    return itr == site_ids_.end();
   } else {
-    return itr->second;
+    return itr != site_ids_.end();
   }
 }
 
-bool BaseFilter::Send(UrlRecord *record, int siteindex) {
+bool BaseFilter::Send(UrlRecord *record) {
   // Host should always be in lower case.
   strlwr(record->host);
 

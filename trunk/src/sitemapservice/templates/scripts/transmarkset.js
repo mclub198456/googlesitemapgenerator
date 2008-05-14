@@ -158,11 +158,6 @@ TransMarkSet.getElementTip_ = function(elem) {
   if (mark && mark != '') { // have transmark attribute
     var tip = TransMarkSet.getTip_(mark);
     if (tip) { // valid transmark
-      // add range info to tips
-      var range = elem.getAttribute('range');
-      if (range && range != '') {
-        tip += ' Range=' + range;
-      }
       return tip;
     }
   }

@@ -17,8 +17,8 @@
 
 #include <vector>
 #include <string>
-#include <set>
 #include <algorithm>
+#include <sstream>
 
 #include "third_party/tinyxml/tinyxml.h"
 #include "common/basesetting.h"
@@ -205,6 +205,50 @@ bool SiteSettings::LoadFromString(const char *xml_string) {
   return Load(&xml_document_);
 }
 
+bool SiteSettings::LoadFromFileForFilter(const char* xml_file_name) {
+  Util::Log(EVENT_CRITICAL, "Loading setting file from %s", xml_file_name);
+
+  ResetToDefault();
+
+  // Load setting file if it's not empty.
+  if (!xml_document_.LoadFile(xml_file_name)) {
+    Util::Log(EVENT_CRITICAL, "Loading setting file failed. Skip loading.");
+    return true;
+  }
+
+  // Find setting element node first.
+  xml_node_ = xml_document_.FirstChildElement(setting_name_.c_str());
+  // Create a new setting element if it's not found.
+  if (xml_node_ == NULL) {
+    Util::Log(EVENT_CRITICAL, "Can't find SiteSettings. Skip loading.");
+    return true;
+  }
+
+  // Load attributes from XML if it exists.
+  LoadAttribute("auto_add", auto_add_);
+  LoadAttribute("logging_level", logging_level_);
+  LoadAttribute("apache_conf", apache_conf_);
+
+  if (!global_setting_.Load(xml_node_)) {
+    Util::Log(EVENT_ERROR, "Loading global setting failed!");
+    return false;
+  }
+
+  // Get all <SiteSetting> nodes.
+  for (TiXmlElement* itr = xml_node_->FirstChildElement("SiteSetting");
+    itr; itr = itr->NextSiblingElement("SiteSetting")) {
+    SiteSetting site_setting(global_setting_);
+    site_setting.set_xml_node(itr);
+
+    site_setting.LoadSettingForFilter();
+    if (site_setting.site_id().length() > 0) {
+      site_settings_.push_back(site_setting);
+    }
+  }
+
+  return true;
+}
+
 bool SiteSettings::LoadSetting() {
   // Load attributes from XML if it exists.
   LoadAttribute("backup_duration_in_seconds", backup_duration_);
@@ -229,34 +273,36 @@ bool SiteSettings::LoadSetting() {
   }
 
   // Get all <SiteSetting> nodes.
-  std::set<TiXmlElement*> obsoleted_sitenode;
+  std::map<std::string, TiXmlElement*> obsoleted_sites;
   for (TiXmlElement* itr = xml_node_->FirstChildElement("SiteSetting");
     itr; itr = itr->NextSiblingElement("SiteSetting")) {
-    obsoleted_sitenode.insert(itr);
+    std::string site_id;
+    if (itr->Attribute("site_id") != NULL) {
+      site_id.append(itr->Attribute("site_id"));
+    } else {
+      std::ostringstream os;
+      os << "bogus_site_id_" << obsoleted_sites.size();
+      site_id.append(os.str());
+    }
+    obsoleted_sites[site_id] = itr;
   }
 
   for (size_t i = 0; i < webserver_config_.site_ids().size(); i ++) {
-    SiteSetting site_setting("SiteSetting");
+    SiteSetting site_setting(global_setting_);
+    site_setting.set_site_id(webserver_config_.site_ids()[i]);
+
     bool found = false;
+    std::map<std::string, TiXmlElement*>::iterator itr =
+      obsoleted_sites.find(webserver_config_.site_ids()[i]);
+    if (itr != obsoleted_sites.end()) {
+      found = true;
+      obsoleted_sites.erase(itr);
 
-    // Find the SiteSetting which matches site_id.
-    for (TiXmlElement* itr = xml_node_->FirstChildElement("SiteSetting");
-      itr; itr = itr->NextSiblingElement("SiteSetting")) {
-      // Copy global value from global_setting.
-      site_setting = global_setting_;
-
-      site_setting.set_xml_node(itr);
+      site_setting.set_xml_node(itr->second);
       if (!site_setting.LoadSetting()) {
         Util::Log(EVENT_ERROR, "Loading SiteSetting (site_id=%s) failed!",
                   site_setting.site_id().c_str());
         return false;
-      }
-
-      // Check if site_id matches
-      if (site_setting.site_id() == webserver_config_.site_ids()[i]) {
-        found = true;
-        obsoleted_sitenode.erase(itr);
-        break;
       }
     }
 
@@ -291,9 +337,9 @@ bool SiteSettings::LoadSetting() {
   }
 
   // Remove all obsoleted <SiteSetting> node.
-  while (!obsoleted_sitenode.empty()) {
-    xml_node_->RemoveChild(*obsoleted_sitenode.begin());
-    obsoleted_sitenode.erase(obsoleted_sitenode.begin());
+  while (!obsoleted_sites.empty()) {
+    xml_node_->RemoveChild(obsoleted_sites.begin()->second);
+    obsoleted_sites.erase(obsoleted_sites.begin());
   }
 
   return true;
@@ -328,6 +374,14 @@ bool SiteSettings::SaveToFile(const char *xml_file_name) {
     Util::Log(EVENT_ERROR, "Saving setting file %s failed.", xml_file_name);
     return false;
   }
+
+#ifdef WIN32
+  if (!Util::AllowEveryoneAccess(xml_file_name)) {
+    Util::Log(EVENT_ERROR, "Failed to change setting file [%s] permission.",
+              xml_file_name);
+    return false;
+  }
+#endif
 
   return true;
 }

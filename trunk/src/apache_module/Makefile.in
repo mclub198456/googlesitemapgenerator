@@ -1,8 +1,7 @@
 CC = @CC@
-CXX = @CXX@
 CFLAGS = @CFLAGS@
-CXXCOMPILE = @CXX@ @DEFS@ @CPPFLAGS@ -I"@INCLUDE_APACHE@" -I"@INCLUDE_APR@" \
-  @CXXFLAGS@
+CCOMPILE = @CC@ @DEFS@ @CPPFLAGS@ -I"@INCLUDE_APACHE@" -I"@INCLUDE_APR@" \
+  @CFLAGS@
 LDFLAGS = @LDFLAGS@
 
 SRCS = sitemapmodule.cc mod_sitemap.cc
@@ -18,12 +17,12 @@ DEP_LIBS = ../common/libcommon.a \
 .SUFFIXES:
 .SUFFIXES: .o .cc
 .cc.o:
-	@$(CXXCOMPILE) -M $< -o $(*F).d; \
+	@$(CCOMPILE) -M $< -o $(*F).d; \
 	 cp -f $(*F).d $(*F).P; \
 	 sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	     -e '/^$$/ d' -e 's/$$/ :/' < $(*F).d >> $(*F).P; \
 	 rm -f $(*F).d
-	$(CXXCOMPILE) -o $@ -c $<
+	$(CCOMPILE) -o $@ -c $<
 
 all: mod_sitemap.so
 

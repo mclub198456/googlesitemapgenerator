@@ -225,6 +225,13 @@ Tips.hidePopup = function() {
   }, Tips.HIDE_DELAY);
 };
 
+/**
+ * Moves the element to the position.
+ * @param {Object} elem  The element to be moved
+ * @param {Object} left  The left side destination position of the element
+ * @param {Object} top  The top side destination position of the element
+ * @private
+ */
 Tips.moveTo_ = function(elem, left, top) {
   elem.style.left = left;
   elem.style.top = top;

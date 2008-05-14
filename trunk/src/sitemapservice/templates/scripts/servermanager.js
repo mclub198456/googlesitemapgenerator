@@ -51,9 +51,11 @@ ServerManager.informUserServerReturnFail = function(msg) {
 /**
  * Get XML content from server.
  * @param {String} cmd  The URI of the 'GET' request
+ * @param {Object?} opt_http  The http output param, used to return some header
+ * information of the http response, currently only used for 'Last-Modified'
  * @return {Document?} The XML document
  */
-ServerManager.getXml = function(cmd) {
+ServerManager.getXml = function(cmd, opt_http) {
   var xmldom = null;
 
   var param = {};
@@ -66,38 +68,30 @@ ServerManager.getXml = function(cmd) {
 
   var xmlURL = cmd + '?' + AjaxUtil.encodeFormData(param);
 
-  if (BROWSER_TYPE == Browser.types.FIREFOX) {
-    // create requester
-    var requester = {
-      url: xmlURL,
-      wait: true
-    };
+  // create requester
+  var requester = {
+    url: xmlURL,
+    wait: true
+  };
 
-    //create responser
-    var responser = new AjaxUtil_responser(requester);
-    responser.onResponseFail = function(){
-      ServerManager.statusCode = responser.xhr.status;
-    };
+  //create responser
+  var responser = new AjaxUtil_responser(requester);
+  responser.onResponseFail = function(){
+    ServerManager.statusCode = responser.xhr.status;
+  };
 
-    // do request
-    AjaxUtil.makeRequest(requester, responser);
+  // do request
+  AjaxUtil.makeRequest(requester, responser);
 
-    // check result
-    xmldom = AjaxUtil.getResponseContent(responser);
+  // check result
+  xmldom = AjaxUtil.getResponseContent(responser);
+  if (xmldom == null) {
+    Util.console.error('can not load xml file');
+  }
 
-    // server may return empty string (text/html) if load xml file failed
-    if (typeof xmldom != 'object' || !(xmldom instanceof Document)) {
-      xmldom = null;
-      Util.console.error('can not load xml file');
-    } else {
-      // TODO: an error condition need to check:
-      // If the server return response content with type: 'text/xml', the Ajax
-      // API will do the parsing automatically, but if the content is not valid
-      // xml content, it will return an XmlDocument object that can't access
-      // correctly.
-    }
-  } else if (BROWSER_TYPE == Browser.types.IE) {
-    xmldom = AjaxUtil.loadXml(xmlURL);
+  if (opt_http) {
+    opt_http.lastModified =
+        responser.xhr.getResponseHeader('Last-Modified');
   }
 
   return xmldom;
@@ -106,6 +100,7 @@ ServerManager.getXml = function(cmd) {
 ////////////////////////////// To server tunnel ////////////////////////////
 /**
  * Send logout request.
+ * @return {Boolean} If the request is successful
  */
 ServerManager.requestLogout = function() {
   return ServerManager.post_(LOGOUT_ACTION);
@@ -114,48 +109,80 @@ ServerManager.requestLogout = function() {
 /**
  * Send save request.
  * @param {String} xmlstring  The content to be saved
+ * @param {Object} ts  The 'value' property of 'ts' object is a string that used
+ * to pass in/out the timestamp of the configuration. When passing in, it 
+ * represents the timestamp when the configuration is got from server, which
+ * will be used for server to judge if the configuration has been out-of-date.
+ * If the save action is successful, server will response the new timestamp,
+ * which will be updated to the 'value' property of 'ts' object when function
+ * return.
+ * @param {Boolean} opt_force  The 'force' param flag, if true, it tells server
+ * to save the content anyway
+ * @return {ServerManager.requestSave.rets} If the request is successful
  */
-ServerManager.requestSave = function(xmlstring){
+ServerManager.requestSave = function(xmlstring, ts, opt_force){
   var param = {};
   param[XML_PARAM_NAME] = xmlstring;
+  param[TS_PARAM_NAME] = ts.value;
+  if (opt_force) {
+    // 'force' is a flag param, the value is not important
+    param[FORCE_PARAM_NAME] = 1;
+  }
 
-  return ServerManager.postWithDefaultAction_(
-      XML_SET_ACTION, new ResponseMessage(SAVE_SUCCESS_MSG, SAVE_FAIL_MSG),
-      param, 'text/xml');
+  var ret;
+  var action = new ResponseAction(
+    function(responser) {
+      var msgFromServer = AjaxUtil.getResponseContent(responser);
+      if (msgFromServer == SAVE_WARN_MSG_FROM_SERVER) {
+        ret = ServerManager.requestSave.rets.OUTOFDATE;
+      } else {
+        ret = ServerManager.requestSave.rets.SUCCESS;
+        ServerManager.informUserServerReturnSuccess(SAVE_SUCCESS_MSG);
+        ts.value = msgFromServer;
+      }
+    },
+    function() {
+      ret = ServerManager.requestSave.rets.FAILED;
+      ServerManager.informUserServerReturnFail(SAVE_FAIL_MSG);
+    }
+  );
+
+  // the 'post_' function call will change the value of the 'ret' var
+  ServerManager.post_(XML_SET_ACTION, action, param, 'text/xml');
+  return ret;
 };
 
 /**
- * Send save and restart request.
- * @param {String} xmlstring  The content to be saved
+ * The return result of the 'requestSave' function.
+ * @enum
  */
-ServerManager.requestSaveRestart = function(xmlstring) {
-  var param = {};
-  param[XML_PARAM_NAME] = xmlstring;
-  
+ServerManager.requestSave.rets = {SUCCESS: 0, FAILED: 1, OUTOFDATE: 2};
+
+/**
+ * Send restart request.
+ * @return {Boolean} If the request is successful
+ */
+ServerManager.requestRestart = function() {
   var action = new ResponseAction(
-    function() {
-      ServerManager.informUserServerReturnSuccess(SAVE_RESTART_SUCCESS_MSG);
+    function(responser) {
+      ServerManager.informUserServerReturnSuccess(RESTART_SUCCESS_MSG);
+      var msgFromServer = AjaxUtil.getResponseContent(responser);
+      if (msgFromServer == RESTART_WARN_MSG_FROM_SERVER) {
+        alert(RESTART_WARNING_MSG);
+      }
     },
     function() {
-      var msgFromServer = AjaxUtil.getResponseContent(this);
-      var msg = SAVE_RESTART_FAIL_MSG;
-      if (msgFromServer == SAVE_FAIL_MSG_FROM_SERVER) {
-        msg = SAVE_FAIL_MSG2;
-      } else if (msgFromServer == RESTART_FAIL_MSG_FROM_SERVER) {
-        msg = RESTART_FAIL_MSG;
-      } else {
-        debugger;
-      }
-      ServerManager.informUserServerReturnFail(msg);
+      ServerManager.informUserServerReturnFail(RESTART_FAIL_MSG);
     }
   );
-  return ServerManager.post_(SAVE_RESTART_ACTION, action, param, 'text/xml');
+  return ServerManager.post_(RESTART_ACTION, action);
 };
 
 /**
  * Send login request.
  * @param {String} username  The login username
  * @param {String} password  The login password
+ * @return {Boolean} If the request is successful
  */
 ServerManager.requestLogin = function(username, password) {
   var param = {};
@@ -183,6 +210,7 @@ ServerManager.requestLogin = function(username, password) {
  * Send change password request.
  * @param {String} oldpswd  The old password
  * @param {String} newpswd  The new password
+ * @return {Boolean} If the request is successful
  */
 ServerManager.requestChangePassword = function(oldpswd, newpswd) {
   var param = {};
@@ -217,6 +245,7 @@ ServerManager.requestChangePassword = function(oldpswd, newpswd) {
  * @param {Object?} opt_param  The parameter sent to server
  * @param {String?} opt_typeval  The HTTP content-type value
  * @private
+ * @return {Boolean} If the request is successful
  */
 ServerManager.postWithDefaultAction_ = function(cmd, opt_msg, opt_param, 
                                                 opt_typeval) {
@@ -242,6 +271,7 @@ ServerManager.postWithDefaultAction_ = function(cmd, opt_msg, opt_param,
  * @param {String?} opt_typeval  The HTTP content-type value
  * @return {Boolean}  If the request is success.
  * @private
+ * @return {Boolean} If the request is successful
  */
 ServerManager.post_ = function(cmd, opt_action, opt_param, opt_typeval) {
   // add session id

@@ -12,8 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef WEBSITE_TOOLS_SITEMAP_SITEMAPSERVICE_HTTPMANAGER_H__
-#define WEBSITE_TOOLS_SITEMAP_SITEMAPSERVICE_HTTPMANAGER_H__
+// This file defines a class that deals with application level http for 
+// Google Sitemap Generator. Up to now, it only defines some const variables
+// for PageController.
+
+#ifndef SITEMAPSERVICE_HTTPMANAGER_H__
+#define SITEMAPSERVICE_HTTPMANAGER_H__
 
 #include <string>
 
@@ -24,9 +28,13 @@ public:
   static const std::string kOldPasswordParamName;
   static const std::string kNewPasswordParamName;
   static const std::string kUnittestPostParamName;
+  static const std::string kForceSaveParamName;
+  static const std::string kXmlTimestampParamName;
 
   // HTTP response messages
   static const std::string kSaveFailAnswer;
   static const std::string kRestartFailAnswer;
+  static const std::string kRestartWarnAnswer;
+  static const std::string kXmlWarnAnswer;
 };
-#endif
+#endif // SITEMAPSERVICE_HTTPMANAGER_H__

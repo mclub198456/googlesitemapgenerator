@@ -12,6 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// This file defines a class that manages the settings.
+// It manages the settings object in the memory, as well as synchronizing with 
+// the configuration XML file on the disk. It also provides some functions to 
+// access information of the settings.
+
 #ifndef WEBSITE_TOOLS_SITEMAP_SITEMAPSERVICE_SETTINGMANAGER_H__
 #define WEBSITE_TOOLS_SITEMAP_SITEMAPSERVICE_SETTINGMANAGER_H__
 
@@ -56,6 +61,9 @@ public:
   // change take effect.
   bool CheckRestart();
 
+  // Gets the XML config file's timestamp
+  bool GetLastModifiedTime(time_t* ts);
+
 private:
   // file paths
   static const std::string kXmlPath;  
@@ -67,25 +75,25 @@ private:
   // thread, so we don't need to lock it.
 
   // True if loading configuration info from webserver succeed.
-  bool isSettingsLoadedFromWebServer_;
+  bool is_settings_loaded_from_web_server_;
 
   // True if the configuration 'settings_' is up-to-date compared to the file
-  bool isSettingsLoadedFromFile_;
+  bool is_settings_loaded_from_file_;
 
   // The timestamp for the configuration 'settings_'
-  time_t lastModifyTimeForSettingsFile_;
+  time_t last_modify_time_for_settings_file_;
 
   // The listener for the setting change
-  SettingUpdateListener* settingListener_;
+  SettingUpdateListener* setting_listener_;
 
   // These two set of settings will be used to judge the necessary to restart
   // the IIS/Apache server.
 
   // The initial site enable settings
-  std::vector<bool> initSiteEnables_;
+  std::vector<bool> init_site_enables_;
 
   // The initial site filter settings
-  std::vector<bool> initWebserverFilterEnables_;
+  std::vector<bool> init_web_server_filter_enables_;
 };
 
 #endif

@@ -346,3 +346,36 @@ int MainService::StartConfig() {
   }
 }
 
+int MainService::SetPermission() {
+  std::string filename(Util::GetApplicationDir());
+  filename.append("\\IIS6_Filter_Win32.dll");
+  if (!Util::AllowEveryoneAccess(filename)) {
+    Util::Log(EVENT_ERROR, "Failed to set permission IIS6_Filter_Win32.dll.");
+    return 1;
+  }
+
+  filename.assign(Util::GetApplicationDir());
+  filename.append("\\IIS6_Filter_x64.dll");
+  if (!Util::AllowEveryoneAccess(filename)) {
+    Util::Log(EVENT_ERROR, "Failed to set permission IIS6_Filter_x64.dll.");
+    return 2;
+  }
+
+  filename.assign(Util::GetApplicationDir());
+  filename.append("\\IIS7_Module_Win32.dll");
+  if (!Util::AllowEveryoneAccess(filename)) {
+    Util::Log(EVENT_ERROR, "Failed to set permission IIS7_Module_Win32.dll.");
+    return 3;
+  }
+
+  filename.assign(Util::GetApplicationDir());
+  filename.append("\\IIS7_Module_x64.dll");
+  if (!Util::AllowEveryoneAccess(filename)) {
+    Util::Log(EVENT_ERROR, "Failed to set permission IIS7_Module_x64.dll.");
+    return 4;
+  }
+
+  return 0;
+}
+
+

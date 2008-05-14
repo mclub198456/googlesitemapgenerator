@@ -94,8 +94,8 @@ REQUEST_NOTIFICATION_STATUS SitemapModule::OnLogRequest(
   }
   itoa(httpcontext->GetSite()->GetSiteId(), record.siteid, 10);
 
-  int siteindex = basefilter_->MatchSite(record.siteid);
-  if (siteindex == -1) {
+  bool site_enabled = basefilter_->MatchSite(record.siteid);
+  if (!site_enabled) {
     return RQ_NOTIFICATION_CONTINUE;
   }
 
@@ -146,7 +146,7 @@ REQUEST_NOTIFICATION_STATUS SitemapModule::OnLogRequest(
             "lastmod:%ld|lastwrite:%ld|status:%d]",
             record.url, record.host, record.siteid, record.contentHashCode,
             record.last_modified, record.last_filewrite, record.statuscode);
-  basefilter_->Send(&record, siteindex);
+  basefilter_->Send(&record);
 
   return RQ_NOTIFICATION_CONTINUE;
 }

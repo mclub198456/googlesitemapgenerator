@@ -298,8 +298,8 @@ Util.DOM.removeAllChildren = function(container) {
 
 /////////////////////// assert function ///////////////////////////
 /**
- * Asserts the value is not null and equal to Boolean value 'true', empty string
- * will be treated as true.
+ * Asserts the value is not null and equal to Boolean value 'true', empty
+ * string will be treated as true.
  * Exception will be thrown if the value is null or undefined.
  * @param {Object?} val  The value to be asserted
  * @param {String} opt_msg  The msg to be output if the assert is failed
@@ -311,19 +311,6 @@ Util.assert = function(val, opt_msg) {
   }
 };
 
-/**
- * Asserts the element with the id exists.
- * Exception will be thrown if the value is null or undefined.
- * @param {Document} dom  The document where to find the element.
- * @param {String} id  The element's id
- * @param {String} opt_msg  The msg to be output if the assert is failed
- * @private
- */
-Util.assertHtmlElementInDom_ = function(dom, id, opt_msg) {
-  var defMsg = 'lack html element with id: ' + id;
-  Util.assert(dom.getElementById(id) != null, opt_msg ? opt_msg : defMsg);
-};
-
 /////////////////////// check function ///////////////////////////
 
 /**
@@ -333,20 +320,10 @@ Util.assertHtmlElementInDom_ = function(dom, id, opt_msg) {
  * @return {Element} The element that is found
  */
 Util.checkElemExistAndReturn = function(id) {
-  return Util.checkElemExistInDomAndReturn(document, id);
-};
-
-/**
- * Checks if the element with this id exists in the given document, and return
- * the element. Exception will be thrown if the check fails.
- * @param {Document} dom  The document where to find the element.
- * @param {String} id  The element's id
- * @return {Element} The element that is found
- */
-Util.checkElemExistInDomAndReturn = function(dom, id) {
-  Util.assertHtmlElementInDom_(dom, id); // cause 40 ms, should be remove when
-                                        // release
-  return dom.getElementById(id);
+  var elem = document.getElementById(id);
+  if (elem == null)
+    Util.assert(false, 'lack html element with id: ' + id);
+  return elem;
 };
 
 /**
@@ -360,7 +337,11 @@ Util.checkElemExistInDomAndReturn = function(dom, id) {
  */
 Util.checkUniqueAndReturn = function(node, tagName) {
   var subnode = node.getElementsByTagName(tagName);
-  Util.assert(subnode.length == 1, 'Util.checkUniqueAndReturn '+tagName);
+  var l = subnode.length;
+  if (l > 1)
+    Util.assert(false, 'element (' + tagName + ') is not unique');
+  else if (l == 0)
+    Util.assert(false, 'element (' + tagName + ') does not exist');
   return subnode[0];
 };
 
@@ -375,10 +356,13 @@ Util.checkUniqueAndReturn = function(node, tagName) {
  */
 Util.checkUniqueOrNullAndReturn = function(node, tagName) {
   var elements = node.getElementsByTagName(tagName);
-  Util.assert(elements.length <= 1, 'Util.checkUniqueOrNullAndReturn');
-  return elements.length == 0 ? null : elements[0];
+  var l = elements.length;
+  if (l > 1)
+    Util.assert(false, 'element (' + tagName + ') is not unique');
+  else if (l == 0)
+    return null;
+  return elements[0];
 };
-
 
 ///////////////////////// array function ////////////////
 /**
@@ -389,7 +373,8 @@ Util.checkUniqueOrNullAndReturn = function(node, tagName) {
  * @return {Boolean} True if the array contains the value
  */
 Util.array.contains = function(array, val) {
-  for (var i = 0; i < array.length; i++) {
+  var l = array.length;
+  for (var i = 0; i < l; i++) {
     if (array[i] == val) {
       return true;
     }
@@ -413,7 +398,8 @@ Util.array.contains = function(array, val) {
  */
 Util.array.apply = function(array, func) {
   var rets = [];
-  for (var i = 0; i < array.length; i++)
+  var l = array.length;
+  for (var i = 0; i < l; i++)
     rets.push(func(array[i]));
   return rets;
 };
@@ -425,7 +411,8 @@ Util.array.apply = function(array, func) {
  * @param {Function} func  The function that applies to the array
  */
 Util.array.applyWithBreak = function(array, func) {
-  for (var i = 0; i < array.length; i++)
+  var l = array.length;
+  for (var i = 0; i < l; i++)
     if (!func(array[i]))
       break;
 };
@@ -442,7 +429,8 @@ Util.array.applyWithBreak = function(array, func) {
  *      one. The return value will be ignored
  */
 Util.array.applyToMultiple = function(arr1, arr2, func) {
-  for (var i = 0; i < arr1.length && i < arr2.length; i++)
+  var l1 = arr1.length, l2 = arr2.length;
+  for (var i = 0; i < l1 && i < l2; i++)
     func(arr1[i], arr2[i]);
 };
 /**
@@ -472,13 +460,14 @@ Util.array.remove = function(array, item, isUnique) {
  * @private
  */
 Util.array.filter_ = function(a, predicate) {
-    var results = [];
-    for (var i = 0; i < a.length; i++) {
-        var element = a[i];
-        if (predicate(element))
-          results.push(element);
-    }
-    return results;
+  var results = [];
+  var l = a.length;
+  for (var i = 0; i < l; i++) {
+    var element = a[i];
+    if (predicate(element))
+      results.push(element);
+  }
+  return results;
 };
 
 //////////////////////// className manipulator //////////////////
@@ -558,7 +547,7 @@ Util.CSS.showElement = function(elem) {
 
 
 ////////////////
-
+Util.event.handlers_ = [];
 
 /**
  * Adds event handler to the element.
@@ -573,20 +562,39 @@ Util.event.add = function(target, eventName, func) {
   if (typeof oldHandler != 'function') {
     target[handlerName] = function(e) {
       func(e, target);
-    }
+    };
   } else {
     target[handlerName] = function(e) {
       oldHandler(e, target);
       func(e, target);
     };
   }
+  Util.event.handlers_.push({elem:target, name:handlerName});
 };
+
+/**
+ * Flush events handlers attached to html DOM objects.
+ * This method should be registered to window.unload method to avoid part of
+ * memory leak in IE6.
+ * 1. Only events included in Util.event.EVENTS can be removed.
+ * 2. The event should be registered by dom_el["event_name"] = event_function.
+ *    Events registered by other ways, like attachEvent, can't be removed here.
+ */
+Util.event.flush = function() {
+  while (true) {
+    var h = Util.event.handlers_.pop();
+    if (!h) {
+      break;
+    }
+    h.elem[h.name] = null;
+  }
+}
 
 /**
  * The events that these utilities in the namespace supported.
  */
 Util.event.EVENTS = ['mouseover', 'mouseout', 'change', 'keydown', 'load',
-                     'click'];
+                     'click', 'unload'];
 /**
  * Checks if the event is supported.
  * @param {String} eventName  The event name

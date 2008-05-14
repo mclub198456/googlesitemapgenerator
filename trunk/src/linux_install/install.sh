@@ -146,6 +146,14 @@ if [ "x$answer" != "xy" -a "x$answer" != "xY" ]; then
   exit 1
 fi
 
+cat <<WELCOME_MSG
+**************************************************************************
+        Welcome to Google Sitemap Generator (Beta)!
+
+For more information, please visit:
+  http://code.google.com/p/googlesitemapgenerator/
+**************************************************************************
+WELCOME_MSG
 }
 
 # Get options from command line.
@@ -168,7 +176,7 @@ function GetOptions()
   done
 
   if test "x$APACHE" = "x"; then
-    PickFile APACHE -f 1 "Which is apache bin?" \
+    PickFile APACHE -f 1 "Where is apache bin?" \
     "/usr/sbin/apache2 /usr/sbin/apache /usr/sbin/httpd /usr/local/httpd/bin/httpd"
   fi
 

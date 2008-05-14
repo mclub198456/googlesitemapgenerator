@@ -164,7 +164,7 @@ AjaxUtil.loadXml = function(filename) {
 /**
  * Parses response content and return suitable format.
  * @param {AjaxUtil_responser} responser  The response object
- * @return {Document|String|Boolean|Number|Object} The return value will be
+ * @return {Document|String|Boolean|Number|Object|null} The return value will be
  *     different according to the 'Content-Type' response header.
  */
 AjaxUtil.getResponseContent = function(responser) {
@@ -177,6 +177,10 @@ AjaxUtil.getResponseContent = function(responser) {
   // Check the content type returned by the server
   switch (responser.xhr.getResponseHeader('Content-Type')) {
     case 'text/xml':
+      // server may return empty string (text/html) if load xml file failed
+      if (responser.xhr.responseText == '') {
+        return null;
+      }
       // If it is an XML document, use the parsed Document object.
       return responser.xhr.responseXML;
 

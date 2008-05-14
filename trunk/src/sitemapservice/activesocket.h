@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// This file defines a wrapper class for socket.
 
 #ifndef SITEMAPSERVICE_SOCKET_H__
 #define SITEMAPSERVICE_SOCKET_H__
@@ -85,7 +86,7 @@ public:
   ActiveSocket& operator=(const ActiveSocket&);
 
   // Receives a line from client
-  std::string ReceiveLine() const;
+  bool ReceiveLine(std::string* line) const;
 
   // Receives the number of bytes from client
   std::string ReceiveBytes(int len = -1) const;
@@ -97,10 +98,10 @@ public:
   int SendBytes(const char * buffer, int length) const;
 
   // Returns the string of remote IP
-  char* GetRemoteIp() const;
+  std::string GetRemoteIp() const;
 
   // Returns the string of local IP
-  char* GetLocalIp() const;
+  std::string GetLocalIp() const;
 
   // Sets remote client socket address
   void SetClientSockAddr(sockaddr_in* addr) {remote_addr_ = addr;}

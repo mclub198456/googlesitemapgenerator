@@ -1,9 +1,8 @@
 CC = @CC@
-CXX = @CXX@
 RANLIB = @RANLIB@
 AR = ar
 
-CXXCOMPILE = @CXX@ @DEFS@ @CPPFLAGS@ @CXXFLAGS@
+CCOMPILE = @CC@ @DEFS@ @CPPFLAGS@ @CFLAGS@
 
 SRCS = basesetting.cc sitemapsetting.cc websitemapsetting.cc \
   newssitemapsetting.cc videositemapsetting.cc \
@@ -23,12 +22,12 @@ DEPS = $(SRCS:.cc=.P)
 .SUFFIXES:
 .SUFFIXES: .o .cc
 .cc.o:
-	@$(CXXCOMPILE) -M $< -o $(*F).d; \
+	@$(CCOMPILE) -M $< -o $(*F).d; \
 	 cp -f $(*F).d $(*F).P; \
 	 sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	     -e '/^$$/ d' -e 's/$$/ :/' < $(*F).d >> $(*F).P; \
 	 rm -f $(*F).d
-	$(CXXCOMPILE) -o $@ -c $<
+	$(CCOMPILE) -o $@ -c $<
 
 all: libcommon.a
 

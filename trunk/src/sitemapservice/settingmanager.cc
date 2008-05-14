@@ -22,14 +22,14 @@ const std::string SettingManager::kXmlPath = "sitesettings.xml";
 
 
 SettingManager::SettingManager() {
-  isSettingsLoadedFromWebServer_ = settings_.LoadWebserverConfig();
+  is_settings_loaded_from_web_server_ = settings_.LoadWebserverConfig();
   GetXmlSettingFromFile();
 
-  if (isSettingsLoadedFromWebServer_) {
+  if (is_settings_loaded_from_web_server_) {
     const std::vector<SiteSetting>& sites = settings_.site_settings();
     for (size_t i = 0; i < sites.size(); i++) {
-      initSiteEnables_.push_back(sites[i].enabled());
-      initWebserverFilterEnables_.push_back(
+      init_site_enables_.push_back(sites[i].enabled());
+      init_web_server_filter_enables_.push_back(
         sites[i].webserver_filter_setting().enabled());
     }    
   } else {
@@ -116,7 +116,7 @@ bool SettingManager::SaveXml(const std::string& xml_string) {
   SiteSettings oldsettings = settings_;
   if (!settings_.LoadFromString(xml_string.c_str())) {
     Util::Log(EVENT_CRITICAL, "LoadFromString failed, need restart!!");
-    isSettingsLoadedFromFile_ = false;
+    is_settings_loaded_from_file_ = false;
     return false;
   }
 
@@ -126,14 +126,14 @@ bool SettingManager::SaveXml(const std::string& xml_string) {
     // password, so check again in case the password is plain-text.   
     if (!settings_.ChangeAdminPassword(settings_.admin_password().c_str())) {
       // Encrypt failed
-      isSettingsLoadedFromFile_ = false;
+      is_settings_loaded_from_file_ = false;
       return false;
     }
 
     if (settings_.admin_password() !=  oldsettings.admin_password()) {
       // if password has been changed, encrypt plain-text Password to MD5
       Util::Log(EVENT_ERROR, "password has changed in a wrong way!!");
-      isSettingsLoadedFromFile_ = false;
+      is_settings_loaded_from_file_ = false;
       return false;
     }
   }    
@@ -142,16 +142,16 @@ bool SettingManager::SaveXml(const std::string& xml_string) {
   // save new settings to settings_, direct copy will cause problem.
   //settings_ = newsettings;  
 
-  if (!settingListener_->PreUpdateSetting(oldsettings, settings_)) {
+  if (!setting_listener_->PreUpdateSetting(oldsettings, settings_)) {
     Util::Log(EVENT_ERROR, "Pre-update setting failed.");
-    isSettingsLoadedFromFile_ = false;
+    is_settings_loaded_from_file_ = false;
     return false;
   }
 
   // save settings_ to file
   bool save_result = SaveSettingToFile();
-  isSettingsLoadedFromFile_ = save_result;
-  if (!settingListener_->PostUpdateSetting(oldsettings, settings_, 
+  is_settings_loaded_from_file_ = save_result;
+  if (!setting_listener_->PostUpdateSetting(oldsettings, settings_, 
                                            save_result)) {
     Util::Log(EVENT_ERROR, "Post-update setting failed. (Ignore).");
   }
@@ -171,24 +171,11 @@ bool SettingManager::SaveSettingToFile() {
   if (!settings_.SaveToFile(filepath.c_str())) {
     return false;
   }
-
-  FileAttribute attr;
-  if (FileUtil::GetFileAttribute(filepath.c_str(), &attr)) {
-    lastModifyTimeForSettingsFile_ = attr.last_modified;
-  } else {
-    Util::Log(EVENT_ERROR, "failed to get file last modify time");
-  }
-
-  return true;
+  
+  return GetLastModifiedTime(&last_modify_time_for_settings_file_);
 }
 
-bool SettingManager::GetXmlSettingFromFile() {
-  //Begin to create default XML object.
-
-  if (!isSettingsLoadedFromWebServer_) {
-    return false;
-  }
-
+bool SettingManager::GetLastModifiedTime(time_t* ts) {
   const std::string filepath = SiteSettings::GetDefaultFilePath();
   FileAttribute attr;
   if (!FileUtil::GetFileAttribute(filepath.c_str(), &attr)) {
@@ -196,28 +183,45 @@ bool SettingManager::GetXmlSettingFromFile() {
     return false;
   }
 
-  // Checks if the setting is up-to-date.
-  if (!isSettingsLoadedFromFile_ || 
-    lastModifyTimeForSettingsFile_ != attr.last_modified) {
-      lastModifyTimeForSettingsFile_ = attr.last_modified;
-      isSettingsLoadedFromFile_ = settings_.LoadFromFile(filepath.c_str());
+  *ts = attr.last_modified;
+  return true;
+}
+
+bool SettingManager::GetXmlSettingFromFile() {
+  //Begin to create default XML object.
+
+  if (!is_settings_loaded_from_web_server_) {
+    return false;
   }
 
-  return isSettingsLoadedFromFile_;
+  time_t ts;
+  if (!GetLastModifiedTime(&ts)) {
+    return false;
+  }
+
+  // Checks if the setting is up-to-date.
+  if (!is_settings_loaded_from_file_ || 
+      last_modify_time_for_settings_file_ != ts) {
+    last_modify_time_for_settings_file_ = ts;
+    is_settings_loaded_from_file_ = 
+        settings_.LoadFromFile(SiteSettings::GetDefaultFilePath().c_str());
+  }
+
+  return is_settings_loaded_from_file_;
 }
 
 void SettingManager::SetUpdateListener(SettingUpdateListener* listener) {
-  settingListener_ = listener;
+  setting_listener_ = listener;
 }
 
 
 bool SettingManager::CheckRestart() {
   const std::vector<SiteSetting>& sites = settings_.site_settings();
   for (size_t i = 0; i < sites.size(); i++) {
-    bool oldEnable = initSiteEnables_[i] && initWebserverFilterEnables_[i];
-    bool newEnable = sites[i].enabled() && 
+    bool old_enable = init_site_enables_[i] && init_web_server_filter_enables_[i];
+    bool new_enable = sites[i].enabled() && 
       sites[i].webserver_filter_setting().enabled();
-    if (oldEnable != newEnable) {
+    if (old_enable != new_enable) {
       return true;
     }
   }

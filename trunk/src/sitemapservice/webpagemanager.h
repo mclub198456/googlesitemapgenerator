@@ -12,6 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// This file defines a class to deal with web page files.
+// It finds the right file to send to client according to the request.
+
 #ifndef WEBSITE_TOOLS_SITEMAP_SITEMAPSERVICE_WEBPAGEMANAGER_H__
 #define WEBSITE_TOOLS_SITEMAP_SITEMAPSERVICE_WEBPAGEMANAGER_H__
 
@@ -60,13 +63,13 @@ public:
 private:
   // Returns the paths of all the JavaScript files that will be included in the 
   // main.html, will merge them into 'all.js'.
-  static const Util::StringVector& getJSFilesForAggregation();
+  static const Util::StringVector& GetJSFilesForAggregation();
 
-  // Replaces all the 'strsrc' sub-strings in the 'strBig' with 'strdst' string.
-  // Returns the number of the 'strsrc' being replaced.
-  static int StringReplace(std::string* strBig, 
-    const std::string & strsrc, 
-    const std::string &strdst);
+  // Replaces all the 'str_src' sub-strings in the 'str_big' with 'str_dst' string.
+  // Returns the number of the 'str_src' being replaced.
+  static int StringReplace(std::string* str_big, 
+    const std::string& str_src, 
+    const std::string& str_dst);
 
   // file paths
   static const std::string kMainFile;

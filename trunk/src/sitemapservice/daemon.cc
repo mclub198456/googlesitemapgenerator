@@ -133,9 +133,6 @@ int Daemon::Restart() {
 
 // run the service
 int Daemon::RunService() {
-  // We will only allow access with owner or group.
-  umask(S_IROTH | S_IWOTH | S_IXOTH);
-
   controller_ = new ServiceController();
 
   if (!controller_->Initialize()) {
@@ -153,7 +150,7 @@ int Daemon::RunService() {
   return 0;
 }
 
-// check whether the service process is runnin
+// check whether the service process is running
 bool Daemon::IsRunning() {
   return GetPid() != -1;
 }

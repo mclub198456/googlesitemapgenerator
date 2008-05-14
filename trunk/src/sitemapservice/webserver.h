@@ -12,6 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// This file defines a class for simple HTTP web server.
+// It listens the port, accept client connection, and deal with HTTP request.
+// It allows passing through a callback function to deal with the HTTP request.
+// It supports both single/multi-threads to deal with each request, but in this
+// project, the callback function class (PageController) only support single 
+// thread.
 
 #ifndef SITEMAPSERVICE_WEBSERVER_H__
 #define SITEMAPSERVICE_WEBSERVER_H__
@@ -22,20 +28,22 @@
 #include "sitemapservice/activesocket.h"
 
 class HttpProto;
-class webserver {
+class WebServer {
 public:
   // destructor
-  ~webserver();
+  ~WebServer();
 
   // singleton factory
-  static webserver* getInstance();
+  static WebServer* GetInstance();
 
   // The type of the callback function to deal with the HTTP request
   typedef void (*request_func) (HttpProto*); 
 
   // Start the webserver listening, will block the thread or return false
-  // if some error occur.
-  bool Start(unsigned int port_to_listen, request_func, bool singleThread);
+  // if some error occur..
+  // Note, in current implementation, "singleThread" MUST be true.
+  // The underlying code is not thread-safe.
+  bool Start(unsigned int port_to_listen, request_func, bool single_thread);
 
   // Parses the HTTP request and call the callback function to deal with it,
   // then pack the response and send it back to the client.
@@ -43,10 +51,10 @@ public:
 
 private:
   // The singleton
-  static webserver* instance_;
+  static WebServer* instance_;
 
   // Initializes the listening socket
-  bool StartListen(int port, int connections, bool isBlocking = true);
+  bool StartListen(int port, int connections, bool is_blocking = true);
 
   // Accepts the connection
   ActiveSocket* Accept();

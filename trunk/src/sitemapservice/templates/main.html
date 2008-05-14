@@ -213,6 +213,23 @@
     <div class='container'>
       <table class='top'>
         <tr>
+          <td colspan='3'>
+            <div id='linkbar' class='linkbar'>
+            <b>admin</b>
+            |
+            <a id='appSettingsLink' class='link'><span transmark='text:appSettingsLink'></span></a>
+            |
+            <a id='siteSettingsLink' class='link'><span transmark='text:siteSettingsLink'></span></a>
+            |
+            <a id='projHomeLink' class='link'><span transmark='text:projHomeLink'></span></a>
+            |
+            <a id='helpLink' class='link'><span transmark='text:helpLink'></span></a>
+            |
+            <a id='logoutLink' class='link'><span transmark='tip:logout;text:logoutLink'></span></a>
+            </div>
+          </td>
+        </tr>
+        <tr>
           <td class='first'><img src='logo.jpg' /></td>
           <td class='middle'>
             <span transmark='text:editorTitle'>
@@ -222,36 +239,33 @@
           <td class='last'>              
             <div id='cmdbuttons'>
               <input type='button' class='cmdbutton' id='submit' transmark='tip:submit;value:submit'>
-              <input type='button' class='cmdbutton' id='refresh' transmark='tip:refresh;value:refresh'>
-              <input type='button' class='cmdbutton' id='restart' transmark='tip:restart;value:restart'>
-              <input type='button' class='cmdbutton' id='logout' transmark='tip:logout;value:logout'>                
+              <input type='button' class='cmdbutton' id='restart' transmark='tip:restart;value:restart'>          
             </div>              
           </td>
         </tr>
       </table>
-      <table class="bottom">
-        <tr class="bottom">
+
+      <table class='bottom'>
+        <tr>
           <td class='left'>
             <br />
             <br />
-            <div class='sitesListContainer' id='siteListContainer'>
-              <table class='inactiveSite hidden' id='siteListTemplate'>
-                <tr>
-                  <td class='active1' valign="top"></td>
-                  <td></td>
-                </tr>
-                <tr>
-                  <td class='active2'></td>
-                  <td class='activeText'><a href='#'>template</a></td>
-                </tr>
-                <tr>
-                  <td class='active3' valign="bottom"></td>
-                  <td></td>
-                </tr>
-                <tr class='activeSpace'><td></td><td></td></tr>
-              </table>
-              <div class='sitesList' id='siteList'>
-              </div>
+            <table class='inactiveSite hidden' id='siteListTemplate'>
+              <tr>
+                <td class='active1' valign='top'></td>
+                <td></td>
+              </tr>
+              <tr>
+                <td class='active2'></td>
+                <td class='activeText'><a href='#'>template</a></td>
+              </tr>
+              <tr>
+                <td class='active3' valign='bottom'></td>
+                <td></td>
+              </tr>
+              <tr class='activeSpace'><td></td><td></td></tr>
+            </table>
+            <div class='sitesList' id='siteListContainer'>
             </div>
           </td>
           <td class='right'>
@@ -262,37 +276,37 @@
                     <div class='active1'><div class='active2'><div class='active3'></div></div></div>
                     <div class='activeText'><a transmark='tip:generalShow'><span transmark='text:generalSitemap'></span></a></div>
                   </td>
-                  <td class="activeSpace"></td>
+                  <td class='activeSpace'></td>
                   <td class='inactiveTab' id='webSitemapShow'>
                     <div class='active1'><div class='active2'><div class='active3'></div></div></div>
                     <div class='activeText'><a transmark='tip:webShow'><span transmark='text:webSitemap'></span></a></div>
                   </td>
-                  <td class="activeSpace"></td>
+                  <td class='activeSpace'></td>
                   <td class='inactiveTab' id='newsSitemapShow'>
                     <div class='active1'><div class='active2'><div class='active3'></div></div></div>
                     <div class='activeText'><a transmark='tip:newsShow'><span transmark='text:newsSitemap'></span></a></div>
                   </td>
-                  <td class="activeSpace"></td>
+                  <td class='activeSpace'></td>
                   <td class='inactiveTab' id='videoSitemapShow'>
                     <div class='active1'><div class='active2'><div class='active3'></div></div></div>
                     <div class='activeText'><a transmark='tip:videoShow'><span transmark='text:videoSitemap'></span></a></div>
                   </td>
-                  <td class="activeSpace"></td>
+                  <td class='activeSpace'></td>
                   <td class='inactiveTab' id='mobileSitemapShow'>
                     <div class='active1'><div class='active2'><div class='active3'></div></div></div>
                     <div class='activeText'><a transmark='tip:mobileShow'><span transmark='text:mobileSitemap'></span></a></div>
                   </td>
-                  <td class="activeSpace"></td>
+                  <td class='activeSpace'></td>
                   <td class='inactiveTab' id='codeSearchSitemapShow'>
                     <div class='active1'><div class='active2'><div class='active3'></div></div></div>
                     <div class='activeText'><a transmark='tip:codeSearchShow'><span transmark='text:codeSearchSitemap'></span></a></div>
                   </td>
-                  <td class="activeSpace"></td>
+                  <td class='activeSpace'></td>
                   <td class='inactiveTab' id='blogSearchPingShow'>
                     <div class='active1'><div class='active2'><div class='active3'></div></div></div>
                     <div class='activeText'><a transmark='tip:blogSearchShow'><span transmark='text:blogSearchPing'></span></a></div>
                   </td>
-                  <td class="activeSpace"></td>
+                  <td class='activeSpace'></td>
                   <td class='inactiveTab' id='runtimeInfoShow'>
                     <div class='active1'><div class='active2'><div class='active3'></div></div></div>
                     <div class='activeText'><a transmark='tip:runtimeShow'><span transmark='text:runtimeInfo'></span></a></div>
@@ -302,259 +316,214 @@
             </div>
             <div class='content' id='content'>
               <div class='contentPane'>
-                <div  class='sitemapContainer' id='sitemapContainerDiv' >
-                  <!--  global setting template -->
-      <div id='globalTpl'>
-        <!--general setting-->   
-        <div class='sitemapDiv hidden' name='tabpage' id='generalSitemapBodyg'>
-          
+                <div class='sitemapContainer' id='sitemapContainerDiv' >
+                  
+      <!--general setting-->  
+      <div id='generalSitemapBody' class='sitemapDiv hidden'>
+        <!--global general setting--> 
+        <div name='tabpage' id='generalSitemapBodyGlobal'>
           <table>
             <tr>
               <td>
                 <div class='title'>
-                  <span transmark='text:globalTitle'></span>
+                  <span transmark='text:siteTitle'></span>
                 </div>
               </td>
             </tr>
           </table>
-          <!--specific for global setting-->
+        </div>
+        <!--site general setting-->   
+        <div name='tabpage' id='generalSitemapBodySite'>
           <table>
             <tr>
               <td>
-                <input type='checkbox' id='autoAdd' transmark='tip:autoAdd'>
-                <span class='textLabel' transmark='text:autoAdd;tip:autoAdd'
-                      ></span>
-              </td>
-            </tr>
-            <tr>
-              <td>
-                <input type='checkbox' id='remoteAccess' 
-                    transmark='tip:remoteAccess'>
-                <span class='textLabel' transmark='text:remoteAccess;tip:remoteAccess'
-                      ></span>
-              </td>
-            </tr>
-            <tr>
-              <td>
-                <span class='textLabel' transmark='text:password'
-                      ></span>
+                <div class='title'>
+                   <span transmark='text:siteTitle'></span>
+                </div>
               </td>
               <td>
-                <input type='password' id='password' class='text' disabled>
-                <a id='changePassword' transmark='tip:changeLoginPassword'>
-                  <span transmark='text:changePassword'></span>
-                </a>
-              </td>
-            </tr>
-            <tr>
-              <td colspan=2 id='changePasswordPagePostion'>              
-                <div id='changePasswordDiv' class='changePasswordPage hidden'>        
-                  <table>
-                    <tr>
-                      <td>
-                        <span transmark='text:inputOldPassword'></span>
-                      </td>
-                      <td>
-                        <input type='password' id='inputOldPassword'>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <span transmark='text:inputNewPassword'></span>
-                      </td>
-                      <td>
-                        <input type='password' id='inputNewPassword'>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <span transmark='text:inputPasswordAgain'></span>
-                      </td>
-                      <td>
-                        <input type='password' id='inputPasswordAgain'>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td colspan=2>
-                        <div id='changePasswordError' class='error hidden'></div>
-                        <input type='button' class='confirmPasswordChange' transmark='value:submit'>
-                        <input type='button' class='cancelPasswordChange' transmark='value:cancel'>
-                      </td>
-                    </tr>
-                  </table>
-                </div>      
-              </td>
-            </tr>
-            <tr>
-              <td>
-                <span class='textLabel' transmark='text:backupDuration;tip:backupDuration'
-                      ></span>
-              </td>
-              <td>
-                <input type='text' id='backupDurationInSeconds' class='text time'                     
-                    transmark='tip:backupDuration'>
-                <span class='textLabel' transmark='text:minuteUnit'></span>
-              </td>
-            </tr>
-            <tr>
-              <td>
-                <span class='textLabel' transmark='text:settingPort;tip:settingPort'
-                      ></span>
-              </td>
-              <td>
-                <input type='text' id='settingPort' class='text'                         
-                    transmark='tip:settingPort'>
+                <input type='checkbox' id='generalCustomize'  
+                       class='customize' transmark='tip:customize'>
+                <span class='textLabel' transmark='text:customize;tip:customize'></span>
               </td>
             </tr>
           </table>
-          <br>
-          <div id='commonGeneralSitemapBody'>
-            <table>
-              <tr>
-                <span class='subtitle' transmark='text:siteTitle'></span>
-              </tr>
-              <tr>
-                <td>
-                  <input type='checkbox' id='siteEnabled'  
-                      transmark='tip:siteEnabled'>
-                  <span class='textLabel' transmark='text:siteEnabled;tip:siteEnabled'
-                      ></span>
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <input type='checkbox' id='addGeneratorInfo'  
-                      transmark='tip:addGeneratorInfo'>
-                  <span class='textLabel' 
-                      transmark='text:addGeneratorInfo;tip:addGeneratorInfo'></span>
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <span class='textLabel' transmark='text:maxUrlLife;tip:maxUrlLife'
-                      ></span>
-                </td>
-                <td>
-                  <input type='text' id='maxUrlLifeInDays' class='text'                     
-                      transmark='tip:maxUrlLife'>
-                </td>
-                <td>
-                  <span class='textLabel' transmark='text:dayUnit'></span>
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <span class='textLabel' transmark='text:maxUrlInMemory;tip:maxUrlInMemory'
-                      ></span>
-                </td>
-                <td>
-                  <input type='text' id='maxSiteUrlInMemory' class='text'                    
-                      transmark='tip:maxUrlInMemory'>
-                </td>
-                <td>
-                  <span class='textLabel' transmark='text:equal'></span>
-                </td>
-                <td class='spaceval'>
-                  <span id='maxSiteUrlInMemoryEqualSize' 
-                        transmark='tip:maxUrlInMemory'></span>
-                </td>
-                <td>
-                  <span class='textLabel' transmark='text:megaByteUnit'></span>
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <span class='textLabel' transmark='text:maxUrlInDisk;tip:maxUrlInDisk'
-                      ></span>
-                </td>
-                <td>
-                  <input type='text' id='maxUrlInDisk' class='text'
-                      transmark='tip:maxUrlInDisk'>
-                </td>
-                <td>
-                  <span class='textLabel' transmark='text:equal'></span>
-                </td>
-                <td class='spaceval'>
-                  <span id='maxUrlInDiskEqualSize' 
-                        transmark='tip:maxUrlInDisk'></span>
-                </td>
-                <td>
-                  <span class='textLabel' transmark='text:megaByteUnit'></span>
-                </td>
-              </tr>
-            </table>
-            <br>
-            <table>
-              <tr>
-                <td>
-                  <input type='checkbox' id='webserverFilterEnabled'  
-                      transmark='tip:webserverFilterEnabled'>
-                </td>
-                <td>
-                </td>
-                <td>
-                  <span class='textLabel'
-                        transmark='text:webserverFilterEnabled;tip:fileScannerEnabled'></span>
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <input type='checkbox' id='fileScannerEnabled'  
-                      transmark='tip:fileScannerEnabled'>
-                </td>
-                <td>
-                  <span class='textLabel hidden'
-                        transmark='text:fileScannerEnabled;tip:fileScannerEnabled'></span>
-                </td>
-                <td>
-                  <span class='textLabel' 
-                        transmark='text:UpdateDurationForFileScanner;tip:UpdateDurationForFileScanner'></span>
-                </td>
-                <td>
-                  <input type='text' id='fileScannerDuration' class='text time'
-                      transmark='tip:UpdateDurationForFileScanner'>
-                  <span class='textLabel' transmark='text:minuteUnit'></span>
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <input type='checkbox' id='logParserEnabled'  
-                      transmark='tip:logParserEnabled'>
-                </td>
-                <td>
-                  <span class='textLabel hidden' transmark='text:logParserEnabled;tip:logParserEnabled'
-                      ></span>
-                </td>
-                <td>
-                  <span class='textLabel' transmark='text:UpdateDurationForLogParser;tip:UpdateDurationForLogParser'
-                      ></span>
-                </td>
-                <td>
-                  <input type='text' id='logParserDuration' class='text time'
-                      transmark='tip:UpdateDurationForLogParser'>
-                  <span class='textLabel' transmark='text:minuteUnit'></span>
-                </td>
-              </tr>
-            </table>
-            <br>
-            <table>
-              <tr>
-                <td>
-                  <span class='subtitle' transmark='text:UrlReplaceList'></span>
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <div id='generalUrlReplaceListContainer'>
-                  </div>
-                </td>
-              </tr>
-            </table>
-          </div>
+          <!--specific for site setting-->
+          <table>
+            <tr>
+              <td>
+                <span class='textLabel' transmark='text:host;tip:host'></span>
+              </td>
+              <td>
+                <input type='text' id='host' class='text'                     
+                    transmark='tip:host'>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <span class='textLabel' transmark='text:logPath;tip:logPath'></span>
+              </td>
+              <td>
+                <input type='text' id='logPath' class='text'                     
+                    transmark='tip:logPath'>
+              </td>
+            </tr>
+          </table>
+          <br />
         </div>
-        <!--web sitemap-->   
-        <div class='sitemapDiv hidden' name='tabpage' id='webSitemapBodyg'>
-          
+        <!--common general setting-->   
+        <div id='commonGeneralSitemapBody'>
+          <table>
+            <tr>
+              <td>
+                <span class='textLabel' id='siteEnabledLabel' transmark='tip:siteEnabled'></span>
+                <input type='radio' id='siteEnabled_true' name='siteEnabled'
+                    transmark='tip:siteEnabled_true'>
+                <span class='textLabel' transmark='text:siteEnabled_true;tip:siteEnabled_true'></span>
+                <input type='radio' id='siteEnabled_false' name='siteEnabled'
+                    transmark='tip:siteEnabled_false'>
+                <span class='textLabel' transmark='text:siteEnabled_false;tip:siteEnabled_false'></span>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <input type='checkbox' id='addGeneratorInfo'  
+                    transmark='tip:addGeneratorInfo'>
+                <span class='textLabel' 
+                    transmark='text:addGeneratorInfo;tip:addGeneratorInfo'></span>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <span class='textLabel' transmark='text:maxUrlLife;tip:maxUrlLife'></span>
+              </td>
+              <td>
+                <input type='text' id='maxUrlLifeInDays' class='text'                     
+                    transmark='tip:maxUrlLife'>
+              </td>
+              <td>
+                <span class='textLabel' transmark='text:dayUnit'></span>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <span class='textLabel' transmark='text:maxUrlInMemory;tip:maxUrlInMemory'></span>
+              </td>
+              <td>
+                <input type='text' id='maxSiteUrlInMemory' class='text'                    
+                    transmark='tip:maxUrlInMemory'>
+              </td>
+              <td>
+                <span class='textLabel' transmark='text:equal'></span>
+              </td>
+              <td class='spaceval'>
+                <span id='maxSiteUrlInMemoryEqualSize' 
+                      transmark='tip:maxUrlInMemory'></span>
+              </td>
+              <td>
+                <span class='textLabel' transmark='text:megaByteUnit'></span>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <span class='textLabel' transmark='text:maxUrlInDisk;tip:maxUrlInDisk'></span>
+              </td>
+              <td>
+                <input type='text' id='maxUrlInDisk' class='text'
+                    transmark='tip:maxUrlInDisk'>
+              </td>
+              <td>
+                <span class='textLabel' transmark='text:equal'></span>
+              </td>
+              <td class='spaceval'>
+                <span id='maxUrlInDiskEqualSize' 
+                      transmark='tip:maxUrlInDisk'></span>
+              </td>
+              <td>
+                <span class='textLabel' transmark='text:megaByteUnit'></span>
+              </td>
+            </tr>
+          </table>
+          <br />
+          <div><span class='subtitle' transmark='text:URLSources'></span></div>
+          <table class='URLSources'>
+            <tr>
+              <td>
+                <span class='textLabel' transmark='text:webserverFilterEnabled;tip:webserverFilterEnabled'></span>
+              </td>
+              <td>                  
+                <input type='radio' id='webserverFilterEnabled_false' name='webserverFilterEnabled'
+                    transmark='tip:webserverFilterEnabled_false'>
+                <span class='textLabel' transmark='text:webserverFilterEnabled_false;tip:webserverFilterEnabled_false'></span>
+                
+                <input type='radio' id='webserverFilterEnabled_true' name='webserverFilterEnabled'
+                    transmark='tip:webserverFilterEnabled_true'>
+                <span class='textLabel' transmark='text:webserverFilterEnabled_true;tip:webserverFilterEnabled_true'></span>
+              </td>
+              <td>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <span class='textLabel' transmark='text:fileScannerEnabled;tip:fileScannerEnabled'></span>
+              </td>
+              <td>
+                <input type='radio' id='fileScannerEnabled_false' name='fileScannerEnabled'
+                    transmark='tip:fileScannerEnabled_false'>
+                <span class='textLabel' transmark='text:fileScannerEnabled_false;tip:fileScannerEnabled_false'></span>
+                
+                <input type='radio' id='fileScannerEnabled_true' name='fileScannerEnabled'
+                    transmark='tip:fileScannerEnabled_true'>
+                <span class='textLabel' transmark='text:fileScannerEnabled_true;tip:fileScannerEnabled_true'></span>
+              </td>
+              <td>
+                <span class='textLabel' id='fileScannerDuration_text1' 
+                      transmark='text:UpdateDurationForFileScanner;tip:UpdateDurationForFileScanner'></span>
+                <input type='text' id='fileScannerDuration' class='text time'
+                    transmark='tip:UpdateDurationForFileScanner'>
+                <span class='textLabel' id='fileScannerDuration_text2' transmark='text:minuteUnit'></span>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <span class='textLabel' transmark='text:logParserEnabled;tip:logParserEnabled'></span>
+              </td>
+              <td>
+                <input type='radio' id='logParserEnabled_false' name='logParserEnabled'
+                    transmark='tip:logParserEnabled_false'>
+                <span class='textLabel' transmark='text:logParserEnabled_false;tip:logParserEnabled_false'></span>
+                <input type='radio' id='logParserEnabled_true' name='logParserEnabled'
+                    transmark='tip:logParserEnabled_true'>
+                <span class='textLabel' transmark='text:logParserEnabled_true;tip:logParserEnabled_true'></span>
+              </td>
+              <td>
+                <span class='textLabel' id='logParserDuration_text1' transmark='text:UpdateDurationForLogParser;tip:UpdateDurationForLogParser'></span>
+                <input type='text' id='logParserDuration' class='text time'
+                    transmark='tip:UpdateDurationForLogParser'>
+                <span class='textLabel' id='logParserDuration_text2' transmark='text:minuteUnit'></span>
+              </td>
+            </tr>
+          </table>
+          <br />
+          <table>
+            <tr>
+              <td>
+                <span class='subtitle' transmark='text:UrlReplaceList'></span>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <div id='generalUrlReplaceListContainer' class='listcontainer'>
+                </div>
+              </td>
+            </tr>
+          </table>
+        </div>
+      </div> 
+      <!--web sitemap-->  
+      <div id='webSitemapBody' class='sitemapDiv hidden'> 
+        <!--global web setting--> 
+        <div name='tabpage' id='webSitemapBodyGlobal'>
           <table>
             <tr>
               <td>
@@ -564,133 +533,145 @@
               </td>
             </tr>
           </table>
-          <div id='commonWebSitemapBody'>
-            <table>
-              <tr>
-                <td>
-                  <input type='checkbox' id='webEnabled'  
-                      transmark='tip:sitemapEnabled'>
-                  <span class='textLabel' transmark='text:enabled;tip:sitemapEnabled'
-                      ></span>
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <input type='checkbox' id='webCompress'  
-                      transmark='tip:compress'>
-                  <span class='textLabel' transmark='text:compress;tip:compress'
-                      ></span>
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <input type='checkbox' id='robotsIncluded' 
-                      class='robotsIncluded' transmark='tip:robotsIncluded'>
-                  <span class='textLabel' transmark='text:robotsIncluded;tip:robotsIncluded'
-                      ></span>
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <span class='textLabel' transmark='text:filename;tip:filename'
-                      ></span>
-                </td>
-                <td>
-                  <input type='text' id='webFileName' class='filename'
-                      transmark='tip:filename'>
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <span class='textLabel' transmark='text:UpdateStartTime;tip:UpdateStartTime'
-                      ></span>
-                </td>
-                <td>
-                  <input type='text' id='webUpdateStartTime' class='date'
-                      transmark='tip:UpdateStartTime'>
-                  (<span class='textLabel' transmark='text:example'></span> 2008-01-01 12:34:56)
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <span class='textLabel' transmark='text:UpdateDuration;tip:UpdateDuration'
-                      ></span>
-                </td>
-                <td>
-                  <input type='text' id='webDuration' class='text time'
-                      transmark='tip:UpdateDuration'>
-                  <span class='textLabel' transmark='text:minuteUnit'></span>
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <span class='textLabel' transmark='text:maxFileUrl;tip:maxFileUrl'
-                      ></span>
-                </td>
-                <td>
-                  <input type='text' id='webMaxFileUrl' class='text'
-                      transmark='tip:maxFileUrl'>
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <span class='textLabel' transmark='text:maxFileSize;tip:maxFileSize'
-                      ></span>
-                </td>
-                <td>
-                  <input type='text' id='webMaxFileSize' class='text'                      
-                      transmark='tip:maxFileSize'>
-                  <span class='textLabel' transmark='text:kbyteUnit'></span>
-                </td>
-              </tr>
-            </table>
-            <br>
-            <table>
-              <tr>
-                <td>
-                  <span class='subtitle' transmark='text:IncludedUrlList'></span>
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <div id='webSitemapIncludedUrlListContainer'>
-                  </div>
-                </td>
-              </tr>
-            </table>
-            <br>
-            <table>
-              <tr>
-                <td>
-                  <span class='subtitle' transmark='text:ExcludedUrlList'></span>
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <div id='webSitemapExcludedUrlListContainer'>
-                  </div>
-                </td>
-              </tr>
-            </table>
-            <br>
-            <table>
-              <tr>
-                <td>
-                  <span class='subtitle' transmark='text:NotifyUrlList'></span>
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <div id='webSitemapNotifyUrlListContainer'>
-                  </div>
-                </td>
-              </tr>
-            </table>
-          </div>
         </div>
-        <!--news sitemap-->   
-        <div class='sitemapDiv hidden' name='tabpage' id='newsSitemapBodyg'>
-          
+        <!--site web setting-->
+        <div name='tabpage' id='webSitemapBodySite'>
+          <table>
+            <tr>
+              <td>
+                <div class='title'>
+                  <span transmark='text:webSitemapTitle'></span>
+                </div>
+              </td>
+              <td>
+                <input type='checkbox' id='webCustomize'  
+                    class='customize' transmark='tip:customize'>
+                <span class='textLabel' transmark='text:customize;tip:customize'></span>
+              </td>
+            </tr>
+          </table>
+        </div>
+        <!--common web setting-->
+        <div id='commonWebSitemapBody'>
+          <table>
+            <tr>
+              <td>
+                <input type='checkbox' id='webEnabled'  
+                    transmark='tip:sitemapEnabled'>
+                <span class='textLabel' id='webEnabledLabel' transmark='tip:sitemapEnabled'></span>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <input type='checkbox' id='webCompress'  
+                    transmark='tip:compress'>
+                <span class='textLabel' transmark='text:compress;tip:compress'></span>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <input type='checkbox' id='robotsIncluded' 
+                    class='robotsIncluded' transmark='tip:robotsIncluded'>
+                <span class='textLabel' transmark='text:robotsIncluded;tip:robotsIncluded'></span>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <span class='textLabel' transmark='text:filename;tip:filename'></span>
+              </td>
+              <td>
+                <input type='text' id='webFileName' class='filename'
+                    transmark='tip:filename'>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <span class='textLabel' transmark='text:UpdateStartTime;tip:UpdateStartTime'></span>
+              </td>
+              <td>
+                <input type='text' id='webUpdateStartTime' class='date'
+                    transmark='tip:UpdateStartTime'>
+                (<span class='textLabel' transmark='text:example'></span> 2008-01-01 12:34:56)
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <span class='textLabel' transmark='text:UpdateDuration;tip:UpdateDuration'></span>
+              </td>
+              <td>
+                <input type='text' id='webDuration' class='text time'
+                    transmark='tip:UpdateDuration'>
+                <span class='textLabel' transmark='text:minuteUnit'></span>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <span class='textLabel' transmark='text:maxFileUrl;tip:maxFileUrl'></span>
+              </td>
+              <td>
+                <input type='text' id='webMaxFileUrl' class='text'
+                    transmark='tip:maxFileUrl'>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <span class='textLabel' transmark='text:maxFileSize;tip:maxFileSize'></span>
+              </td>
+              <td>
+                <input type='text' id='webMaxFileSize' class='text'                      
+                    transmark='tip:maxFileSize'>
+                <span class='textLabel' transmark='text:kbyteUnit'></span>
+              </td>
+            </tr>
+          </table>
+          <br />
+          <table>
+            <tr>
+              <td>
+                <span class='subtitle' transmark='text:IncludedUrlList'></span>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <div id='webSitemapIncludedUrlListContainer'>
+                </div>
+              </td>
+            </tr>
+          </table>
+          <br />
+          <table>
+            <tr>
+              <td>
+                <span class='subtitle' transmark='text:ExcludedUrlList'></span>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <div id='webSitemapExcludedUrlListContainer'>
+                </div>
+              </td>
+            </tr>
+          </table>
+          <br />
+          <table>
+            <tr>
+              <td>
+                <span class='subtitle' transmark='text:NotifyUrlList'></span>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <div id='webSitemapNotifyUrlListContainer'>
+                </div>
+              </td>
+            </tr>
+          </table>
+        </div>
+      </div>
+      <!--news sitemap-->   
+      <div id='newsSitemapBody' class='sitemapDiv hidden'> 
+        <!--global news setting-->
+        <div name='tabpage' id='newsSitemapBodyGlobal'>
           <table>
             <tr>
               <td>
@@ -700,134 +681,146 @@
               </td>
             </tr>
           </table>
-          <div id='commonNewsSitemapBody'>
-            <table>
-              <tr>
-                <td>
-                  <input type='checkbox' id ='newsEnabled'  
-                      transmark='tip:sitemapEnabled'>
-                  <span class='textLabel' transmark='text:enabled'></span>
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <input type='checkbox' id='newsCompress' transmark='tip:compress'>
-                  <span class='textLabel' transmark='text:compress;tip:compress'
-                      ></span>
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <span class='textLabel' transmark='text:filename;tip:filename'
-                      ></span>
-                </td>
-                <td>
-                  <input type='text' id='newsFileName' class='filename'
-                      transmark='tip:filename'>
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <span class='textLabel' transmark='text:UpdateStartTime;tip:UpdateStartTime'
-                      ></span>
-                </td>
-                <td>
-                  <input type='text' id='newsUpdateStartTime' class='date'
-                      transmark='tip:UpdateStartTime'>
-                  (<span class='textLabel' transmark='text:example'></span> 2008-01-01 12:34:56)
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <span class='textLabel' transmark='text:newsExpireDuration;tip:newsExpireDuration'
-                      ></span>
-                </td>
-                <td>
-                  <input type='text' id='newsExpireDuration' class='text time'                      
-                      transmark='tip:newsExpireDuration'>
-                  <span class='textLabel' transmark='text:minuteUnit'></span>
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <span class='textLabel' transmark='text:UpdateDuration;tip:UpdateDuration'
-                      ></span>
-                </td>
-                <td>
-                  <input type='text' id='newsDuration' class='text time'
-                      transmark='tip:UpdateDuration'>
-                  <span class='textLabel' transmark='text:minuteUnit'></span>
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <span class='textLabel' transmark='text:maxFileUrl;tip:maxFileUrl'
-                      ></span>
-                </td>
-                <td>
-                  <input type='text' id='newsMaxFileUrl' class='text'
-                      transmark='tip:maxFileUrl'>
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <span class='textLabel' transmark='text:maxFileSize;tip:maxFileSize'
-                      ></span>
-                </td>
-                <td>
-                  <input type='text' id='newsMaxFileSize' class='text'
-                      transmark='tip:maxFileSize'>
-                  <span class='textLabel' transmark='text:kbyteUnit'></span>
-                </td>
-              </tr>
-            </table>
-            <br>
-            <table>
-              <tr>
-                <td>
-                  <span class='subtitle' transmark='text:IncludedUrlList'></span>
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <div id='newsSitemapIncludedUrlListContainer'>
-                  </div>
-                </td>
-              </tr>
-            </table>
-            <br>
-            <table>
-              <tr>
-                <td>
-                  <span class='subtitle' transmark='text:ExcludedUrlList'></span>
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <div id='newsSitemapExcludedUrlListContainer'>
-                  </div>
-                </td>
-              </tr>
-            </table>
-            <br>
-            <table class='hidden'>
-              <tr>
-                <td>
-                  <span class='subtitle' transmark='text:NotifyUrlList'></span>
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <div id='newsSitemapNotifyUrlListContainer'>
-                  </div>
-                </td>
-              </tr>
-            </table>
-          </div>
         </div>
-        <!--video sitemap-->   
-        <div class='sitemapDiv hidden' name='tabpage' id='videoSitemapBodyg'>
-          
+        <!--site news setting-->
+        <div name='tabpage' id='newsSitemapBodySite'>          
+          <table>
+            <tr>
+              <td>
+                <div class='title'>
+                  <span transmark='text:newsSitemapTitle'></span>
+                </div>
+              </td>
+              <td>
+                <input type='checkbox' id='newsCustomize' class='customize' transmark='tip:customize'>
+                <span class='textLabel' transmark='text:customize;tip:customize'></span>
+              </td>
+            </tr>
+          </table>
+        </div>
+        <!--common news setting-->
+        <div id='commonNewsSitemapBody'>
+          <table>
+            <tr>
+              <td>
+                <input type='checkbox' id='newsEnabled'  
+                    transmark='tip:sitemapEnabled'>
+                <span class='textLabel' id='newsEnabledLabel' transmark='tip:sitemapEnabled'></span>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <input type='checkbox' id='newsCompress' transmark='tip:compress'>
+                <span class='textLabel' transmark='text:compress;tip:compress'></span>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <span class='textLabel' transmark='text:filename;tip:filename'></span>
+              </td>
+              <td>
+                <input type='text' id='newsFileName' class='filename'
+                    transmark='tip:filename'>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <span class='textLabel' transmark='text:UpdateStartTime;tip:UpdateStartTime'></span>
+              </td>
+              <td>
+                <input type='text' id='newsUpdateStartTime' class='date'
+                    transmark='tip:UpdateStartTime'>
+                (<span class='textLabel' transmark='text:example'></span> 2008-01-01 12:34:56)
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <span class='textLabel' transmark='text:newsExpireDuration;tip:newsExpireDuration'></span>
+              </td>
+              <td>
+                <input type='text' id='newsExpireDuration' class='text time'                      
+                    transmark='tip:newsExpireDuration'>
+                <span class='textLabel' transmark='text:minuteUnit'></span>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <span class='textLabel' transmark='text:UpdateDuration;tip:UpdateDuration'></span>
+              </td>
+              <td>
+                <input type='text' id='newsDuration' class='text time'
+                    transmark='tip:UpdateDuration'>
+                <span class='textLabel' transmark='text:minuteUnit'></span>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <span class='textLabel' transmark='text:maxFileUrl;tip:maxFileUrl'></span>
+              </td>
+              <td>
+                <input type='text' id='newsMaxFileUrl' class='text'
+                    transmark='tip:maxFileUrl'>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <span class='textLabel' transmark='text:maxFileSize;tip:maxFileSize'></span>
+              </td>
+              <td>
+                <input type='text' id='newsMaxFileSize' class='text'
+                    transmark='tip:maxFileSize'>
+                <span class='textLabel' transmark='text:kbyteUnit'></span>
+              </td>
+            </tr>
+          </table>
+          <br />
+          <table>
+            <tr>
+              <td>
+                <span class='subtitle' transmark='text:IncludedUrlList'></span>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <div id='newsSitemapIncludedUrlListContainer'>
+                </div>
+              </td>
+            </tr>
+          </table>
+          <br />
+          <table>
+            <tr>
+              <td>
+                <span class='subtitle' transmark='text:ExcludedUrlList'></span>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <div id='newsSitemapExcludedUrlListContainer'>
+                </div>
+              </td>
+            </tr>
+          </table>
+          <br />
+          <table class='hidden'>
+            <tr>
+              <td>
+                <span class='subtitle' transmark='text:NotifyUrlList'></span>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <div id='newsSitemapNotifyUrlListContainer'>
+                </div>
+              </td>
+            </tr>
+          </table>
+        </div>
+      </div>
+      <!--video sitemap-->  
+      <div id='videoSitemapBody' class='sitemapDiv hidden'>  
+        <!--global video setting-->
+        <div name='tabpage' id='videoSitemapBodyGlobal'>
           <table>
             <tr>
               <td>
@@ -837,129 +830,142 @@
               </td>
             </tr>
           </table>
-          <div id='commonVideoSitemapBody'>
-            <table>
-              <tr>
-                <td>
-                  <input type='checkbox' id='videoEnabled'  
-                      transmark='tip:sitemapEnabled'>
-                  <span class='textLabel' transmark='text:enabled;tip:sitemapEnabled'
-                      ></span>
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <input type='checkbox' id='videoCompress'  
-                      transmark='tip:compress'>
-                  <span class='textLabel' transmark='text:compress;tip:compress'
-                      ></span>
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <span class='textLabel' transmark='text:filename;tip:filename'
-                      ></span>
-                </td>
-                <td>
-                  <input type='text' id='videoFileName' class='filename'
-                      transmark='tip:filename'>
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <span class='textLabel' 
-                        transmark='text:UpdateStartTime;tip:UpdateStartTime'
-                      ></span>
-                </td>
-                <td>
-                  <input type='text' id='videoUpdateStartTime' class='date'
-                         transmark='tip:UpdateStartTime'>
-                  (<span class='textLabel' transmark='text:example'></span> 2008-01-01 12:34:56)
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <span class='textLabel' 
-                        transmark='text:UpdateDuration;tip:UpdateDuration'
-                      ></span>
-                </td>
-                <td>
-                  <input type='text' id='videoDuration' class='text time'
-                         transmark='tip:UpdateDuration'>
-                  <span class='textLabel' transmark='text:minuteUnit'></span>
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <span class='textLabel' transmark='text:maxFileUrl;tip:maxFileUrl'
-                      ></span>
-                </td>
-                <td>
-                  <input type='text' id='videoMaxFileUrl' class='text'
-                         transmark='tip:maxFileUrl'>
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <span class='textLabel' transmark='text:maxFileSize;tip:maxFileSize'
-                      ></span>
-                </td>
-                <td>
-                  <input type='text' id='videoMaxFileSize' class='text'
-                      transmark='tip:maxFileSize'>
-                  <span class='textLabel' transmark='text:kbyteUnit'></span>
-                </td>
-              </tr>
-            </table>
-            <br>
-            <table>
-              <tr>
-                <td>
-                  <span class='subtitle' 
-                        transmark='text:IncludedUrlList'></span>
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <div id='videoSitemapIncludedUrlListContainer'>
-                  </div>
-                </td>
-              </tr>
-            </table>
-            <br>
-            <table>
-              <tr>
-                <td>
-                  <span class='subtitle' 
-                        transmark='text:ExcludedUrlList'></span>
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <div id='videoSitemapExcludedUrlListContainer'>
-                  </div>
-                </td>
-              </tr>
-            </table>
-            <br>
-            <table class='hidden'>
-              <tr>
-                <td>
-                  <span class='subtitle' transmark='text:NotifyUrlList'></span>
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <div id='videoSitemapNotifyUrlListContainer'>
-                  </div>
-                </td>
-              </tr>
-            </table>
-          </div>
         </div>
-        <!--mobile sitemap-->   
-        <div class='sitemapDiv hidden' name='tabpage' id='mobileSitemapBodyg'>
-          
+        <!--site video setting-->
+        <div name='tabpage' id='videoSitemapBodySite'>
+          <table>
+            <tr>
+              <td>
+                <div class='title'>
+                  <span transmark='text:videoSitemapTitle'></span>
+                </div>
+              </td>
+              <td>
+                <input type='checkbox' id='videoCustomize'  
+                    class='customize' transmark='tip:customize'>
+                <span class='textLabel' transmark='text:customize;tip:customize'></span>
+              </td>
+            </tr>
+          </table>
+        </div>
+        <!--common video setting-->
+        <div id='commonVideoSitemapBody'>
+          <table>
+            <tr>
+              <td>
+                <input type='checkbox' id='videoEnabled'  
+                    transmark='tip:sitemapEnabled'>
+                <span class='textLabel' id='videoEnabledLabel' transmark='tip:sitemapEnabled'></span>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <input type='checkbox' id='videoCompress'  
+                    transmark='tip:compress'>
+                <span class='textLabel' transmark='text:compress;tip:compress'></span>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <span class='textLabel' transmark='text:filename;tip:filename'></span>
+              </td>
+              <td>
+                <input type='text' id='videoFileName' class='filename'
+                    transmark='tip:filename'>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <span class='textLabel' 
+                      transmark='text:UpdateStartTime;tip:UpdateStartTime'></span>
+              </td>
+              <td>
+                <input type='text' id='videoUpdateStartTime' class='date'
+                       transmark='tip:UpdateStartTime'>
+                (<span class='textLabel' transmark='text:example'></span> 2008-01-01 12:34:56)
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <span class='textLabel' 
+                      transmark='text:UpdateDuration;tip:UpdateDuration'></span>
+              </td>
+              <td>
+                <input type='text' id='videoDuration' class='text time'
+                       transmark='tip:UpdateDuration'>
+                <span class='textLabel' transmark='text:minuteUnit'></span>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <span class='textLabel' transmark='text:maxFileUrl;tip:maxFileUrl'></span>
+              </td>
+              <td>
+                <input type='text' id='videoMaxFileUrl' class='text'
+                       transmark='tip:maxFileUrl'>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <span class='textLabel' transmark='text:maxFileSize;tip:maxFileSize'></span>
+              </td>
+              <td>
+                <input type='text' id='videoMaxFileSize' class='text'
+                    transmark='tip:maxFileSize'>
+                <span class='textLabel' transmark='text:kbyteUnit'></span>
+              </td>
+            </tr>
+          </table>
+          <br />
+          <table>
+            <tr>
+              <td>
+                <span class='subtitle' 
+                      transmark='text:IncludedUrlList'></span>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <div id='videoSitemapIncludedUrlListContainer'>
+                </div>
+              </td>
+            </tr>
+          </table>
+          <br />
+          <table>
+            <tr>
+              <td>
+                <span class='subtitle' 
+                      transmark='text:ExcludedUrlList'></span>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <div id='videoSitemapExcludedUrlListContainer'>
+                </div>
+              </td>
+            </tr>
+          </table>
+          <br />
+          <table class='hidden'>
+            <tr>
+              <td>
+                <span class='subtitle' transmark='text:NotifyUrlList'></span>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <div id='videoSitemapNotifyUrlListContainer'>
+                </div>
+              </td>
+            </tr>
+          </table>
+        </div>
+      </div>
+      <!--mobile sitemap-->   
+      <div id='mobileSitemapBody' class='sitemapDiv hidden'>  
+        <!--global mobile setting-->
+        <div name='tabpage' id='mobileSitemapBodyGlobal'>
           <table>
             <tr>
               <td>
@@ -969,127 +975,140 @@
               </td>
             </tr>
           </table>
-          <div id='commonMobileSitemapBody'>
-            <table>
-              <tr>
-                <td>
-                  <input type='checkbox' id='mobileEnabled'  
-                      transmark='tip:sitemapEnabled'>
-                  <span class='textLabel' transmark='text:enabled;tip:sitemapEnabled'
-                      ></span>
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <input type='checkbox' id='mobileCompress'  
-                      transmark='tip:compress'>
-                  <span class='textLabel' transmark='text:compress;tip:compress'
-                      ></span>
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <span class='textLabel' transmark='text:filename;tip:filename'
-                      ></span>
+        </div>
+        <!--site mobile setting-->   
+        <div name='tabpage' id='mobileSitemapBodySite'>
+          <table>
+            <tr>
+              <td>
+                <div class='title'>
+                  <span transmark='text:mobileSitemapTitle'></span>
+                </div>
               </td>
-                <td>
-                  <input type='text' id='mobileFileName' class='filename'
-                      transmark='tip:filename'>
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <span class='textLabel' 
-                        transmark='text:UpdateStartTime;tip:UpdateStartTime'
-                      ></span>
-                </td>
-                <td>
-                  <input type='text' id='mobileUpdateStartTime' class='date'
-                         transmark='tip:UpdateStartTime'>
-                  (<span class='textLabel' transmark='text:example'></span> 2008-01-01 12:34:56)
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <span class='textLabel' 
-                        transmark='text:UpdateDuration;tip:UpdateDuration'
-                      ></span>
-                </td>
-                <td>
-                  <input type='text' id='mobileDuration' class='text time'
-                         transmark='tip:UpdateDuration'>
-                  <span class='textLabel' transmark='text:minuteUnit'></span>
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <span class='textLabel' transmark='text:maxFileUrl;tip:maxFileUrl'
-                      ></span>
-                </td>
-                <td>
-                  <input type='text' id='mobileMaxFileUrl' class='text'
-                         transmark='tip:maxFileUrl'>
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <span class='textLabel' transmark='text:maxFileSize;tip:maxFileSize'
-                      ></span>
-                </td>
-                <td>
-                  <input type='text' id='mobileMaxFileSize' class='text'
-                         transmark='tip:maxFileSize'>
-                  <span class='textLabel' transmark='text:kbyteUnit'></span>
-                </td>
-              </tr>
-            </table>
-            <br>
-            <table>
-              <tr>
-                <td>
-                  <span class='subtitle' transmark='text:IncludedUrlList'></span>
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <div id='mobileSitemapIncludedUrlListContainer'>
-                  </div>
-                </td>
-              </tr>
-            </table>
-            <br>
-            <table>
-              <tr>
-                <td>
-                  <span class='subtitle' transmark='text:ExcludedUrlList'></span>
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <div id='mobileSitemapExcludedUrlListContainer'>
-                  </div>
-                </td>
-              </tr>
-            </table>
-            <br>
-            <table class='hidden'>
-              <tr>
-                <td>
-                  <span class='subtitle' transmark='text:NotifyUrlList'></span>
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <div id='mobileSitemapNotifyUrlListContainer'>
-                  </div>
-                </td>
-              </tr>
-            </table>
-          </div>
-        </div>    
-        <!--code search sitemap-->
-        <div class='sitemapDiv hidden' name='tabpage' id='codeSearchSitemapBodyg'>
-          
+              <td>
+                <input type='checkbox' id='mobileCustomize'  
+                    class='customize' transmark='tip:customize'>
+                <span class='textLabel' transmark='text:customize;tip:customize'></span>
+              </td>
+            </tr>
+          </table>
+        </div> 
+        <!--common mobile setting-->
+        <div id='commonMobileSitemapBody'>
+          <table>
+            <tr>
+              <td>
+                <input type='checkbox' id='mobileEnabled'  
+                    transmark='tip:sitemapEnabled'>
+                <span class='textLabel' id='mobileEnabledLabel' transmark='tip:sitemapEnabled'></span>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <input type='checkbox' id='mobileCompress'  
+                    transmark='tip:compress'>
+                <span class='textLabel' transmark='text:compress;tip:compress'></span>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <span class='textLabel' transmark='text:filename;tip:filename'></span>
+            </td>
+              <td>
+                <input type='text' id='mobileFileName' class='filename'
+                    transmark='tip:filename'>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <span class='textLabel' 
+                      transmark='text:UpdateStartTime;tip:UpdateStartTime'></span>
+              </td>
+              <td>
+                <input type='text' id='mobileUpdateStartTime' class='date'
+                       transmark='tip:UpdateStartTime'>
+                (<span class='textLabel' transmark='text:example'></span> 2008-01-01 12:34:56)
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <span class='textLabel' 
+                      transmark='text:UpdateDuration;tip:UpdateDuration'></span>
+              </td>
+              <td>
+                <input type='text' id='mobileDuration' class='text time'
+                       transmark='tip:UpdateDuration'>
+                <span class='textLabel' transmark='text:minuteUnit'></span>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <span class='textLabel' transmark='text:maxFileUrl;tip:maxFileUrl'></span>
+              </td>
+              <td>
+                <input type='text' id='mobileMaxFileUrl' class='text'
+                       transmark='tip:maxFileUrl'>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <span class='textLabel' transmark='text:maxFileSize;tip:maxFileSize'></span>
+              </td>
+              <td>
+                <input type='text' id='mobileMaxFileSize' class='text'
+                       transmark='tip:maxFileSize'>
+                <span class='textLabel' transmark='text:kbyteUnit'></span>
+              </td>
+            </tr>
+          </table>
+          <br />
+          <table>
+            <tr>
+              <td>
+                <span class='subtitle' transmark='text:IncludedUrlList'></span>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <div id='mobileSitemapIncludedUrlListContainer'>
+                </div>
+              </td>
+            </tr>
+          </table>
+          <br />
+          <table>
+            <tr>
+              <td>
+                <span class='subtitle' transmark='text:ExcludedUrlList'></span>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <div id='mobileSitemapExcludedUrlListContainer'>
+                </div>
+              </td>
+            </tr>
+          </table>
+          <br />
+          <table class='hidden'>
+            <tr>
+              <td>
+                <span class='subtitle' transmark='text:NotifyUrlList'></span>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <div id='mobileSitemapNotifyUrlListContainer'>
+                </div>
+              </td>
+            </tr>
+          </table>
+        </div>
+      </div>    
+      <!--code search sitemap--> 
+      <div id='codeSearchSitemapBody' class='sitemapDiv hidden'> 
+        <!--global code search setting--> 
+        <div name='tabpage' id='codeSearchSitemapBodyGlobal'>
           <table>
             <tr>
               <td>
@@ -1099,126 +1118,138 @@
               </td>
             </tr>
           </table>
-          <div id='commonCodeSearchSitemapBody'>
-            <table>
-              <tr>
-                <td>
-                  <input type='checkbox' id='codeSearchEnabled'  
-                      transmark='tip:sitemapEnabled'>
-                  <span class='textLabel' transmark='text:enabled;tip:sitemapEnabled'
-                      ></span>
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <input type='checkbox' id='codeSearchCompress'  
-                      transmark='tip:compress'>
-                  <span class='textLabel' transmark='text:compress;tip:compress'
-                      ></span>
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <span class='textLabel' transmark='text:filename;tip:filename'
-                      ></span>
-                </td>
-                <td>
-                  <input type='text' id='codeSearchFileName' class='filename'
-                      transmark='tip:filename'>
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <span class='textLabel' transmark='text:UpdateStartTime;tip:UpdateStartTime'
-                      ></span>
-                </td>
-                <td>
-                  <input type='text' id='codeSearchUpdateStartTime' class='date'
-                      transmark='tip:UpdateStartTime'>
-                  (<span class='textLabel' transmark='text:example'></span> 2008-01-01 12:34:56)
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <span class='textLabel' transmark='text:UpdateDuration;tip:UpdateDuration'
-                      ></span>
-                </td>
-                <td>
-                  <input type='text' id='codeSearchDuration' class='text time'
-                      transmark='tip:UpdateDuration'>
-                  <span class='textLabel' transmark='text:minuteUnit'></span>
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <span class='textLabel' transmark='text:maxFileUrl;tip:maxFileUrl'
-                      ></span>
-                </td>
-                <td>
-                  <input type='text' id='codeSearchMaxFileUrl' class='text'
-                      transmark='tip:maxFileUrl'>
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <span class='textLabel' transmark='text:maxFileSize;tip:maxFileSize'
-                      ></span>
-                </td>
-                <td>
-                  <input type='text' id='codeSearchMaxFileSize' class='text'
-                      transmark='tip:maxFileSize'>
-                  <span class='textLabel' transmark='text:kbyteUnit'></span>
-                </td>
-              </tr>
-            </table>
-            <br>
-            <table>
-              <tr>
-                <td>
-                  <span class='subtitle' transmark='text:IncludedUrlList'></span>
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <div id='codeSearchSitemapIncludedUrlListContainer'>
-                  </div>
-                </td>
-              </tr>
-            </table>
-            <br>
-            <table>
-              <tr>
-                <td>
-                  <span class='subtitle' transmark='text:ExcludedUrlList'></span>
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <div id='codeSearchSitemapExcludedUrlListContainer'>
-                  </div>
-                </td>
-              </tr>
-            </table>
-            <br>
-            <table class='hidden'>
-              <tr>
-                <td>
-                  <span class='subtitle' transmark='text:NotifyUrlList'></span>
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <div id='codeSearchSitemapNotifyUrlListContainer'>
-                  </div>
-                </td>
-              </tr>
-            </table>
-          </div>
-        </div>         
-        
-        <!--blog search ping-->
-        <div class='sitemapDiv hidden' name='tabpage' id='blogSearchPingBodyg'>
-          
+        </div>
+        <!--site code search setting-->   
+        <div name='tabpage' id='codeSearchSitemapBodySite'>
+          <table>
+            <tr>
+              <td>
+                <div class='title'>
+                  <span transmark='text:codeSearchSitemapTitle'></span>
+                </div>
+              </td>
+              <td>
+                <input type='checkbox' id='codeSearchCustomize'  
+                    class='customize' transmark='tip:customize'>
+                <span class='textLabel' transmark='text:customize;tip:customize'></span>
+              </td>
+            </tr>
+          </table>
+        </div> 
+        <!--common code search setting-->
+        <div id='commonCodeSearchSitemapBody'>
+          <table>
+            <tr>
+              <td>
+                <input type='checkbox' id='codeSearchEnabled'  
+                    transmark='tip:sitemapEnabled'>
+                <span class='textLabel' id='codeSearchEnabledLabel' transmark='tip:sitemapEnabled'></span>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <input type='checkbox' id='codeSearchCompress'  
+                    transmark='tip:compress'>
+                <span class='textLabel' transmark='text:compress;tip:compress'></span>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <span class='textLabel' transmark='text:filename;tip:filename'></span>
+              </td>
+              <td>
+                <input type='text' id='codeSearchFileName' class='filename'
+                    transmark='tip:filename'>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <span class='textLabel' transmark='text:UpdateStartTime;tip:UpdateStartTime'></span>
+              </td>
+              <td>
+                <input type='text' id='codeSearchUpdateStartTime' class='date'
+                    transmark='tip:UpdateStartTime'>
+                (<span class='textLabel' transmark='text:example'></span> 2008-01-01 12:34:56)
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <span class='textLabel' transmark='text:UpdateDuration;tip:UpdateDuration'></span>
+              </td>
+              <td>
+                <input type='text' id='codeSearchDuration' class='text time'
+                    transmark='tip:UpdateDuration'>
+                <span class='textLabel' transmark='text:minuteUnit'></span>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <span class='textLabel' transmark='text:maxFileUrl;tip:maxFileUrl'></span>
+              </td>
+              <td>
+                <input type='text' id='codeSearchMaxFileUrl' class='text'
+                    transmark='tip:maxFileUrl'>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <span class='textLabel' transmark='text:maxFileSize;tip:maxFileSize'></span>
+              </td>
+              <td>
+                <input type='text' id='codeSearchMaxFileSize' class='text'
+                    transmark='tip:maxFileSize'>
+                <span class='textLabel' transmark='text:kbyteUnit'></span>
+              </td>
+            </tr>
+          </table>
+          <br />
+          <table>
+            <tr>
+              <td>
+                <span class='subtitle' transmark='text:IncludedUrlList'></span>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <div id='codeSearchSitemapIncludedUrlListContainer'>
+                </div>
+              </td>
+            </tr>
+          </table>
+          <br />
+          <table>
+            <tr>
+              <td>
+                <span class='subtitle' transmark='text:ExcludedUrlList'></span>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <div id='codeSearchSitemapExcludedUrlListContainer'>
+                </div>
+              </td>
+            </tr>
+          </table>
+          <br />
+          <table class='hidden'>
+            <tr>
+              <td>
+                <span class='subtitle' transmark='text:NotifyUrlList'></span>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <div id='codeSearchSitemapNotifyUrlListContainer'>
+                </div>
+              </td>
+            </tr>
+          </table>
+        </div>
+      </div>
+      <!--blog search ping-->
+      <div id='blogSearchPingBody' class='sitemapDiv hidden'> 
+        <!--global blog search setting--> 
+        <div name='tabpage' id='blogSearchPingBodyGlobal'>
           <table>
             <tr>
               <td>
@@ -1228,62 +1259,81 @@
               </td>
             </tr>
           </table>
-          <div id='commonBlogSearchPingBody'>
-            <table>
-              <tr>
-                <td>
-                  <input type='checkbox' id='blogSearchEnabled'  
-                      transmark='tip:blogSearchPingEnabled'>
-                  <span class='textLabel' transmark='text:enabled;tip:blogSearchPingEnabled'
-                      ></span>
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <span class='textLabel' transmark='text:UpdateDurationForBlogSearchPing;tip:UpdateDurationForBlogSearchPing'
-                      ></span>
-                </td>
-                <td>
-                  <input type='text' id='blogSearchDuration' class='text time'
-                      transmark='tip:UpdateDurationForBlogSearchPing'>
-                  <span class='textLabel' transmark='text:minuteUnit'></span>
-                </td>
-              </tr>
-            </table>
-            <br>
-            <table>
-              <tr>
-                <td>
-                  <span class='subtitle' transmark='text:IncludedUrlList'></span>
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <div id='blogSearchPingIncludedUrlListContainer'>
-                  </div>
-                </td>
-              </tr>
-            </table>
-            <br>
-            <table>
-              <tr>
-                <td>
-                  <span class='subtitle' transmark='text:ExcludedUrlList'></span>
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <div id='blogSearchPingExcludedUrlListContainer'>
-                  </div>
-                </td>
-              </tr>
-            </table>
-          </div>
-        </div>  
-        <!--runtime info-->    
-        <div class='sitemapDiv hidden' name='tabpage' id='runtimeInfoBodyg'>
-           <input type='button' class='internalButton updateRuntime'  
-                transmark='tip:updateRuntime;value:updateRuntime'>
+        </div>
+        <!--site blog search setting--> 
+        <div name='tabpage' id='blogSearchPingBodySite'>
+          <table>
+            <tr>
+              <td>
+                <div class='title'>
+                  <span transmark='text:blogSearchPingTitle'></span>
+                </div>
+              </td>
+              <td>
+                <input type='checkbox' id='blogSearchCustomize'  
+                    class='customize' transmark='tip:customize'>
+                <span class='textLabel' transmark='text:customize;tip:customize'></span>
+              </td>
+            </tr>
+          </table>
+        </div> 
+        <!--common blog search setting-->
+        <div id='commonBlogSearchPingBody'>
+          <table>
+            <tr>
+              <td>
+                <input type='checkbox' id='blogSearchEnabled'  
+                    transmark='tip:blogSearchPingEnabled'>
+                <span class='textLabel' id='blogSearchEnabledLabel' transmark='tip:blogSearchPingEnabled'></span>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <span class='textLabel' transmark='text:UpdateDurationForBlogSearchPing;tip:UpdateDurationForBlogSearchPing'></span>
+              </td>
+              <td>
+                <input type='text' id='blogSearchDuration' class='text time'
+                    transmark='tip:UpdateDurationForBlogSearchPing'>
+                <span class='textLabel' transmark='text:minuteUnit'></span>
+              </td>
+            </tr>
+          </table>
+          <br />
+          <table>
+            <tr>
+              <td>
+                <span class='subtitle' transmark='text:IncludedUrlList'></span>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <div id='blogSearchPingIncludedUrlListContainer'>
+                </div>
+              </td>
+            </tr>
+          </table>
+          <br />
+          <table>
+            <tr>
+              <td>
+                <span class='subtitle' transmark='text:ExcludedUrlList'></span>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <div id='blogSearchPingExcludedUrlListContainer'>
+                </div>
+              </td>
+            </tr>
+          </table>
+        </div>
+      </div>  
+      <!--runtime info-->    
+      <div id='runtimeInfoBody' class='sitemapDiv hidden'> 
+        <!--global runtime info--> 
+        <div name='tabpage' id='runtimeInfoBodyGlobal'>
+          <input type='button' class='internalButton updateRuntime'  
+                 transmark='tip:updateRuntime;value:updateRuntime'>
           <table>
             <tr>
               <td>
@@ -1328,170 +1378,10 @@
             </tr>
           </table>
         </div>       
-      </div>
-      <!--  site setting template -->
-      <div id='siteTpl'>
-        <!--general setting-->   
-        <div class='sitemapDiv hidden' name='tabpage' id='generalSitemapBody'>
-          
-          <table>
-            <tr>
-              <td>
-                <div class='title'>
-                   <span transmark='text:siteTitle'></span>
-                </div>
-              </td>
-              <td>
-                <input type='checkbox' id='generalCustomize'  
-                       class='customize' transmark='tip:customize'>
-                <span class='textLabel' transmark='text:customize;tip:customize'
-                      ></span>
-              </td>
-            </tr>
-          </table>
-          <!--specific for site setting-->
-          <table>
-            <tr>
-              <td>
-                <span class='textLabel' transmark='text:host;tip:host'
-                      ></span>
-              </td>
-              <td>
-                <input type='text' id='host' class='text'                     
-                    transmark='tip:host'>
-              </td>
-            </tr>
-            <tr>
-              <td>
-                <span class='textLabel' transmark='text:logPath;tip:logPath'
-                      ></span>
-              </td>
-              <td>
-                <input type='text' id='logPath' class='text'                     
-                    transmark='tip:logPath'>
-              </td>
-            </tr>
-          </table>
-          <br>
-        </div>
-        
-        <!--web sitemap-->   
-        <div class='sitemapDiv hidden' name='tabpage' id='webSitemapBody'>
-          
-          <table>
-            <tr>
-              <td>
-                <div class='title'>
-                  <span transmark='text:webSitemapTitle'></span>
-                </div>
-              </td>
-              <td>
-                <input type='checkbox' id='webCustomize'  
-                    class='customize' transmark='tip:customize'>
-                <span class='textLabel' transmark='text:customize;tip:customize'
-                      ></span>
-              </td>
-            </tr>
-          </table>
-        </div>
-        <!--news sitemap-->   
-        <div class='sitemapDiv hidden' name='tabpage' id='newsSitemapBody'>
-          
-          <table>
-            <tr>
-              <td>
-                <div class='title'>
-                  <span transmark='text:newsSitemapTitle'></span>
-                </div>
-              </td>
-              <td>
-                <input type='checkbox' id='newsCustomize' class='customize' transmark='tip:customize'>
-                <span class='textLabel' transmark='text:customize;tip:customize'
-                      ></span>
-              </td>
-            </tr>
-          </table>
-        </div>
-        <!--video sitemap-->        
-        <div class='sitemapDiv hidden' name='tabpage' id='videoSitemapBody'>
-          
-          <table>
-            <tr>
-              <td>
-                <div class='title'>
-                  <span transmark='text:videoSitemapTitle'></span>
-                </div>
-              </td>
-              <td>
-                <input type='checkbox' id='videoCustomize'  
-                    class='customize' transmark='tip:customize'>
-                <span class='textLabel' transmark='text:customize;tip:customize'
-                      ></span>
-              </td>
-            </tr>
-          </table>
-        </div>
-        <!--mobile sitemap-->    
-        <div class='sitemapDiv hidden' name='tabpage' id='mobileSitemapBody'>
-          
-          <table>
-            <tr>
-              <td>
-                <div class='title'>
-                  <span transmark='text:mobileSitemapTitle'></span>
-                </div>
-              </td>
-              <td>
-                <input type='checkbox' id='mobileCustomize'  
-                    class='customize' transmark='tip:customize'>
-                <span class='textLabel' transmark='text:customize;tip:customize'
-                      ></span>
-              </td>
-            </tr>
-          </table>
-        </div> 
-        <!--code search sitemap-->    
-        <div class='sitemapDiv hidden' name='tabpage' id='codeSearchSitemapBody'>
-          
-          <table>
-            <tr>
-              <td>
-                <div class='title'>
-                  <span transmark='text:codeSearchSitemapTitle'></span>
-                </div>
-              </td>
-              <td>
-                <input type='checkbox' id='codeSearchCustomize'  
-                    class='customize' transmark='tip:customize'>
-                <span class='textLabel' transmark='text:customize;tip:customize'
-                      ></span>
-              </td>
-            </tr>
-          </table>
-        </div> 
-        <!--blog search ping-->    
-        <div class='sitemapDiv hidden' name='tabpage' id='blogSearchPingBody'>
-          
-          <table>
-            <tr>
-              <td>
-                <div class='title'>
-                  <span transmark='text:blogSearchPingTitle'></span>
-                </div>
-              </td>
-              <td>
-                <input type='checkbox' id='blogSearchCustomize'  
-                    class='customize' transmark='tip:customize'>
-                <span class='textLabel' transmark='text:customize;tip:customize'
-                      ></span>
-              </td>
-            </tr>
-          </table>
-        </div> 
-        <!--runtime info-->    
-        <div class='sitemapDiv hidden' name='tabpage' id='runtimeInfoBody'>
-           <input type='button' class='internalButton updateRuntime' 
-                transmark='tip:updateRuntime;value:updateRuntime'>
+        <!--site runtime info-->  
+        <div name='tabpage' id='runtimeInfoBodySite'>
+          <input type='button' class='internalButton updateRuntime' 
+                 transmark='tip:updateRuntime;value:updateRuntime'>
           <table>
             <tr>
               <td>
@@ -1580,15 +1470,124 @@
               </table>
             </div>
           </div>
-        </div>
+        </div>      
       </div>
+        
+        
+        
                 </div>
               </div>
             </div>
           </td>
         </tr>
+        <tr></tr>
+        <tr></tr>
       </table>
-    
+      <div id='appSettings' class='appSettings'>          
+          <table>
+            <tr>
+              <td>
+                <div class='title'>
+                  <span transmark='text:appTitle'></span>
+                </div>
+              </td>
+            </tr>
+          </table>
+        <!--specific for global setting-->
+          <table>
+            <tr>
+              <td>
+                <input type='checkbox' id='autoAdd' transmark='tip:autoAdd'>
+                <span class='textLabel' transmark='text:autoAdd;tip:autoAdd'></span>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <input type='checkbox' id='remoteAccess' 
+                    transmark='tip:remoteAccess'>
+                <span class='textLabel' transmark='text:remoteAccess;tip:remoteAccess'></span>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <span class='textLabel' transmark='text:password'></span>
+              </td>
+              <td>
+                <input type='password' id='password' class='text' disabled>
+                <a id='changePassword' transmark='tip:changeLoginPassword'>
+                  <span transmark='text:changePassword'></span>
+                </a>
+              </td>
+            </tr>
+            <tr>
+              <td colspan=2 id='changePasswordPagePostion'>              
+                <div id='changePasswordDiv' class='changePasswordPage hidden'>        
+                  <table>
+                    <tr>
+                      <td colspan=2>
+                        <span class='hints' transmark='text:passwordHints'></span>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <span transmark='text:inputOldPassword'></span>
+                      </td>
+                      <td>
+                        <input type='password' id='inputOldPassword'>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <span transmark='text:inputNewPassword'></span>
+                      </td>
+                      <td>
+                        <input type='password' id='inputNewPassword'>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <span transmark='text:inputPasswordAgain'></span>
+                      </td>
+                      <td>
+                        <input type='password' id='inputPasswordAgain'>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td colspan=2>
+                        <div id='changePasswordError' class='error hidden'></div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td colspan=2 class='last'>
+                        <input type='button' class='confirmPasswordChange' transmark='value:submit'>
+                        <input type='button' class='cancelPasswordChange' transmark='value:cancel'>
+                      </td>
+                    </tr>
+                  </table>
+                </div>      
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <span class='textLabel' transmark='text:backupDuration;tip:backupDuration'></span>
+              </td>
+              <td>
+                <input type='text' id='backupDurationInSeconds' class='text time'                     
+                    transmark='tip:backupDuration'>
+                <span class='textLabel' transmark='text:minuteUnit'></span>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <span class='textLabel' transmark='text:settingPort;tip:settingPort'></span>
+              </td>
+              <td>
+                <input type='text' id='settingPort' class='text'                         
+                    transmark='tip:settingPort'>
+              </td>
+            </tr>
+          </table>
+      </div>
       <div id='loginPage' class='loginPage'>
         <table>
           <tr>
@@ -1601,8 +1600,7 @@
           </tr>
           <tr>
             <td>
-              <span transmark='text:loginPassword;tip:loginPassword'
-                      ></span>
+              <span transmark='text:loginPassword;tip:loginPassword'></span>
             </td>
             <td>
               <input type='password' id='loginPassword' transmark='tip:loginPassword'>
@@ -1615,7 +1613,6 @@
           </tr>
         </table>
       </div>
-      
       <br /><br /><br />
       <div class='copyright' id='copyright'>
           Copyright 2008 Google Inc. All Rights Reserved.

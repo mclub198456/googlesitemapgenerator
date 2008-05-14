@@ -24,6 +24,7 @@
 
 #include <pthread.h>
 #include <map>
+#include <string>
 
 // apache 2.2 0x41503232UL, apache 2.0 0x41503230UL
 // apache 1.3 with EAPI 0x45415049UL, without EAPI 0x41503133UL
@@ -57,12 +58,13 @@ private:
     return offset + len;
   }
 
-  int MatchSite(server_rec* server);
+  std::string MatchSite(server_rec* server);
 
   bool inited_;
 
-  // match a vhost to internal site index
-  std::map<void*, int> siteids_;
+  // match a vhost to site id.
+  // If the site is not enabled, site_id is empty.
+  std::map<void*, std::string> siteids_;
   pthread_mutex_t siteid_mutex_;
 };
 

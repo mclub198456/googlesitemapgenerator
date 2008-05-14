@@ -69,7 +69,7 @@ class SitemapSetting: public BaseSetting {
   const time_t update_start_time() const {return update_start_time_; }
   void set_update_start_time(const int update_start_time) {
     update_start_time_ = update_start_time;
-    SaveAttribute("update_start_time", update_start_time_);
+    SaveTimeAttribute("update_start_time", update_start_time_);
   }
 
   const bool compress() const {return compress_; }

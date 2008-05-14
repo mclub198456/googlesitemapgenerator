@@ -21,47 +21,61 @@
 #include <sstream>
 #include <fstream>
 
+#if defined(__linux__) || defined(__unix__)
+#include <signal.h>
+#endif
+
+
 #include "common/util.h"
 #include "common/port.h"
 #include "sitemapservice/httpproto.h"
 
-webserver* webserver::instance_ = NULL;
-webserver* webserver::getInstance() { 
-  if (instance_ == NULL) 
-    instance_ = new webserver();
-  return instance_; 
+WebServer* WebServer::instance_ = NULL;
+WebServer* WebServer::GetInstance() {
+  if (instance_ == NULL)
+    instance_ = new WebServer();
+  return instance_;
 }
 /////////////////////// thread function /////////////////////////////
 
 void* ProcessRequestThread(void* param) {
   ActiveSocket* sock = reinterpret_cast<ActiveSocket*>(param);
-  webserver::getInstance()->ProcessRequest(*sock);
+  WebServer::GetInstance()->ProcessRequest(*sock);
+  delete sock;
   return 0;
 }
 
-void webserver::ProcessRequest(const ActiveSocket& s) {
+void WebServer::ProcessRequest(const ActiveSocket& s) {
 
   HttpProto http;
   http.ResetRequest();
   http.ProcessRequest(s);
 
   http.ResetResponse();
-  request_func_(&http);  
+  request_func_(&http);
   http.ProcessResponse(s);
 }
 
-webserver::~webserver() {
+WebServer::~WebServer() {
 #ifdef WIN32
   WSACleanup();
 #endif
 }
 
-bool webserver::Start(unsigned int port_to_listen, request_func r,
-                      bool singleThread) {
+bool WebServer::Start(unsigned int port_to_listen, request_func r,
+                      bool single_thread) {
 #ifdef WIN32
-  WSADATA info;  
+  WSADATA info;
   if (WSAStartup(MAKEWORD(2,0), &info)) {
     Util::Log(EVENT_ERROR, "fail to startup WSA (%d).", MyGetLastError());
+    return false;
+  }
+#endif
+
+  // Ignore SIGPIPE.
+#if defined(__linux__) || defined(__unix__)
+  if (signal(SIGPIPE, SIG_IGN) == SIG_ERR) {
+    Util::Log(EVENT_ERROR, "Failed to ignore SIGPIPE.");
     return false;
   }
 #endif
@@ -80,23 +94,24 @@ bool webserver::Start(unsigned int port_to_listen, request_func r,
       return false;
     }
 
-    if (singleThread) {
+    if (single_thread) {
       ProcessRequest(*sock);
+      delete sock;
     } else {
       bool failed;
 #ifdef WIN32
-      DWORD dwThreadId;
-      failed = CreateThread(NULL, 0, 
+      DWORD thread_id;
+      failed = CreateThread(NULL, 0,
         (LPTHREAD_START_ROUTINE )ProcessRequestThread,
-        (void*)sock, 0, &dwThreadId) == INVALID_HANDLE_VALUE;
+        (void*)sock, 0, &thread_id) == INVALID_HANDLE_VALUE;
 #else
       pthread_t th_head;
-      failed = pthread_create(&th_head, NULL, 
+      failed = pthread_create(&th_head, NULL,
         &ProcessRequestThread,(void*)sock) != 0;
 #endif
       if (failed) {
-        Util::Log(EVENT_ERROR, 
-          "fail to create thread to process webserver request (%d).", 
+        Util::Log(EVENT_ERROR,
+          "fail to create thread to process webserver request (%d).",
           MyGetLastError());
         return false;
       }
@@ -107,19 +122,19 @@ bool webserver::Start(unsigned int port_to_listen, request_func r,
 
 
 
-bool webserver::StartListen(int port, int connections, bool isBlocking) {
+bool WebServer::StartListen(int port, int connections, bool is_blocking) {
   sockaddr_in sa;
 
   memset(&sa, 0, sizeof(sa));
 
-  sa.sin_family = PF_INET;             
-  sa.sin_port = htons(port);          
+  sa.sin_family = PF_INET;
+  sa.sin_port = htons(port);
   listen_socket_ = socket(AF_INET, SOCK_STREAM, 0);
   if (listen_socket_ == INVALID_SOCKET) {
     return false;
   }
 
-  if(!isBlocking) {
+  if(!is_blocking) {
     int arg = 1;
     SetIoctl(listen_socket_, FIONBIO, &arg);
   }
@@ -131,20 +146,20 @@ bool webserver::StartListen(int port, int connections, bool isBlocking) {
   }
 #endif
 
-  if (bind(listen_socket_, (sockaddr *)&sa, sizeof(sockaddr_in)) 
+  if (bind(listen_socket_, (sockaddr *)&sa, sizeof(sockaddr_in))
     == SOCKET_ERROR) {
       closesocket(listen_socket_);
       return false;
   }
 
-  int ret = listen(listen_socket_, connections);                    
+  int ret = listen(listen_socket_, connections);
   return ret == -1 ? false : true;
 }
 
-ActiveSocket* webserver::Accept() {
+ActiveSocket* WebServer::Accept() {
   sockaddr_in* addr = new sockaddr_in();
   socklen_t sockaddr_len = sizeof(struct sockaddr_in);
-  SOCKET new_sock = accept(listen_socket_, (struct sockaddr*)addr, 
+  SOCKET new_sock = accept(listen_socket_, (struct sockaddr*)addr,
     &sockaddr_len);
   if (new_sock == INVALID_SOCKET) {
     int rc = MyGetLastError();
@@ -159,3 +174,4 @@ ActiveSocket* webserver::Accept() {
   r->SetClientSockAddr(addr);
   return r;
 }
+

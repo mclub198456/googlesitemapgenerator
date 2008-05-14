@@ -101,8 +101,10 @@ fi
 
 # Checks for programs.
 AC_PROG_CXX
+AC_PROG_AWK
 AC_PROG_CC
 AC_PROG_LN_S
+AC_PROG_MAKE_SET
 AC_PROG_RANLIB
 
 topdir=`pwd`
@@ -118,11 +120,9 @@ LDFLAGS="-lpthread -lm"
 if test "x$APACHE_ARCH" = "x32"; then
   LIB_STDCXX="$topdir/third_party/libstdc++-v3/32/libstdc++.a"
   CFLAGS="$CFLAGS -m32 -fPIC"
-  CXXFLAGS="$CXXFLAGS -m32 -fPIC"
 elif test "x$APACHE_ARCH" = "x64"; then
   LIB_STDCXX="$topdir/third_party/libstdc++-v3/64/libstdc++.a"
   CFLAGS="$CFLAGS -m64 -fPIC"
-  CXXFLAGS="$CXXFLAGS -m64 -fPIC"
 else
   AC_MSG_ERROR([Invalid apache arch: $APACHE_ARCH])
 fi
@@ -160,34 +160,54 @@ AC_SUBST(APACHE_ARCH)
 # Checks for libraries.
 
 # Checks for header files.
-# AC_HEADER_DIRENT
-# AC_HEADER_STDC
-# AC_CHECK_HEADERS([arpa/inet.h fcntl.h limits.h malloc.h netdb.h netinet/in.h stdlib.h string.h sys/file.h sys/socket.h sys/time.h syslog.h unistd.h])
+AC_HEADER_DIRENT
+AC_HEADER_STDC
+AC_HEADER_SYS_WAIT
+AC_CHECK_HEADERS([arpa/inet.h fcntl.h limits.h malloc.h memory.h netdb.h netinet/in.h stddef.h stdint.h stdlib.h string.h strings.h sys/file.h sys/ioctl.h sys/param.h sys/socket.h sys/time.h syslog.h unistd.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
-# AC_HEADER_STDBOOL
-# AC_C_CONST
-# AC_TYPE_UID_T
-# AC_C_INLINE
-# AC_TYPE_PID_T
-# AC_TYPE_SIZE_T
-# AC_HEADER_TIME
-# AC_STRUCT_TM
-# AC_C_VOLATILE
+AC_HEADER_STAT
+AC_HEADER_STDBOOL
+AC_C_CONST
+AC_TYPE_UID_T
+AC_C_INLINE
+AC_TYPE_MODE_T
+AC_TYPE_OFF_T
+AC_TYPE_PID_T
+AC_TYPE_SIZE_T
+AC_HEADER_TIME
+AC_STRUCT_TM
+AC_C_VOLATILE
+AC_CHECK_TYPES([ptrdiff_t])
+
 
 # Checks for library functions.
-# AC_FUNC_FORK
-# AC_FUNC_LSTAT
-# AC_FUNC_LSTAT_FOLLOWS_SLASHED_SYMLINK
-# AC_FUNC_MKTIME
-# AC_TYPE_SIGNAL
-# AC_FUNC_STAT
-# AC_FUNC_STRFTIME
-# AC_FUNC_STRTOD
-# AC_CHECK_FUNCS([dup2 gethostbyname gethostname inet_ntoa memset socket strcasecmp strchr strncasecmp strstr])
+AC_FUNC_CLOSEDIR_VOID
+AC_FUNC_ERROR_AT_LINE
+AC_REPLACE_FNMATCH
+AC_FUNC_FORK
+AC_PROG_GCC_TRADITIONAL
+AC_FUNC_LSTAT
+AC_FUNC_LSTAT_FOLLOWS_SLASHED_SYMLINK
+AC_FUNC_MALLOC
+AC_FUNC_MKTIME
+AC_FUNC_MMAP
+AC_FUNC_SELECT_ARGTYPES
+AC_TYPE_SIGNAL
+AC_FUNC_STAT
+AC_FUNC_STRFTIME
+AC_FUNC_STRTOD
+AC_FUNC_VPRINTF
+AC_FUNC_WAIT3
+AC_CHECK_FUNCS([bzero dup2 gethostbyaddr gethostbyname gethostname inet_ntoa memchr memset munmap regcomp select socket strcasecmp strchr strdup strerror strncasecmp strstr])
 
 AC_CONFIG_FILES([Makefile
-third_party/tinyxml/Makefile third_party/zlib/Makefile third_party/md5/Makefile
-src/common/Makefile src/apache_module/Makefile src/sitemapservice/Makefile])
+                 src/apache_module/Makefile
+                 src/common/Makefile
+                 src/sitemapservice/Makefile
+                 third_party/md5/Makefile
+                 third_party/tinyxml/Makefile
+                 third_party/zlib/Makefile])
+
 AC_OUTPUT
 

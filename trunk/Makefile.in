@@ -37,7 +37,6 @@ installer: all
 	@cp -f src/sitemapservice/sitemap-daemon $(INSTALL_DIR)/$(DAEMON_NAME)
 	@cp -f src/apache_module/mod_sitemap.so $(INSTALL_DIR)/$(MOD_NAME)
 	@cp -f -R src/sitemapservice/templates $(INSTALL_DIR)
-	@cp -f document/*.pdf $(INSTALL_DIR)
 	@chmod -R a+rwx $(INSTALL_DIR)
 	@chmod a+rx .
 

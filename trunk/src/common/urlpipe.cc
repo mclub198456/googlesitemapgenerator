@@ -356,14 +356,10 @@ int UrlPipe::RunSemop(int num, int op, int flag, int wait_time) {
     operation.sem_flg |= IPC_NOWAIT;
     result = semop(resource_.sem_id, &operation, 1);
   } else {
-#ifdef semtimedop
     timespec timeout;
     timeout.tv_sec = wait_time / 1000;
-    timeout.tv_sec = (wait_time % 1000) * 1000000;
+    timeout.tv_nsec = (wait_time % 1000) * 1000000;
     result = semtimedop(resource_.sem_id, &operation, 1, &timeout);
-#else
-    result = semop(resource_.sem_id, &operation, 1);
-#endif
   }
 
   return result == 0 ? 0 : errno;

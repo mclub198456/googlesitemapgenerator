@@ -29,7 +29,7 @@ BEGIN
             VALUE "FileDescription", "Sitemap Filter"
             VALUE "FileVersion", SITEMAP_VERSION1
             VALUE "InternalName", "SitemapFilter.dll"
-            VALUE "LegalCopyright", "Copyright (C) 2007"
+            VALUE "LegalCopyright", "Copyright (C) 2008"
             VALUE "OriginalFilename", "sitemapfilter.dll"
             VALUE "ProductName", PRODUCT_NAME
             VALUE "ProductVersion", SITEMAP_VERSION1

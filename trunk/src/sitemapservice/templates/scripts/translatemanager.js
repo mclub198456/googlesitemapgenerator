@@ -37,10 +37,13 @@ var Controller = {};
  * Updates the setting XML data to UI.
  */
 Controller.updateSettingData = function() {
-  var dom = ServerManager.getXml(CONFIG_XML_GET_ACTION);
+  var http = {};
+  var dom = ServerManager.getXml(CONFIG_XML_GET_ACTION, http);
   if (!dom) {
     Controller.processErrorResponseFromServer_();
   }
+  
+  SiteSettings.getInstance().SetTimestamp(http.lastModified);
   SiteSettings.getInstance().load(dom);
 };
 
@@ -127,10 +130,29 @@ Controller.onSubmitXml = function() {
   // (we assume the values from server's xml are correct)
   if (TabManager.getInstance().currentTab().validate()) {
     SiteSettings.getInstance().save();
-    var value = SiteSettings.getInstance().xml_.serialize();
-    if (!ServerManager.requestSave(
-        value)) {
-      Controller.processErrorResponseFromServer_();
+    var xml = SiteSettings.getInstance().xml_.serialize();
+    var ts = {};
+    ts.value = SiteSettings.getInstance().timestamp();
+    switch (ServerManager.requestSave(xml, ts)) {
+      case ServerManager.requestSave.rets.FAILED:
+        Controller.processErrorResponseFromServer_();
+        break;
+      case ServerManager.requestSave.rets.OUTOFDATE:
+        if (confirm(SAVE_WARNING_MSG)) {
+          // post again
+          ServerManager.requestSave(xml, ts, true);
+        } else {
+          if (confirm(REFRESH_MSG)) {
+            // refresh the page            
+            Controller.updateSettingData();
+            Controller.updateRuntimeInfo();
+            alert(REFRESH_DONE_MSG);
+          }
+        }
+        break;
+      case ServerManager.requestSave.rets.SUCCESS:
+        SiteSettings.getInstance().SetTimestamp(ts.value);
+        break;
     }
   } else {
     alert(VALIDATING_ONSAVE_FAIL_MSG);
@@ -139,47 +161,19 @@ Controller.onSubmitXml = function() {
 };
 
 /**
- * Refresh the main page.
+ * Restarts the server.
  */
-Controller.onRefreshPage = function() {
-  if (confirm(REFRESH_CONFIRM_MSG)) {
-    Controller.updateSettingData();
-    Controller.updateRuntimeInfo();
-    alert(REFRESH_DONE_MSG);
-  }
-  return false;
-};
-
-/**
- * Submits the settings to server and restart the server.
- */
-Controller.onSaveXmlAndRestart = function() {
-  // Generally speaking, it should check all tabs in all sites.
-  // But since program will check the current tab when user switch to another,
-  // so we can assume that all the other tabs in the site have been checked,
-  // and all tabs in other sites have been checked, too.
-  // (we assume the values from server's xml are correct)
-  if (TabManager.getInstance().currentTab().validate()) {
-    if (confirm(SAVE_RESTART_MSG)) {
-      SiteSettings.getInstance().save();
+Controller.onRestart = function() {
+  // send restart command syncronized
+  if (ServerManager.requestRestart()) {
+    // hide the content, show waiting page
+    document.body.innerHTML = WAITING_FOR_SERVER_RESTART_MSG;
   
-      // send save and restart command syncronized
-      if (!ServerManager.requestSaveRestart(
-          SiteSettings.getInstance().xml_.serialize())) {
-        return;
-      }
-  
-      // hide the content, show waiting page
-      document.body.innerHTML = WAITING_FOR_SERVER_RESTART_MSG;
-  
-      // redirect to new server address
-      var port = Controller.getPortFromClientSetting_();
-      var waitTimer = setTimeout(function(){
-        Controller.redirectToLoginPage_(port);
-      }, SERVER_RESTART_DELAY);
-    }
-  } else {
-    alert(VALIDATING_ONSAVE_FAIL_MSG);
+    // redirect to new server address
+    var port = Controller.getPortFromClientSetting_();
+    var waitTimer = setTimeout(function(){
+      Controller.redirectToLoginPage_(port);
+    }, SERVER_RESTART_DELAY);
   }
   return false;
 };

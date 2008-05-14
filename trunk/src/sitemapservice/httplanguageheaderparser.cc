@@ -20,7 +20,7 @@
 #include "common/util.h"
 
 
-void HttpLanguageHeaderParser::getAllLanguages(Map* lang_map, 
+void HttpLanguageHeaderParser::GetAllLanguages(Map* lang_map, 
                                                const std::string& accept_lang) {
   lang_map->clear();
 
@@ -55,14 +55,14 @@ void HttpLanguageHeaderParser::getAllLanguages(Map* lang_map,
   }  
 }
 
-bool HttpLanguageHeaderParser::isSupportedLanguage(const std::string& lang) {
+bool HttpLanguageHeaderParser::IsSupportedLanguage(const std::string& lang) {
   return lang.compare("en-us") == 0 ||
     lang.compare("zh-cn") == 0 ||
     lang.compare("en") == 0 ||
     lang.compare("zh") == 0 ;
 }
 
-void HttpLanguageHeaderParser::filterLanguages(Map* map) {
+void HttpLanguageHeaderParser::FilterLanguages(Map* map) {
   // can not use std::remove_if on std::map
   // first solution: store the supported elements to another map, 
   //    then copy back(can not use std::copy too).
@@ -71,7 +71,7 @@ void HttpLanguageHeaderParser::filterLanguages(Map* map) {
   // first:
   //Map localMap;
   //for (Map::iterator it = map->begin();it != map->end();it++) {
-  //  if (isSupportedLanguage(it->first)) {
+  //  if (IsSupportedLanguage(it->first)) {
   //    localMap[it->first] = it->second;
   //  }    
   //}
@@ -83,26 +83,26 @@ void HttpLanguageHeaderParser::filterLanguages(Map* map) {
 
   // second:
   for (Map::iterator it = map->begin();it != map->end();) {
-    if (!isSupportedLanguage(it->first))
+    if (!IsSupportedLanguage(it->first))
       map->erase(it++);
     else
       ++it;
   }
 }
 
-std::string HttpLanguageHeaderParser::findPreferLanguage(Map* map) {
+std::string HttpLanguageHeaderParser::FindPreferLanguage(Map* map) {
   double max_value = 0;
-  std::string preferLanguage = "";
+  std::string prefer_language = "";
   for (Map::iterator it = map->begin();it != map->end();it++) {
     if (it->second > max_value) {
-      preferLanguage = it->first;
+      prefer_language = it->first;
       max_value = it->second;
     }    
   }
-  return preferLanguage;
+  return prefer_language;
 }
 
-std::string HttpLanguageHeaderParser::getLanguageRegularName(
+std::string HttpLanguageHeaderParser::GetLanguageRegularName(
     const std::string& language) {
   if (language == "")
     return "en-us";
@@ -116,15 +116,15 @@ std::string HttpLanguageHeaderParser::getLanguageRegularName(
   return language;
 }
 
-std::string HttpLanguageHeaderParser::getPreferLanguage(
+std::string HttpLanguageHeaderParser::GetPreferLanguage(
     const std::string& accept_lang) {
   Map lang_map; 
   std::string language;
 
-  getAllLanguages(&lang_map, accept_lang);
-  filterLanguages(&lang_map);
-  language = findPreferLanguage(&lang_map);
-  language = getLanguageRegularName(language);
+  GetAllLanguages(&lang_map, accept_lang);
+  FilterLanguages(&lang_map);
+  language = FindPreferLanguage(&lang_map);
+  language = GetLanguageRegularName(language);
 
   return language;  
 }

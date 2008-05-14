@@ -55,8 +55,11 @@ class MainService {
   // line parameter is used.
   static void RunSitemapService();
 
-  // open browser for configuration
+  // Open browser for configuration.
   static int StartConfig();
+
+  // Set permission for program files.
+  static int SetPermission();
 
  private:
   // Does not allow creating new instance of this class

@@ -1,6 +1,5 @@
 
 CC = @CC@
-CXX = @CXX@
 RANLIB = @RANLIB@
 AR = ar
 

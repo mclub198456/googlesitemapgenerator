@@ -35,6 +35,22 @@
  *
  * @author chaiying@google.com
  */
+
+var Component = {};
+Component.objects_ = [];
+Component.regist = function(obj) {
+  Component.objects_.push(obj);
+};
+
+Component.releaseAll = function(obj) {
+  while (true) {
+    var html = Component.objects_.pop();
+    if (!html) {
+      break;
+    }
+    html.releaseHtml();
+  }
+};
 //////////// Class SpaceConvertComponent /////////////////
 /**
  * @constructor
@@ -43,6 +59,7 @@
 function SpaceConvertComponent(htmlId) {
   this.html_ = Util.checkElemExistAndReturn(htmlId);
   this.html_.settingComp_ = this;
+  Component.regist(this);
 }
 
 /**
@@ -68,6 +85,12 @@ SpaceConvertComponent.prototype.setValueToHTML_ = function(value) {
   this.html_.innerHTML = value;
 };
 
+SpaceConvertComponent.prototype.releaseHtml = function() {
+  if (this.html_) {
+    this.html_.settingComp_ = null;
+    this.html_ = null;
+  }
+};
 
 //////////// Class SettingComponent /////////////////
 /**
@@ -76,7 +99,8 @@ SpaceConvertComponent.prototype.setValueToHTML_ = function(value) {
  * @param {String?} htmlId  The id of the setting HTML element
  * @param {Object?} opt_flags  Some component type flags
  */
-function SettingComponent(xpath, htmlId, opt_flags) {
+function SettingComponent(xpath, htmlId, ownerSetting, opt_flags,
+                          opt_labelMng) {
   if (arguments[0] == 'inheritsFrom') {
     // called by inheritsFrom function
     return;
@@ -91,7 +115,12 @@ function SettingComponent(xpath, htmlId, opt_flags) {
    * @type {String}
    */
   this.name_ = XmlManager.getAttrNameFromXpath(xpath);
-
+  
+  /**
+   * 
+   */
+  this.ownerSetting_ = ownerSetting;
+  
   /**
    * @type {Boolean}
    */
@@ -137,7 +166,20 @@ function SettingComponent(xpath, htmlId, opt_flags) {
    */
   this.flags_.isSiteSpecial_ = (opt_flags && opt_flags.isSiteSpecial != null) ?
                                opt_flags.isSiteSpecial : false;
+               
+  /**
+   * @type {LabelManager?}
+   */
+  this.labelMng_ = opt_labelMng;
+
+  Component.regist(this);                            
 }
+
+SettingComponent.prototype.releaseHtml = function() {
+  if (this.labelMng_) {
+    this.labelMng_.releaseHtml();
+  }
+};
 
 /**
  * Checks if the setting is site special setting (the setting that has different
@@ -223,6 +265,9 @@ SettingComponent.prototype.load = function(xml) {
   this.isInherited_ = null;
   this.setValueToHTML_(this.getValueFromXML_());
   this.listenerMng_.inform();
+  if (this.labelMng_) {
+    this.labelMng_.switchLabel(this.ownerSetting_.getSiteIdx());
+  }
 };
 
 /**
@@ -241,19 +286,6 @@ SettingComponent.prototype.save = function() {
   }
 };
 
-/**
- * Deal with the change of the listening target component.
- * @param {SettingComponent} comp  The listening target component
- * @param {ListenerManager.listenTypes} type  The type of listening
- */
-SettingComponent.prototype.listeningCallback = function(comp, type) {
-  // Changes this component's access right according to the target component's 
- 	// value.
-  if (type == ListenerManager.listenTypes.ACCESSCONTROL) {
-    this.setAccess(!(comp.getValueFromHTML_()), comp.html_.id);
-  }
-};
-
 //////////// Class SimpleSettingComponent /////////////////
 /**
  * For single text and boolean setting.
@@ -263,24 +295,30 @@ SettingComponent.prototype.listeningCallback = function(comp, type) {
  * @param {SimpleSettingComponent.types} type  The value type of the setting
  * @param {ValidateManager?} opt_validator  The validator of the setting
  * @param {Object?} opt_flags  Some component type flags
+ * @param {Array.<String>?} opt_spans  The span text ids for this setting
  */
-function SimpleSettingComponent(xpath, htmlId, type, opt_validator, opt_flags) {
+function SimpleSettingComponent(xpath, htmlId, ownerSetting, type, opt_validator, 
+                                opt_flags, opt_labelMng) {
   if (arguments[0] == 'inheritsFrom') {
     // called by inheritsFrom function
     return;
   }
 
   SimpleSettingComponent.prototype.parent.constructor.call(
-      this, xpath, htmlId, opt_flags);
+      this, xpath, htmlId, ownerSetting, opt_flags, opt_labelMng);
   /**
    * @type {SimpleSettingComponent.types}
    */
-  this.type_ = type;  
+  this.type_ = type;
   
   /**
    * @type {ValidateManager?}
    */
   this.validator_ = opt_validator;
+  
+  if ('password' == htmlId) {
+    this.access_.set(true, 'always');
+  }
 }
 SimpleSettingComponent.inheritsFrom(SettingComponent);
 
@@ -400,7 +438,7 @@ SimpleSettingComponent.prototype.setValueToXML_ = function(value) {
 SimpleSettingComponent.prototype.validate = function() {
   if (!this.validator_) {
     return true;
-  }    
+  }
   if (!this.initHtml_()) {
     return true; // return true is acceptable since the value will not be
                  // changed to invalid value
@@ -433,6 +471,16 @@ SimpleSettingComponent.prototype.initHtml_ = function() {
 
     // Init the HTML element
     if (needInit) {
+      // assume the components that share the same html element have the same
+      // validator
+      if (this.html_.tip && this.validator_) {
+        // add range info to tips
+        var range = this.validator_.range();
+        if (range) {
+          this.html_.tip += ' Range=' + range;
+        }
+      }
+      
       // add onchange function for inputs
       Util.event.add(this.html_, 'change', function(e, target){
         if (!target.settingComp_.validate()) {
@@ -449,22 +497,6 @@ SimpleSettingComponent.prototype.initHtml_ = function() {
             Util.event.add(this.html_, 'click', function(e, target){
               if (target.checked && !confirm(ROBOTS_INCLUDE_CONFIRM_MSG)) {
                 target.checked = false;
-              }
-            });
-            break;
-          case 'siteEnabled':
-            Util.event.add(this.html_, 'click', function(e, target){
-              if (SiteSettings.getInstance().site().isWebServerFilterEnabled())
-                  if (!confirm(NEED_RESTART_WEBSERVER_CONFIRM_MSG)) {
-                    target.checked = !target.checked;
-                  }
-            });
-            break;
-          case 'webserverFilterEnabled':
-            Util.event.add(this.html_, 'click', function(e, target){
-              if (SiteSettings.getInstance().site().isEnabled() &&
-                  !confirm(NEED_RESTART_WEBSERVER_CONFIRM_MSG)) {
-                target.checked = !target.checked;
               }
             });
             break;
@@ -487,10 +519,16 @@ SimpleSettingComponent.prototype.initHtml_ = function() {
         }
       }
     }
-
   }
-
   return true;
+};
+
+SimpleSettingComponent.prototype.releaseHtml = function() {
+  SimpleSettingComponent.prototype.parent.releaseHtml();
+  if (this.html_) {
+    this.html_.settingComp_ = null;
+    this.html_ = null;
+  }
 };
 
 /**
@@ -512,7 +550,7 @@ SimpleSettingComponent.prototype.setValueToHTML_ = function(value) {
     case SimpleSettingComponent.types.SPACESIZE:
       this.html_.value = value;
       break;
-    default:debugger;
+    default:
       Util.console.error('Invalid setting component type');
   }
 
@@ -537,7 +575,7 @@ SimpleSettingComponent.prototype.getValueFromHTML_ = function() {
     case SimpleSettingComponent.types.DURATION:
     case SimpleSettingComponent.types.SPACESIZE:
       return this.html_.value;
-    default:debugger;
+    default:
       Util.console.error('Invalid setting component type');
       return null;
   }
@@ -557,19 +595,173 @@ SimpleSettingComponent.prototype.setAccess = function(readonly, reason) {
   AccessManager.setAccessToElem(this.access_, this.html_);
 };
 
+/**
+ * Deal with the change of the listening target component.
+ * @param {SettingComponent} comp  The listening target component
+ * @param {ListenerManager.listenTypes} type  The type of listening
+ */
+SimpleSettingComponent.prototype.listeningCallback = function(comp, type) {
+  // Changes this component's access right according to the target component's 
+ 	// value.
+  if (type == ListenerManager.listenTypes.ACCESSCONTROL) {
+    this.setAccess(!(comp.getValueFromHTML_()), comp.htmlId_);
+    if (this.labelMng_) {
+      this.labelMng_.setAccess(this.access_);
+    }
+  }
+};
+
+//////////// Class RadioSettingComponent /////////////////
+/**
+ * For the customize checkbox setting on each tab,
+ * inherit from SimpleSettingComponent.
+ * @param {String?} xpath  The xpath of the setting XML element/attribute
+ * @param {String?} htmlId  The id of the setting HTML element
+ */
+function RadioSettingComponent(xpath, htmlId, ownerSetting, opt_labelMng) {
+  this.parent.constructor.call(this, xpath, htmlId, ownerSetting,
+                               SimpleSettingComponent.types.BOOLEAN, null, null,
+                               opt_labelMng);
+  this.radios_ = [];
+}
+RadioSettingComponent.inheritsFrom(SimpleSettingComponent);
+
+/**
+ * focus to this setting.
+ */
+RadioSettingComponent.prototype.focus = function() {
+  if (!this.initHtml_()) {
+    return;
+  }
+  try {
+    this.radios_[0].focus();
+  } catch(e) {
+  }
+};
+
+/**
+ * Finds the HTML element and bind it to the setting component.
+ * One HTML element may shared by multiple setting components.
+ * @private
+ */
+RadioSettingComponent.prototype.initHtml_ = function() {
+  if (!this.htmlId_)
+    return false;
+
+  if (this.radios_.length == 0) {
+    this.radios_[0] = Util.checkElemExistAndReturn(this.htmlId_ + '_true');
+    this.radios_[1] = Util.checkElemExistAndReturn(this.htmlId_ + '_false');
+    this.radios_[0].brother = this.radios_[1];
+    this.radios_[1].brother = this.radios_[0];
+
+    // Init the HTML element if it has not been inited by other settting
+    // component.
+    var needInit = this.radios_[0].settingComp_ == null;
+
+    // set the owner
+    this.radios_[0].settingComp_ = this;
+    this.radios_[1].settingComp_ = this;
+
+    // Init the HTML element
+    if (needInit) {
+      // add onchange function for inputs
+      var that = this;
+      var fn = function(e, target){
+        switch (that.htmlId_) {
+          case 'siteEnabled':
+            if (SiteSettings.getInstance().site().isWebServerFilterEnabled() &&
+                !confirm(NEED_RESTART_WEBSERVER_CONFIRM_MSG)) {
+              target.checked = false;
+              target.brother.checked = true;
+              return;
+            }
+            break;
+          case 'webserverFilterEnabled':
+            if (SiteSettings.getInstance().site().isEnabled() &&
+                !confirm(NEED_RESTART_WEBSERVER_CONFIRM_MSG)) {
+              target.checked = false;
+              target.brother.checked = true;
+              return;
+            }
+            break;
+        }
+        
+        target.settingComp_.listenerMng_.inform();
+      };
+      
+      Util.event.add(this.radios_[0], 'click', fn);
+      Util.event.add(this.radios_[1], 'click', fn);
+    }
+  }
+
+  return true;
+};
+
+RadioSettingComponent.prototype.releaseHtml = function() {
+  RadioSettingComponent.prototype.parent.releaseHtml();
+  while (true) {
+    var html = this.radios_.pop();
+    if (!html) {
+      break;
+    }
+    html.settingComp_ = null;
+    html.brother = null;
+  }
+};
+
+/**
+ * Sets setting value to HTML.
+ * @param {Boolean|String} value  The setting value
+ * @private
+ */
+RadioSettingComponent.prototype.setValueToHTML_ = function(value) {
+  if (!this.initHtml_()) {
+    return;
+  }
+
+  this.radios_[0].checked = value;
+  this.radios_[1].checked = !value;
+};
+
+/**
+ * Gets setting value from HTML.
+ * @return {Boolean|String} The setting value
+ * @private
+ */
+RadioSettingComponent.prototype.getValueFromHTML_ = function() {
+  if (!this.initHtml_()) {
+    return null;
+  }
+
+  return this.radios_[0].checked;
+};
+
+/**
+ * Sets access right to the setting, since there are more than one reason to set
+ * the access right, we must record the reason.
+ * @param {Boolean} readonly  If the setting is readonly
+ * @param {String} reason  The reason to set the access right
+ */
+RadioSettingComponent.prototype.setAccess = function(readonly, reason) {
+  if (!this.initHtml_()) {
+    return;
+  }
+  this.access_.set(readonly, reason);
+  AccessManager.setAccessToElem(this.access_, this.radios_[0]);
+  AccessManager.setAccessToElem(this.access_, this.radios_[1]);
+};
 
 //////////// Class CustomizeSettingComponent /////////////////
 /**
  * For the customize checkbox setting on each tab,
  * inherit from SimpleSettingComponent.
  * @param {String?} htmlId  The id of the setting HTML element
- * @param {SiteSetting|SitemapSetting} owner  The setting which owns this 
+ * @param {SiteSetting|SitemapSetting} ownerSetting  The setting which owns this 
  * component
  */
-function CustomizeSettingComponent(htmlId, owner) {
-  this.parent.constructor.call(this, 'customizeComponent', htmlId,
+function CustomizeSettingComponent(htmlId, ownerSetting) {
+  this.parent.constructor.call(this, 'customizeComponent', htmlId, ownerSetting,
                                SimpleSettingComponent.types.BOOLEAN);
-  this.owner_ = owner;
 }
 CustomizeSettingComponent.inheritsFrom(SimpleSettingComponent);
 
@@ -591,12 +783,12 @@ CustomizeSettingComponent.prototype.initHtml_ = function() {
           that.html_.checked = false;
         } else {
           // uncustomize tab
-          that.owner_.setInherit(true);
-          PageManager.getInstance().adjustPageHeight();
+          that.ownerSetting_.setInherit(true);
+          TabManager.getInstance().tabHeightChanged(); 
         }
       } else {
         // customize tab
-        that.owner_.setInherit(false);
+        that.ownerSetting_.setInherit(false);
       }
     });
   }
@@ -613,7 +805,7 @@ CustomizeSettingComponent.prototype.initHtml_ = function() {
  */
 CustomizeSettingComponent.prototype.loadValue = function(value) {
   this.setValueToHTML_(value);
-  this.owner_.setInherit(value);
+  this.ownerSetting_.setInherit(value);
 };
 
 /**
@@ -690,8 +882,8 @@ ListTplParamSet.prototype.attributes = function() {
  * @param {String} xpath  The xpath of the setting XML element/attribute
  * @param {String} htmlId  The id of the setting HTML element
  */
-function ListSettingComponent(xpath, htmlId) {
-  this.parent.constructor.call(this, xpath, htmlId, null);
+function ListSettingComponent(xpath, htmlId, ownerSetting) {
+  this.parent.constructor.call(this, xpath, htmlId, ownerSetting);
   /**
    * @type {ListTplParamSet}
    */
@@ -748,7 +940,8 @@ ListSettingComponent.prototype.setValueToXML_ = function(value) {
   // set always after the get, so if the this.listNode_ is null, it means
   // no node in XML.
   if (this.listNode_ == null) {
-    this.listNode_ = XmlManager.createElement(this.listTplParamSet_.container());
+    this.listNode_ = 
+        XmlManager.createElement(this.listTplParamSet_.container());
 
     // add separator too
     var separator = this.xml_.generateSeparator(XML_FILE_INDENT);
@@ -766,7 +959,7 @@ ListSettingComponent.prototype.setValueToXML_ = function(value) {
     var listItem =
         XmlManager.createElement(this.listTplParamSet_.line());
 
-    Util.array.applyToMultiple(this.listTplParamSet_.attributes(), listValue[i], 
+    Util.array.applyToMultiple(this.listTplParamSet_.attributes(), listValue[i],
         function(attr, value) {
           listItem.setAttribute(attr, value);
         });
@@ -869,6 +1062,12 @@ ListSettingComponent.prototype.initHtml_ = function() {
   return true;
 };
 
+ListSettingComponent.prototype.releaseHtml = function() {
+  ListSettingComponent.prototype.parent.releaseHtml();
+  if (this.html_) {
+    this.html_.releaseHtml();
+  }
+};
 /**
  * Sets setting value to HTML.
  * @param {Array.<Array.<String>>} value  The setting value of this list
@@ -1074,9 +1273,9 @@ AccessManager.setAccessToElem = function(access, elem) {
 //////////////////////////////////////////////////////////////////////////
 /**
  * @constructor
- * @param {String|RegExp|null} pattern
- * @param {String?} opt_range
- * @param {Boolean?} opt_required
+ * @param {String|RegExp|null} pattern  The pattern of the validated field
+ * @param {String?} opt_range  The range of the number validated field
+ * @param {Boolean?} opt_required  The validated field should not be empty
  */
 function ValidateManager(pattern, opt_range, opt_required) {
   this.pattern_ = pattern;
@@ -1095,6 +1294,14 @@ function ValidateManager(pattern, opt_range, opt_required) {
 }
 
 /**
+ * Gets the range value.
+ * @return {String} The range
+ */
+ValidateManager.prototype.range = function() {
+  return this.range_;
+};
+
+/**
  * Default validators.
  * @enum {ValidateManager}
  */
@@ -1109,12 +1316,16 @@ ValidateManager.validators = {
 /**
  * Checks if the 'INPUT-text' element has valid value.
  * @param {Element} elem  The 'INPUT-text' element
+ * @param {Boolean} opt_highlight  If the invalid field should be hightlight
  * @return {Boolean} If the 'INPUT-text' element has valid value
  */
-ValidateManager.prototype.check = function(elem) {
+ValidateManager.prototype.check = function(elem, opt_highlight) {
+  var highlight = opt_highlight == null ? true : opt_highlight;
   // do validation
   var isValid = this.validate_(elem.value);
-  ValidateManager.setElementValidation_(elem, isValid);
+  if (highlight) {
+    ValidateManager.setElementValidation_(elem, isValid);
+  }
   return isValid;
 };
 
@@ -1155,7 +1366,7 @@ ValidateManager.prototype.validate_ = function(value) {
  */
 ValidateManager.matchPredefinedPattern_ = function(pattern, value) {
   if (pattern == 'password') { // hardcode 'password' pattern
-    return value.length >= 6 && value.length <= 50;
+    return value.length >= 5;
   }
   
   if (typeof pattern != 'string') { // can't be a predefined pattern name
@@ -1219,6 +1430,7 @@ ValidateManager.isInRange_ = function(range, val) {
  * Sets the element's status (the background-color) for validation.
  * @param {Element} elem  The element to be set
  * @param {Boolean} valid  The validation result
+ * @private
  */
 ValidateManager.setElementValidation_ = function(elem, valid) {
   if (valid)
@@ -1273,4 +1485,36 @@ ValidateManager.patterns_ = {
   /^(?:[\w- \.\/\?\%\&\=\*]*\[[\w- \.\/\?\%\&\=\*]*\][\w- \.\/\?\%\&\=\*]*)+$/,
   
   urlreplaceInput: /^[\w- \.\/\?\%\&\=]*$/
+};
+
+/////////////////////////////////////////////////////////////////////
+function LabelManager(htmlIds, opt_labelForGlobal, opt_labelForSite) {
+  this.htmlLabels_ = Util.array.apply(htmlIds, function(id) {    
+    return Util.checkElemExistAndReturn(id);
+  });
+  this.globalLabelText_ = opt_labelForGlobal != null ?
+      SettingEditorLanguage.texts[opt_labelForGlobal] : null;
+  this.siteLabelText_ = opt_labelForSite != null ? 
+      SettingEditorLanguage.texts[opt_labelForSite] : null;
+}
+
+LabelManager.prototype.switchLabel = function(siteIdx) {
+  if (this.globalLabelText_ == null) {
+    return;
+  }
+  if (siteIdx == GLOBAL_SETTING_ID) {
+    this.htmlLabels_[0].innerHTML = this.globalLabelText_;
+  } else {
+    this.htmlLabels_[0].innerHTML = this.siteLabelText_;    
+  }
+};
+
+LabelManager.prototype.setAccess = function(access) {
+  Util.array.apply(this.htmlLabels_, function(label) {
+    AccessManager.setAccessToElem(access, label);
+  });
+};
+
+LabelManager.prototype.releaseHtml = function() {
+  while (this.htmlLabels_.pop());
 };

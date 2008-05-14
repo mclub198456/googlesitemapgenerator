@@ -1,8 +1,22 @@
+// Copyright 2008 Google Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 #include "sitemapservice/httpproto.h"
 #include <sstream>
 #include "common/url.h"
 #include "common/util.h"
+#include "common/port.h"
 
 const std::string HttpProto::kSessionIdParamName = "sessionId";
 const std::string HttpProto::kUsernameParamName = "username";
@@ -28,7 +42,11 @@ void HttpProto::ResetResponse() {
 }
 
 bool HttpProto::ParseFirstLine(const ActiveSocket& s) {
-  std::string line = s.ReceiveLine();
+  // Read the first line of request.
+  std::string line;
+  if (s.ReceiveLine(&line) == false) {
+    return false;
+  }
 
   if (line.empty()) {
     return false;
@@ -80,7 +98,10 @@ bool HttpProto::ProcessRequest(const ActiveSocket& s) {
   static const std::string if_none_match     = "If-None-Match: "    ;
 
   while(true) {
-    std::string line=s.ReceiveLine();
+    std::string line;
+    if (s.ReceiveLine(&line) == false) {
+      return false;
+    }
     if (line.empty()) 
       break;
 
@@ -110,9 +131,6 @@ bool HttpProto::ProcessRequest(const ActiveSocket& s) {
       referer_ = line.substr(referer.size());
       // TODO: if referrer is relative path, we should convert it to
       // absolute path.
-
-    } else if (line.compare(0, x_forwarded_for.size(), x_forwarded_for) == 0) {
-      remote_ip_ = line.substr(x_forwarded_for.size());
 
     } else if (line.compare(0, cookie.size(), cookie) == 0) {
       cookie_ = line.substr(cookie.size());
@@ -145,9 +163,9 @@ bool HttpProto::ProcessRequest(const ActiveSocket& s) {
     }
   }
 
-  /* get remote IP */
-  if (remote_ip_.length() == 0)
-    remote_ip_ = s.GetRemoteIp();
+  // Get remote IP.
+  // If proxy server was used by client, this value is the IP of proxy server.
+  remote_ip_ = s.GetRemoteIp();
 
   /* get path and url params */
   std::string::size_type pos = url_.find("?");
@@ -239,9 +257,9 @@ void HttpProto::UnescapeWhitespace(std::string* val) {
   }
 }
 
-void HttpProto::ParseParams(std::string paramStr) {
+void HttpProto::ParseParams(std::string param_string) {
   Util::StringVector name_value_pairs;
-  Util::StrSplit(paramStr, '&', &name_value_pairs);
+  Util::StrSplit(param_string, '&', &name_value_pairs);
   for (size_t i = 0; i < name_value_pairs.size(); i++) {
     Util::StringVector name_value;
     if (Util::StrSplit(name_value_pairs[i], '=', &name_value) != 2) {
@@ -261,10 +279,10 @@ void HttpProto::ParseParams(std::string paramStr) {
   }
 }
 
-std::string HttpProto::GetParam(const std::string& paramName) {
+std::string HttpProto::GetParam(const std::string& param_name) {
   // get param from URL, Referer and POST
   std::map<std::string, std::string>::iterator pfind = 
-      params_.find(paramName);
+      params_.find(param_name);
   if (pfind != params_.end()) {
     return pfind->second;
   }
@@ -275,7 +293,7 @@ std::string HttpProto::GetParam(const std::string& paramName) {
   std::string cookie = FindSubString(cookie_, kCookieName, kCookieSplit);
   if (!cookie.empty()) {
     // get session id
-    if (paramName == HttpProto::kSessionIdParamName) {
+    if (param_name == HttpProto::kSessionIdParamName) {
       const std::string kSessionIdCookieName = "sid:";
       const std::string kCookieValueSplit = "&";
       std::string sessionId = 
@@ -304,23 +322,10 @@ std::string HttpProto::FindSubString(const std::string& str,
   return "";
 }
 
-bool HttpProto::CheckCaching(const time_t& lastWrite) {
-  char buff[128];
-
-  // convert 'time_t' to struct tm (GMT)
-  tm* gmt_p = gmtime(&lastWrite);
-
-  // convert struct tm to HTTP-date string
-  size_t res = strftime(buff, sizeof(buff), 
-    "%a, %d %b %Y %H:%M:%S GMT", gmt_p);
-  if (res == 0) {
-    Util::Log(EVENT_ERROR, "fail to call strftime");
+bool HttpProto::CheckCaching(const time_t& last_write) {
+  if (!SetLastModifiedResponse(last_write)) {
     return false;
   }
-
-  // add file last write time to 'last_modified' header
-  answer_last_modified_.assign(buff);
-  answer_cache_control_ = "max-age=86400"; //one-day  
 
   // validate the cache
   // if_modified_since_ from remote IE7 will have 'length=xxx' append str, just
@@ -332,4 +337,34 @@ bool HttpProto::CheckCaching(const time_t& lastWrite) {
   }
 
   return false;
+}
+
+bool HttpProto::SetLastModifiedResponse(const time_t& last_write, 
+                                        const int expired) {
+  if (!ConvertLastModifiedTime(last_write, &answer_last_modified_)) {
+    return false;
+  }
+  char buff[16];
+  answer_cache_control_.assign("max-age=").append(itoa(expired, buff));  
+
+  return true;
+}
+
+bool HttpProto::ConvertLastModifiedTime(const time_t& ttime, 
+                                        std::string* stime) {
+  char buff[128];
+
+  // convert 'time_t' to struct tm (GMT)
+  tm* gmt_p = gmtime(&ttime);
+
+  // convert struct tm to HTTP-date string
+  size_t res = strftime(buff, sizeof(buff), 
+    "%a, %d %b %Y %H:%M:%S GMT", gmt_p);
+  if (res == 0) {
+    Util::Log(EVENT_ERROR, "fail to call strftime");
+    return false;
+  }
+
+  stime->assign(buff);
+  return true;
 }

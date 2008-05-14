@@ -12,8 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef WEBSITE_TOOLS_SITEMAP_SITEMAPSERVICE_SECURITYMANAGER_H__
-#define WEBSITE_TOOLS_SITEMAP_SITEMAPSERVICE_SECURITYMANAGER_H__
+// This file defines a class to deal with the issues related to security.
+// It checks the user session id and IP address in the http request. It also
+// verifies the user login password, checks the static pages' access path, and
+// provides strong random-generated session id.
+
+#ifndef SITEMAPSERVICE_SECURITYMANAGER_H__
+#define SITEMAPSERVICE_SECURITYMANAGER_H__
 
 #include <string>
 
@@ -25,12 +30,12 @@ class SecurityManager {
 public:
   // Check if the access is valid.
   static bool SecurityCheck(HttpProto *r, SessionManager* sess, 
-    bool allowRemote);
+    bool allow_remote);
 
   // Functions for IP
 
   // Checks if the IP for the request is allowed.
-  static bool CheckIp(HttpProto *r, bool allowRemote);
+  static bool CheckIp(HttpProto *r, bool allow_remote);
 
   // Functions for password
 
@@ -42,10 +47,10 @@ public:
   static bool CheckPath(HttpProto* r);
 
   // Returns random-generated session id (weak version)
-  static std::string GenerateSimpleRandomId(SettingManager* setting);
+  static std::string GenerateSimpleRandomId(const std::string& seed);
 
   // Returns random-generated session id (strong version)
-  static std::string GenerateRandomId(SettingManager* setting);
+  static std::string GenerateRandomId(const std::string& seed);
 
 };
-#endif
+#endif // SITEMAPSERVICE_SECURITYMANAGER_H__

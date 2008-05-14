@@ -35,7 +35,6 @@
 #include "sitemapservice/httplanguageheaderparser.h"
 #include "sitemapservice/runtimeinfomanager.h"
 #include "sitemapservice/httpproto.h"
-#include "sitemapservice/webserver.h"
 #include "sitemapservice/settingmanager.h"
 #include "sitemapservice/sessionmanager.h"
 #include "sitemapservice/httpmanager.h"
@@ -53,7 +52,7 @@ PageController* PageController::instance_ = NULL;
 const std::string PageController::kXmlGetAction = "/getxml";
 const std::string PageController::kRuntimeInfoAction = "/getruntimeinfo";
 const std::string PageController::kXmlSetAction = "/postxml";
-const std::string PageController::kSaveAndRestartAction = "/saverestart";
+const std::string PageController::kRestartAction = "/restart";
 const std::string PageController::kLogoutAction = "/logout";
 const std::string PageController::kLoginAction = "/login";
 const std::string PageController::kChangePasswordAction = "/chpswd";
@@ -74,29 +73,29 @@ const std::string PageController::kUnittestPostAndGetContentPath =
 
 
 /////////////////////// static class function /////////////////////////////
-PageController* PageController::getInstance() { 
+PageController* PageController::GetInstance() { 
   if (instance_ == NULL) 
     instance_ = new PageController();
   return instance_; 
 }
 
 void PageController::PageControl(HttpProto *r) {
-  PageController* controller = PageController::getInstance();
+  PageController* controller = PageController::GetInstance();
 
   if (r->path_ == kMainAction || r->path_ == "/") {
     // access main page
-    controller->AccessMainPage(r);
+    controller->AccessMainPageHandler(r);
 
   } else if (r->path_ == kLoginAction) {  
     // login
-    controller->Login(r);
+    controller->LoginHandler(r);
 
   } else if (r->path_ == kLogoutAction) {
     // logout, check authorization first
     if (SecurityManager::SecurityCheck(
-      r, controller->sessionMng_, 
-      controller->settingMng_->AllowRemoteAccess())) { 
-        controller->Logout(r);
+      r, controller->session_manager_, 
+      controller->setting_manager_->AllowRemoteAccess())) { 
+        controller->LogoutHandler(r);
     }
 
   } else if (r->path_ == kUnittestPostAction ||
@@ -104,43 +103,41 @@ void PageController::PageControl(HttpProto *r) {
     r->path_ == kUnittestCrashAction ||
     r->path_ == kUnittestLongtimeAction) {
       // access unittest files
-      controller->UnittestProcess(r);  
+      controller->UnittestProcessHandler(r);  
 
-  } else if (r->path_ == kSaveAndRestartAction) {
+  } else if (r->path_ == kRestartAction) {
     // save and restart server, check authorization first
-    if (SecurityManager::SecurityCheck(r, controller->sessionMng_,
-      controller->settingMng_->AllowRemoteAccess())) { 
-        if (controller->SaveSetting(r)) {
-          controller->ServeRestartAction(r);
-        }
+    if (SecurityManager::SecurityCheck(r, controller->session_manager_,
+        controller->setting_manager_->AllowRemoteAccess())) { 
+      controller->ServeRestartHandler(r);
     }
 
   } else if (r->path_ == kChangePasswordAction) {
     // save and restart server, check authorization first
-    if (SecurityManager::SecurityCheck(r, controller->sessionMng_,
-      controller->settingMng_->AllowRemoteAccess())) {
-        controller->ChangePassword(r);
+    if (SecurityManager::SecurityCheck(r, controller->session_manager_,
+      controller->setting_manager_->AllowRemoteAccess())) {
+        controller->ChangePasswordHandler(r);
     }
 
   } else if (r->path_ == kXmlGetAction) {
     // get sitesetting xml file, check authorization first
-    if (SecurityManager::SecurityCheck(r, controller->sessionMng_,
-      controller->settingMng_->AllowRemoteAccess())) {
-        controller->AccessXmlFile(r);
+    if (SecurityManager::SecurityCheck(r, controller->session_manager_,
+      controller->setting_manager_->AllowRemoteAccess())) {
+        controller->AccessXmlFileHandler(r);
     }    
 
   } else if (r->path_ == kXmlSetAction) {
     // post sitesetting xml file, check authorization first
-    if (SecurityManager::SecurityCheck(r, controller->sessionMng_,
-      controller->settingMng_->AllowRemoteAccess())) {
-        controller->SaveSetting(r);
+    if (SecurityManager::SecurityCheck(r, controller->session_manager_,
+      controller->setting_manager_->AllowRemoteAccess())) {
+        controller->SaveSettingHandler(r);
     }    
 
   } else if (r->path_ == kRuntimeInfoAction) {
     // get sitesetting xml file, check authorization first
-    if (SecurityManager::SecurityCheck(r, controller->sessionMng_,
-      controller->settingMng_->AllowRemoteAccess())) {
-        controller->GetRuntimeInfo(r);
+    if (SecurityManager::SecurityCheck(r, controller->session_manager_,
+      controller->setting_manager_->AllowRemoteAccess())) {
+        controller->AccessRuntimeInfoHandler(r);
     }    
 
   } else if (Util::Match(r->path_, -1, "all.js")) {
@@ -154,17 +151,17 @@ void PageController::PageControl(HttpProto *r) {
 /////////////////////// public class methods /////////////////////////////
 // Constructor
 PageController::PageController() {
-  sessionMng_ = new SessionManager();
-  settingMng_ = new SettingManager();
+  session_manager_ = new SessionManager();
+  setting_manager_ = new SettingManager();
 }
 
-void PageController::setUpdateListener(SettingUpdateListener* listener) {
-  settingMng_->SetUpdateListener(listener);
+void PageController::SetUpdatelistener(SettingUpdateListener* listener) {
+  setting_manager_->SetUpdateListener(listener);
 }
 
 
 /////////////////////// private class methods /////////////////////////////
-void PageController::GetRuntimeInfo(HttpProto *r) {
+void PageController::AccessRuntimeInfoHandler(HttpProto *r) {
   DLog(EVENT_IMPORTANT, "Get request (RUNTIME INFO)");
 
   std::string xmlstring;
@@ -182,13 +179,13 @@ void PageController::GetRuntimeInfo(HttpProto *r) {
   DLog(EVENT_IMPORTANT, "Send response: size %d", r->answer_.length());
 }
 
-bool PageController::ChangePassword(HttpProto* r) {
+bool PageController::ChangePasswordHandler(HttpProto* r) {
   std::string password = r->GetParam(HttpManager::kOldPasswordParamName);
   std::string new_password = r->GetParam(HttpManager::kNewPasswordParamName);
 
   DLog(EVENT_IMPORTANT, "Get request (PASSWORD CHANGE)");
 
-  int result = settingMng_->ChangePassword(password, new_password);
+  int result = setting_manager_->ChangePassword(password, new_password);
 
   if (result == 0) {
     r->answer_ = "Success";
@@ -204,45 +201,129 @@ bool PageController::ChangePassword(HttpProto* r) {
   return result == 0;  
 }
 
-void PageController::AccessXmlFile(HttpProto *r) {
+void PageController::AccessXmlFileHandler(HttpProto *r) {
   DLog(EVENT_IMPORTANT, "Get request (XML GET)");
 
   //FileUtil::LoadFile(kXmlPath.c_str(), &xmlstring); 
-  if (settingMng_->GetXmlString(&(r->answer_))) {
+  do {
+    if (!setting_manager_->GetXmlString(&(r->answer_))) {
+      r->answer_status_ = "500 Internal Server Error"; 
+      r->answer_ = "!!failed to load the settings";
+      break;
+    }
+
     r->answer_content_type_ = "text/xml";
-  } else { 
-    r->answer_status_ = "500 Internal Server Error"; 
-    r->answer_ = "!!failed to load the settings";
-  }
+
+    time_t ts;
+    if(!setting_manager_->GetLastModifiedTime(&ts)) {
+      // if one file access time cannot get, all the files should be sent
+      r->answer_status_ = "500 Internal Server Error"; 
+      r->answer_ = "!!failed to get timestamp for XML";
+      break;
+    }
+
+    if (!r->SetLastModifiedResponse(ts, 0)) {
+      r->answer_status_ = "500 Internal Server Error"; 
+      r->answer_ = "!!failed to set timestamp for XML";
+      break;
+    }
+    DLog(EVENT_NORMAL, "Timestamp to client [%s]", 
+         r->answer_last_modified_.c_str());
+  } while (false);  
 
   DLog(EVENT_IMPORTANT, "Send response: size %d", r->answer_.length());
 }
 
-bool PageController::SaveSetting(HttpProto *r) {
+bool PageController::SaveSettingHandler(HttpProto *r) {
   std::string xmlstring = r->GetParam(HttpManager::kXmlContentParamName);
-
-  DLog(EVENT_IMPORTANT, "Get request (XML SET): size %d", 
-    xmlstring.length());
-
-  bool result;
-  result = settingMng_->SaveXml(xmlstring);
-
-  if (result) {
-    r->answer_ = "Success";
-  } else {
-    Util::Log(EVENT_ERROR, "!!Failed to save xml setting.");
+  if (xmlstring == "") {
+    Util::Log(EVENT_ERROR, "no XML content");
     r->answer_status_ = "500 Internal Server Error"; 
     r->answer_ = HttpManager::kSaveFailAnswer;
+    return false;
   }
 
+  DLog(EVENT_IMPORTANT, "Get request (XML SET): size %d", xmlstring.length());
+
+  bool do_save = true;
+  bool error = false;
+  // Check if the timestamp is older than the current file written time.
+  // If the 'force' flag is set, ignore the checking.
+  if (r->GetParam(HttpManager::kForceSaveParamName) == "") {
+    do {
+      std::string ts_from_client = 
+          r->GetParam(HttpManager::kXmlTimestampParamName);
+      if (ts_from_client == "") {
+        // if no timestamp, save it anyway
+        break;
+      }
+      DLog(EVENT_NORMAL, "Timestamp from client [%s]", ts_from_client.c_str());
+
+      // get the configuration file's timestamp
+      time_t ts;
+      if (!setting_manager_->GetLastModifiedTime((&ts))) {
+        // if failed to get the timestamp of the file, report error
+        r->answer_status_ = "500 Internal Server Error"; 
+        r->answer_ = HttpManager::kSaveFailAnswer;
+        error = true;
+        break;
+      }
+
+      std::string latest;
+      if (!r->ConvertLastModifiedTime(ts, &latest)) {
+        Util::Log(EVENT_ERROR, "!!Failed to convert file timestamp.");
+        r->answer_status_ = "500 Internal Server Error"; 
+        r->answer_ = HttpManager::kSaveFailAnswer;
+        error = true;
+        break;
+      }
+      DLog(EVENT_NORMAL, "Timestamp for XML now [%s]", latest.c_str());
+
+      if (ts_from_client != latest) {
+        // not the same timestamp, warning the client
+        r->answer_ = HttpManager::kXmlWarnAnswer;
+        do_save = false;
+        break;
+      } 
+    } while (false);    
+  }
+
+  if (!error && do_save) {
+    do {
+      // have the same timestamp, save the settings    
+      if (!setting_manager_->SaveXml(xmlstring)) {
+        Util::Log(EVENT_ERROR, "!!Failed to save xml setting.");
+        r->answer_status_ = "500 Internal Server Error"; 
+        r->answer_ = HttpManager::kSaveFailAnswer;
+        error = true;
+        break;
+      }
+
+      time_t ts;
+      if(!setting_manager_->GetLastModifiedTime(&ts)) {
+        // if one file access time cannot get, all the files should be sent
+        r->answer_status_ = "500 Internal Server Error"; 
+        r->answer_ = "Get new timestamp failed";
+        error = true;
+        break;
+      }
+
+      if (!r->ConvertLastModifiedTime(ts, &r->answer_)) {
+        Util::Log(EVENT_ERROR, "!!Failed to convert file timestamp.");
+        r->answer_status_ = "500 Internal Server Error"; 
+        r->answer_ = "Get new timestamp failed";
+        error = true;
+        break;
+      }
+      DLog(EVENT_NORMAL, "Timestamp after saving [%s]", r->answer_.c_str());
+    } while (false);    
+  }
+  
   DLog(EVENT_IMPORTANT, "Send response (XML SET): %s", r->answer_.c_str());
-  return result;
+  return !error;
 };
 
-
-
-
-void PageController::ServeRestartAction(HttpProto* r) {
+void PageController::ServeRestartHandler(HttpProto* r) {
 
   DLog(EVENT_IMPORTANT, "Get request (server restart)");
   r->answer_ = "Success";
@@ -251,17 +332,19 @@ void PageController::ServeRestartAction(HttpProto* r) {
     Util::Log(EVENT_ERROR, "Fail to restart server.");
     r->answer_status_ = "500 Internal Server Error"; 
     r->answer_ = HttpManager::kRestartFailAnswer;
-  }  
+  } else if (setting_manager_->CheckRestart()) {
+    r->answer_ = HttpManager::kRestartWarnAnswer;    
+  }
 
   DLog(EVENT_IMPORTANT, 
     "Send response (server restart): %s", r->answer_.c_str());
 
 }
 
-void PageController::AccessMainPage(HttpProto* r) {
+void PageController::AccessMainPageHandler(HttpProto* r) {
   DLog(EVENT_IMPORTANT, "Get request (MAIN)");
 
-  if (!SecurityManager::CheckIp(r, settingMng_->AllowRemoteAccess())){
+  if (!SecurityManager::CheckIp(r, setting_manager_->AllowRemoteAccess())){
     return;
   }
 
@@ -269,10 +352,9 @@ void PageController::AccessMainPage(HttpProto* r) {
   bool need_login;
   std::string session_id_encrypt;
   session_id_encrypt = r->GetParam(HttpProto::kSessionIdParamName);
-  if (session_id_encrypt.empty() || !sessionMng_->CheckSessionLogin(r)) {
+  if (session_id_encrypt.empty() || !session_manager_->CheckSessionLogin(r)) {
     // if it's a new session request, check if the session connections are full
-    sessionMng_->RemoveExpireSession();
-    if (sessionMng_->isFull()) {
+    if (session_manager_->IsFull()) {
       r->answer_ = "Too many sessions!!";
       return;
     }
@@ -301,7 +383,7 @@ void PageController::AccessMainPage(HttpProto* r) {
 }
 
 
-bool PageController::UnittestProcess(HttpProto* r) {
+bool PageController::UnittestProcessHandler(HttpProto* r) {
   // For security reason, by pass the function when release.
 #ifndef _DEBUG
   r->answer_ = "Page not found";
@@ -374,20 +456,25 @@ bool PageController::UnittestProcess(HttpProto* r) {
 }
 
 
-void PageController::Login(HttpProto *r) {
+void PageController::LoginHandler(HttpProto *r) {
   DLog(EVENT_IMPORTANT, "Get request (Login)"); 
-  if (SecurityManager::CheckIp(r, settingMng_->AllowRemoteAccess())) {
-    if (SecurityManager::VerifyPasswd(r, settingMng_)) {
+  if (SecurityManager::CheckIp(r, setting_manager_->AllowRemoteAccess())) {
+    if (SecurityManager::VerifyPasswd(r, setting_manager_)) {
       DLog(EVENT_IMPORTANT, "Login success");       
 
-      std::string session_id_encrypt = 
-        SecurityManager::GenerateRandomId(settingMng_);
+      std::string session_id;
+      if (!session_manager_->CreateSession(
+        setting_manager_->GetPassword(), &session_id)) {
+        Util::Log(EVENT_ERROR, "Failed to create session id.");
+        r->answer_status_ = "503 Service Unavailable";
+        r->answer_ = "New client is temporary unavailable.";
+        return;
+      }
 
-      sessionMng_->CreateSession(session_id_encrypt);
 
       std::stringstream sstream;
       sstream << "<?xml version=\"1.0\" encoding=\"UTF-8\" ?><Session id=\"" 
-        << session_id_encrypt << "\"></Session>";
+        << session_id << "\"></Session>";
 
       r->answer_ = sstream.str();
       r->answer_content_type_ = "text/xml";
@@ -400,25 +487,17 @@ void PageController::Login(HttpProto *r) {
   DLog(EVENT_IMPORTANT, "Send response (XML SET): %s", r->answer_.c_str());
 }
 
-void PageController::Logout(HttpProto *r) {
+void PageController::LogoutHandler(HttpProto *r) {
   DLog(EVENT_IMPORTANT, "Get request (Logout)"); 
   std::string session_id = r->GetParam(HttpProto::kSessionIdParamName);
-  sessionMng_->RemoveSession(session_id);
+  session_manager_->RemoveSession(session_id);
   r->answer_ = "Success";
   DLog(EVENT_IMPORTANT, "Send response (XML SET): %s", r->answer_.c_str());
 }
 
-// Other functions 
-
-bool PageController::requireAutoRestartWebServer() {
-  return true;
-}
-
+// Other functions
 bool PageController::RestartServer() {
-  bool needRestartAll = 
-    requireAutoRestartWebServer() && settingMng_->CheckRestart();
-
-  std::string args = needRestartAll ? "all" : "";
+  std::string args = "";
 #ifdef WIN32
   std::string cmd = Util::GetApplicationDir().append("/").append("restart.bat");
   HINSTANCE h = ShellExecuteA(NULL, 

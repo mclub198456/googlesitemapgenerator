@@ -52,11 +52,7 @@ bool SitemapModuleFactory::Initialize() {
 
   // Load settings.
   SiteSettings settings;
-  if (!settings.LoadWebserverConfig()) {
-    Util::Log(EVENT_ERROR, "Failed to load webserver config.");
-    return false;
-  }
-  if (!settings.LoadFromFile(settings_file.c_str())) {
+  if (!settings.LoadFromFileForFilter(settings_file.c_str())) {
     Util::Log(EVENT_ERROR, "Failed to load setting from file.");
     return false;
   }

@@ -12,12 +12,22 @@ body {
   background-color:#FDFCDC;
   border:1px solid;
   padding:2px 4px 2px 4px;
+  text-align:left;
 }
   
 .p { margin: 0 0 15px 0; }
 
 .error {
   color:red;  
+}
+
+.linkbar {
+  text-align:right; 
+  width:100%;
+}
+
+a.link {
+  color:blue;   
 }
 
 .hidden {
@@ -28,8 +38,32 @@ body {
   display:block;
 }
 
-.readonly {
+input.readonly {
   color:black;  
+}
+
+span.readonly {
+  color:gray;
+}
+
+a.readonly {
+  color:gray;
+}
+
+table.URLSources {
+  margin-left:20px;
+}
+
+div.listcontainer {
+  margin-left:20px;
+}
+
+.appSettings {
+  border:1px solid #d0d0d0; 
+  margin-left:200px; 
+  padding:5px 100px 100px 5px;
+  text-align:left;
+  vertical-align:middle;  
 }
 
 .loginPage {
@@ -56,6 +90,9 @@ body {
   text-align:right;
 }
 
+#inputOldPassword {
+  width:150px;
+}
 
 #inputNewPassword {
   width:150px;
@@ -66,12 +103,17 @@ body {
 }
 
 .changePasswordPage {
-  border-color:black;  
-  border-style: solid;
-  border-width: 1px 1px 1px 1px;
+  border:1px solid #d0d0d0;
+  margin-left:50px;
+  margin-right:20px;
 }
 
-.changePasswordPage table td {
+.changePasswordPage table {
+  text-align:left;  
+  margin-left:10px;
+}
+
+.changePasswordPage table td.last {
   text-align:right;
 }
 
@@ -86,7 +128,6 @@ input.internalButton {
 
 /* buttons on top-right */
 input.cmdbutton {
-  width: 100px;
 }
 
 div.templates {
@@ -195,6 +236,7 @@ text-align:center;
   
 .container table.top td.last {
   vertical-align:middle;
+  text-align:right;
   width: 220px;
 }
 
@@ -233,13 +275,15 @@ text-align:center;
 .saveResult {
 }
 
+span.hints {
+  color:blue;
+}
+
 .content {
   overflow: visible; 
   width: 770px;
   height: 700px;
-  border-left: 1px solid #d0d0d0;
-  border-right: 1px solid #d0d0d0;
-  border-bottom: 1px solid #d0d0d0;
+  border: 3px solid #6699cc;
   border-collapse: collapse;
 }
 
@@ -248,7 +292,7 @@ text-align:center;
   font-size: 20px;
 }
 
-.sitesListContainer {
+.sitesList {
   width: 100%;
 }
 
@@ -266,7 +310,7 @@ text-align:center;
   padding: 0;
   border-collapse: collapse;
   width: 100%;
-  background-color:#CC9966;
+  background-color:#6699cc;
 }
 
 .activeSite tr {
@@ -478,12 +522,13 @@ text-align:center;
   left: 0;
   top: 0;
 }
-.sitemapDiv .title {
+
+.title {
   text-align: left;    
   font-size: 20px;
 }
   
-.sitemapDiv .subtitle {
+.subtitle {
   text-align: left;    
   font-size: 12px;
   font-weight: bold;

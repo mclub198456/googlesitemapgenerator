@@ -16,8 +16,8 @@
 #ifndef COMMON_VERSION_H__
 #define COMMON_VERSION_H__
 
-#define SITEMAP_VERSION1 "1.0.0.01283"
-#define SITEMAP_VERSION2 1, 0, 0, 01301
+#define SITEMAP_VERSION1 "1.0.0.0"
+#define SITEMAP_VERSION2 1, 0, 0, 0
 
 #define PRODUCT_NAME  "Google Sitemap Generator"
 #define COMPANY_NANE  "Google Inc."

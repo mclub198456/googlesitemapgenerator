@@ -97,7 +97,7 @@ class BaseSetting {
   void LoadAttribute(const char *attribute_name, std::string &value);
   void LoadAttribute(const char *attribute_name, int &value);
   void LoadAttribute(const char *attribute_name, bool &value);
-  void LoadAttribute(const char *attribute_name, time_t &value);
+  void LoadTimeAttribute(const char *attribute_name, time_t &value);
   void LoadAttribute(const char *attribute_name, Url &value);
 
   // Save simple attributes to assocciated xml-node.
@@ -106,7 +106,7 @@ class BaseSetting {
   void SaveAttribute(const char *attribute_name, const std::string &value);
   void SaveAttribute(const char *attribute_name, const int value);
   void SaveAttribute(const char *attribute_name, const bool value);
-  void SaveAttribute(const char *attribute_name, const time_t &value);
+  void SaveTimeAttribute(const char *attribute_name, const time_t &value);
   void SaveAttribute(const char *attribute_name, const Url &value);
 
   // Load a Url vector from a XML element tree.

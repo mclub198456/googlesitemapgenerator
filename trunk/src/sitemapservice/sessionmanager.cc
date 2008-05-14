@@ -16,16 +16,35 @@
 
 #include "sitemapservice/pagecontroller.h"
 #include "sitemapservice/httpproto.h"
+#include "sitemapservice/securitymanager.h"
 
 const unsigned int SessionManager::kMaxSessionNum = 16;
 const unsigned int SessionManager::kSessionExpireTime = 30*60; // secs, 30 mins
 
-void SessionManager::CreateSession(const std::string& session_id) {
-  SessionInfo* sess = new SessionInfo;
-  sess->session_id = session_id;
-  sess->last_access = time(NULL);
+bool SessionManager::CreateSession(const std::string& seed,
+                                   std::string* session_id) {
+  // Max times of trying to create new session id.
+  static const int kMaxTryTimes = 100;
 
-  sessions_[session_id] = sess;
+  if (IsFull()) {
+    return false;
+  }
+
+  for (int i = kMaxTryTimes; i >= 0; --i) {
+    std::string temp_id = SecurityManager::GenerateRandomId(seed);
+
+    if (sessions_.find(temp_id) == sessions_.end()) {
+      SessionInfo* session = new SessionInfo;
+      session->session_id = temp_id;
+      time(&session->last_access);
+
+      session_id->assign(temp_id);
+      sessions_[temp_id] = session;
+      return true;
+    }
+  }
+
+  return false;
 }
 
 SessionManager::SessionInfo* SessionManager::GetSession(HttpProto *r) {
@@ -60,7 +79,8 @@ bool SessionManager::CheckSessionLogin(HttpProto* r) {
   return sess != NULL;
 }
 
-bool SessionManager::isFull() {
+bool SessionManager::IsFull() {
+  RemoveExpireSession();
   return sessions_.size() >= kMaxSessionNum;
 }
 

@@ -78,7 +78,7 @@ void BaseSetting::LoadAttribute(const char *attribute_name, bool &value) {
     value = stricmp(attribute, "true") == 0 ? true: false;
 }
 
-void BaseSetting::LoadAttribute(const char *attribute_name, time_t &value) {
+void BaseSetting::LoadTimeAttribute(const char *attribute_name, time_t &value) {
 
   if (attribute_name == NULL || xml_node_ == NULL) return;
 
@@ -168,8 +168,8 @@ void BaseSetting::SaveAttribute(const char *attribute_name, const bool value) {
   xml_node_->SetAttribute(attribute_name, value ? "true" : "false");
 }
 
-void BaseSetting::SaveAttribute(const char *attribute_name,
-                                const time_t &value) {
+void BaseSetting::SaveTimeAttribute(const char *attribute_name,
+                                    const time_t &value) {
 
   if (attribute_name == NULL || xml_node_ == NULL)
     return;

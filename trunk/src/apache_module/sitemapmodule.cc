@@ -48,10 +48,10 @@ SitemapModule::~SitemapModule() {
 
 bool SitemapModule::Initialize() {
   Util::SetLogFileName("/var/log/google-sitemap-generator.log");
- 
+
   Util::Log(EVENT_CRITICAL, "=== Google Sitemap Generator Apache Module [%s] ===",
             SITEMAP_VERSION1);
- 
+
   std::string setting_file = SiteSettings::GetDefaultFilePath();
   SiteSettings settings;
   if (!settings.LoadFromFile(setting_file.c_str())) {
@@ -71,11 +71,11 @@ bool SitemapModule::Initialize() {
 
   // Init flags.
   Util::SetLogLevel(settings.logging_level());
- 
+
   pthread_mutex_init(&siteid_mutex_, NULL);
-  
+
   inited_ = BaseFilter::Initialize(SiteSettings::GetDefaultFilePath().c_str());
-  
+
   return inited_;
 }
 
@@ -94,16 +94,16 @@ int SitemapModule::Process(request_rec* req) {
   }
 
   UrlRecord record;
- 
+
   // retrieve status code
   record.statuscode = req->status;
 
   // Determine which site this url belongs to.
-  int siteindex = MatchSite(req->server);
-  if (siteindex == -1) return DECLINED;  
-  if (!BaseFilter::CopySiteId(siteindex, record.siteid, kMaxSiteIdLength)) {
+  std::string site_id = MatchSite(req->server);
+  if (site_id.length() == 0 || site_id.length() >= kMaxSiteIdLength) {
     return DECLINED;
   }
+  strcpy(record.siteid, site_id.c_str());
 
   // Check whether it is an authenticated url.
   if (apr_table_get(req->headers_in, "Authorization") != NULL) {
@@ -153,7 +153,7 @@ int SitemapModule::Process(request_rec* req) {
 #if APACHE_VERSION >= 20
   if (req->finfo.protection != 0 && req->finfo.mtime > 0) {
     // static file or files like SHTML
-    if (record.contentHashCode == req->finfo.size || 
+    if (record.contentHashCode == req->finfo.size ||
         BaseFilter::TreatAsStatic(req->finfo.fname)) {
       // WARN: 10000000 is workable under apache 2.0,
       // although APR doc says mtime is in second
@@ -176,7 +176,7 @@ int SitemapModule::Process(request_rec* req) {
   } else {
     offset = CopyString(record.url, 0, kMaxUrlLength, req->uri);
     if (offset == -1) return DECLINED;
-    
+
     // if it has args
     if (req->args != NULL) {
       offset = CopyString(record.url, offset, kMaxUrlLength, "?");
@@ -189,81 +189,64 @@ int SitemapModule::Process(request_rec* req) {
 
   Util::Log(EVENT_NORMAL,
             "Record generated:[url:%s|host:%s|siteid:%s|content:%lld|"
-            "lastmod:%ld|lastwrite:%ld|status:%d]\n",
+            "lastmod:%ld|lastwrite:%ld|status:%d]",
             record.url, record.host, record.siteid, record.contentHashCode,
             record.last_modified, record.last_filewrite, record.statuscode);
 
-  BaseFilter::Send(&record, siteindex);
+  BaseFilter::Send(&record);
 
   return DECLINED;
 }
 
-int SitemapModule::MatchSite(server_rec* server) {
-  int index = -2;
+std::string SitemapModule::MatchSite(server_rec* server) {
+  bool found = false;
+  std::string site_id;
 
   pthread_mutex_lock(&siteid_mutex_);
-  std::map<void*, int>::iterator itr = siteids_.find(server);
+  std::map<void*, std::string>::iterator itr = siteids_.find(server);
   if (itr != siteids_.end()) {
-    index = itr->second;
+    site_id = itr->second;
+    found = true;
   }
   pthread_mutex_unlock(&siteid_mutex_);
 
-  if (index != -2) return index;
+  if (found) {
+    return site_id;
+  }
 
   // add server name to id
-  std::string newid;
-  newid.append(server->server_hostname);
+  site_id.append(server->server_hostname);
 
   std::set<std::pair<std::string, int> > vhosts;
   server_addr_rec *sar = server->addrs;
   while (sar != NULL) {
     vhosts.insert(make_pair(std::string(sar->virthost), sar->host_port));
     sar = sar->next;
-
-    // Pls DO NOT REMOVE following code,
-    // which would be used later very likely.
-    /*
-    apr_sockaddr_t *ha = sar->host_addr;
-    char buffer[1024];
-    int len = 0;
-    if (ha->family == APR_INET &&
-      ha->sa.sin.sin_addr.s_addr == DEFAULT_VHOST_ADDR) {
-        len = apr_snprintf(buffer, sizeof(buffer), "_default_:%u",
-                          sar->host_port);
-    } else if (ha->family == APR_INET &&
-      ha->sa.sin.sin_addr.s_addr == INADDR_ANY) {
-        len = apr_snprintf(buffer, sizeof(buffer), "*:%u",
-                          sar->host_port);
-    } else {
-      len = apr_snprintf(buffer, sizeof(buffer), "%pI", ha);
-    }
-    newid.append(",").append(buffer);
-    sar = sar->next;
-    */
   }
   std::set<std::pair<std::string, int> >::iterator vhostitr = vhosts.begin();
   for (; vhostitr != vhosts.end(); ++vhostitr) {
-    newid.append(",").append(vhostitr->first);
+    site_id.append(",").append(vhostitr->first);
 
     // append the port to siteid
     char buffer[128];
     itoa(vhostitr->second, buffer);
-    newid.append(":").append(buffer);
+    site_id.append(":").append(buffer);
   }
 
-  index = BaseFilter::MatchSite(newid.c_str());
+  bool matched = BaseFilter::MatchSite(site_id.c_str());
+  Util::Log(EVENT_IMPORTANT, "Match site (%s) (%d)\n",
+            site_id.c_str(), (matched ? "YES" : "NO"));
+  if (!matched) site_id.clear();
 
-  Util::Log(EVENT_IMPORTANT, "Match site (%s) at (%d)\n", newid.c_str(), index);
-
-  // cache the site id
+  // Cache the site id
   pthread_mutex_lock(&siteid_mutex_);
   if (siteids_.size() < 100000) {
-    siteids_[server] = index;
+    siteids_[server] = site_id;
   } else {
     siteids_.clear();
-    Util::Log(EVENT_IMPORTANT, "SiteIds cache is cleared.");
+    Util::Log(EVENT_CRITICAL, "SiteIds cache is cleared.");
   }
   pthread_mutex_unlock(&siteid_mutex_);
 
-  return index;
+  return site_id;
 }

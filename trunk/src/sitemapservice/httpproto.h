@@ -1,8 +1,21 @@
-// Copyright 2007 Google Inc. All Rights Reserved.
-// Author: chaiying@google.com
+// Copyright 2008 Google Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
-#ifndef WEBSITE_TOOLS_SITEMAP_SITEMAPSERVICE_HTTP_H__
-#define WEBSITE_TOOLS_SITEMAP_SITEMAPSERVICE_HTTP_H__
+// This file defines a class to implement the HTTP protocol.
+
+#ifndef SITEMAPSERVICE_HTTPPROTO_H__
+#define SITEMAPSERVICE_HTTPPROTO_H__
 
 #include <string>
 #include <map>
@@ -15,8 +28,8 @@ public:
   // The type of the callback function for sending the HTTP response content
   typedef   void (*response_func) (HttpProto*); 
 
-  // Parses the HTTP params from the 'paramStr', store the results in params_
-  void ParseParams(std::string paramStr);
+  // Parses the HTTP params from the 'param_string', store the results in params_
+  void ParseParams(std::string param_string);
 
   // The constructor
   HttpProto();
@@ -35,14 +48,20 @@ public:
   // response is successful.
   bool ProcessResponse(const ActiveSocket& s);
 
-  // Returns the param value in the params_ according to the 'paramName'
-  std::string GetParam(const std::string& paramName);
+  // Returns the param value in the params_ according to the 'param_name'
+  std::string GetParam(const std::string& param_name);
 
   // Returns true if the last modified time of the client cache equals to the
-  // 'lastWrite'. Sets the answer_last_modified_ according to the 'lastWrite' 
+  // 'last_write'. Sets the answer_last_modified_ according to the 'last_write' 
   // and sets the answer_cache_control_ to one day.
-  bool CheckCaching(const time_t& lastWrite);
+  bool CheckCaching(const time_t& last_write);
 
+  // Sets the last modified header for HTTP response
+  bool SetLastModifiedResponse(const time_t& last_write, 
+                               const int expired = 86400);//one-day
+
+  // convert timestamp from time_t to string
+  bool ConvertLastModifiedTime(const time_t& ttime, std::string* stime);
 private:
 
   // Returns the string that in the 'str' and begin with 'begin', end with 'end'
@@ -114,4 +133,4 @@ public:
   // to x_forwarded_for. Otherwise, it's the value read from socket.
   std::string remote_ip_;
 };
-#endif
+#endif // SITEMAPSERVICE_HTTPPROTO_H__

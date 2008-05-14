@@ -25,7 +25,7 @@
 #ifndef COMMON_BASEFILTER_H__
 #define COMMON_BASEFILTER_H__
 
-#include <map>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -57,17 +57,16 @@ class BaseFilter {
   bool Initialize(const SiteSettings& settings);
 
   // Return an integer site index for given siteid string.
-  // "-1" is returned for un-matched site. In this case, the record for given
+  // "false" is returned for un-matched site. In this case, the record for given
   // site shouldn't be sent.
-  int MatchSite(const char* siteid);
+  bool MatchSite(const char* siteid);
 
   // Copy site id into "dest". Only maxlen should be used in dest.
   bool CopySiteId(int siteindex, char* dest, int maxlen);
 
   // Send a UrlRecord to service side through UrlPipe.
-  // "siteindex" indicates which site the "record" belongs to.
   // Before sending, this method makes record->host to lower case.
-  bool Send(UrlRecord* record, int siteindex);
+  bool Send(UrlRecord* record);
 
   // Whether given file should be treated as a static web page.
   // The sub-class (concrete filter) should check the web page size on disk.
@@ -96,8 +95,9 @@ class BaseFilter {
 
   SiteSettings settings_;
 
-  // Map site id string to site index.
-  std::map<std::string, int> site_ids_;
+  // If default_enabled_ is true, site_ids_ contains disabled sites.
+  bool default_enabled_;
+  std::set<std::string> site_ids_;
 };
 
 #endif // COMMON_BASEFILTER_H__

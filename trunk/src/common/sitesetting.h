@@ -59,6 +59,8 @@ class SiteSetting : public BaseSetting {
   // Load setting from xml_node_.
   virtual bool LoadSetting();
 
+  bool LoadSettingForFilter();
+
   // Save settings to xml_node_.
   virtual void SaveSetting();
 

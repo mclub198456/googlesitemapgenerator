@@ -306,6 +306,99 @@ bool Util::GetModulePath(HMODULE module, std::string* path) {
   return true;
 }
 
+bool Util::AllowEveryoneAccess(const std::string& file) {
+  // Retrieve security identifier for "Everyone".
+  char sidbuffer[1024];
+  PSID psid = reinterpret_cast<PSID>(sidbuffer);
+  DWORD sidbuffer_size = 1024;
+  char domainbuffer[1024];
+  DWORD domainbuffer_size = 1024;
+
+  SID_NAME_USE snu;
+  if (!LookupAccountNameA(NULL, "Everyone",
+                          psid, &sidbuffer_size,
+                          domainbuffer, &domainbuffer_size,
+                          &snu)) {
+     Util::Log(EVENT_ERROR, "Failed to get SID for Everyone. (%d)",
+               GetLastError());
+     return false;
+  }
+
+  char* p_sd = NULL, *p_new_dacl = NULL;
+  bool result = false;
+  do {
+    // Get current file security.
+    DWORD old_sd_length = 0;  // Length of original SD.
+    if (!GetFileSecurityA(file.c_str(), DACL_SECURITY_INFORMATION,
+      NULL, 0, &old_sd_length)) {
+      if (GetLastError() != ERROR_INSUFFICIENT_BUFFER) {
+        Util::Log(EVENT_ERROR, "Failed to GetFileSecurity1 (%d).",
+                  GetLastError());
+        break;
+      }
+    }
+
+    p_sd = new char[old_sd_length];
+    if (!GetFileSecurityA(file.c_str(), DACL_SECURITY_INFORMATION,
+      p_sd, old_sd_length, &old_sd_length)) {
+      Util::Log(EVENT_ERROR, "Failed to GetFileSecurity2 (%d).",
+                file.c_str());
+      break;
+    }
+
+    // Retrieve current DACL.
+    BOOL dacl_present, dacl_defaulted;
+    PACL dacl;
+    if (!GetSecurityDescriptorDacl(p_sd, &dacl_present, &dacl, &dacl_defaulted)) {
+      Util::Log(EVENT_ERROR, "Failed to GetSecurityDescriptorDacl (%d).",
+                GetLastError());
+      break;
+    }
+    // No DACL is present, so it can be accessed by Everyone.
+    if (dacl_present == FALSE) {
+      result = true;
+      break;
+    }
+
+    // Add ACE for Everyone into DACL.
+    p_new_dacl = new char[dacl->AclSize + 1024];
+    memcpy(p_new_dacl, dacl, dacl->AclSize);
+    PACL new_dacl = reinterpret_cast<PACL>(p_new_dacl);
+    new_dacl->AclSize += 1024;
+    if (!AddAccessAllowedAce(new_dacl, ACL_REVISION,
+      GENERIC_READ | GENERIC_EXECUTE, psid)) {
+      Util::Log(EVENT_ERROR, "Failed to AddAccessAllowedAce. (%d)",
+                GetLastError());
+      break;
+    }
+
+    // Set new DACL to SD.
+    SECURITY_DESCRIPTOR sd;
+    if (!InitializeSecurityDescriptor(&sd, SECURITY_DESCRIPTOR_REVISION)) {
+      Util::Log(EVENT_ERROR, "Failed to InitializeSecurityDescriptor. (%d)",
+                GetLastError());
+      break;
+    }
+    if (!SetSecurityDescriptorDacl(&sd, TRUE, new_dacl, dacl_defaulted)) {
+      Util::Log(EVENT_ERROR, "Failed to SetSecurityDescriptorDacl. (%d)",
+                GetLastError());
+      break;
+    }
+
+    // Set new SD to file.
+    if (!SetFileSecurityA(file.c_str(), DACL_SECURITY_INFORMATION, &sd)) {
+      Util::Log(EVENT_ERROR, "Failed to SetFileSecurityA. (%d)",
+          GetLastError());
+      break;
+    }
+
+    result = true;
+  } while (false);
+
+  if (p_sd != NULL) delete[] p_sd;
+  if (p_new_dacl != NULL) delete[] p_new_dacl;
+  return result;
+}
 
 bool Util::CreateLogFile() {
   // Check whether log file already exists.

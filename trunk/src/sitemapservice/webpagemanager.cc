@@ -48,7 +48,7 @@ const WebPageManager::ParamPattern WebPageManager::kScriptIncludePattern = {
   250
 };
 
-const std::vector<std::string>& WebPageManager::getJSFilesForAggregation() {
+const std::vector<std::string>& WebPageManager::GetJSFilesForAggregation() {
   static std::vector<std::string> jsfiles;
   if (jsfiles.size() == 0) {
     jsfiles.push_back("browser.js");
@@ -104,7 +104,6 @@ void WebPageManager::AccessStaticFile(HttpProto* r) {
   } else {
     filename = GetLocalPath() + r->path_;
   }
-
 
   DLog(EVENT_IMPORTANT, "File path: %s", 
        Util::EscapeLogMessage(filename.c_str()).c_str());
@@ -163,7 +162,7 @@ void WebPageManager::AccessAggregateJSFile(HttpProto* r) {
   // get last modify timestamp, it's the latest file time of all the js files
   std::string filename;
   time_t latest = 0;
-  const std::vector<std::string>& jsfiles = getJSFilesForAggregation();
+  const std::vector<std::string>& jsfiles = GetJSFilesForAggregation();
   std::vector<std::string>::const_iterator itr = jsfiles.begin();
   for (;itr!=jsfiles.end();itr++) {
     filename = GetLocalPath() + "scripts/" + *itr;
@@ -249,16 +248,16 @@ bool WebPageManager::InsertParamToHtml(std::string* html_string,
   if ((pos=pattern.find("*")) != std::string::npos &&
       (pos == 0 || pattern[pos-1] != '\\')) {
 
-    std::string beginStr = pattern.substr(0, pos);
-    std::string endStr = pattern.substr(pos + 1);
-    std::string::size_type beginPos, endPos;
+    std::string begin_string = pattern.substr(0, pos);
+    std::string end_string = pattern.substr(pos + 1);
+    std::string::size_type begin_pos, end_pos;
     
     pos = 0;
-    if ((beginPos=html_string->find(beginStr, pos)) != std::string::npos) {
-      if ((endPos=html_string->find(endStr, beginPos)) != std::string::npos) {
-        html_string->replace(beginPos, endPos - beginPos + endStr.size(), 
+    if ((begin_pos=html_string->find(begin_string, pos)) != std::string::npos) {
+      if ((end_pos=html_string->find(end_string, begin_pos)) != std::string::npos) {
+        html_string->replace(begin_pos, end_pos - begin_pos + end_string.size(), 
                              replace_string);
-        pos = beginPos + replace_string.size();
+        pos = begin_pos + replace_string.size();
         return true;
       }
     }
@@ -345,26 +344,26 @@ std::string WebPageManager::GetLanguage(HttpProto* r) {
   // get user prefer language
   std::string language = r->GetParam("hl");
   if (language == "" || 
-    !HttpLanguageHeaderParser::isSupportedLanguage(language)) {
+    !HttpLanguageHeaderParser::IsSupportedLanguage(language)) {
       language = 
-        HttpLanguageHeaderParser::getPreferLanguage(r->accept_language_);
+        HttpLanguageHeaderParser::GetPreferLanguage(r->accept_language_);
   } else {
     language = 
-      HttpLanguageHeaderParser::getLanguageRegularName(language);
+      HttpLanguageHeaderParser::GetLanguageRegularName(language);
   }
   return language;
 }
 
-int WebPageManager::StringReplace(std::string* strBig, 
-                                  const std::string & strsrc, 
-                                  const std::string &strdst) {
+int WebPageManager::StringReplace(std::string* str_big, 
+                                  const std::string & str_src, 
+                                  const std::string &str_dst) {
   std::string::size_type pos = 0;
-  std::string::size_type srclen=strsrc.size();
-  std::string::size_type dstlen=strdst.size();
+  std::string::size_type src_len=str_src.size();
+  std::string::size_type dst_len=str_dst.size();
   int count = 0;
-  while( (pos=strBig->find(strsrc, pos)) != std::string::npos){
-    strBig->replace(pos, srclen, strdst);
-    pos += dstlen;
+  while( (pos=str_big->find(str_src, pos)) != std::string::npos){
+    str_big->replace(pos, src_len, str_dst);
+    pos += dst_len;
     count++;
   }
   return count;

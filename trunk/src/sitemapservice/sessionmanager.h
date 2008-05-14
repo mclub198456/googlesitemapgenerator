@@ -12,6 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// This file defines a class to manage the user session. The user session
+// object currently only record the session id for authorization and access
+// time to remove expired sessions. It also limits the max number of sessions.
+
 #ifndef WEBSITE_TOOLS_SITEMAP_SITEMAPSERVICE_SESSIONMANAGER_H__
 #define WEBSITE_TOOLS_SITEMAP_SITEMAPSERVICE_SESSIONMANAGER_H__
 
@@ -23,16 +27,14 @@ class SessionManager {
   // data structure for each session
   struct SessionInfo {
     std::string session_id;
-    bool is_login;
     time_t last_access;
-    std::string language_;
   };
 
   // Hash table for sessions
   typedef HashMap<std::string, SessionInfo*>::Type HashTable;
  public:
-  // Creates the session with the session id
-  void CreateSession(const std::string& session_id);
+  // Creates a new session.
+  bool CreateSession(const std::string& seed, std::string* session_id);
 
   // Fetches session id from the request and get the session info from server
   SessionInfo* GetSession(HttpProto *r);
@@ -44,7 +46,7 @@ class SessionManager {
   bool CheckSessionLogin(HttpProto* r);
 
   // Returns true if sessions reaches the max limit number.
-  bool isFull();
+  bool IsFull();
 
   // Removes the session with the id
   void RemoveSession(const std::string& id);

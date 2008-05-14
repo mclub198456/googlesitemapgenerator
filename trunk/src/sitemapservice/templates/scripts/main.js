@@ -51,3 +51,7 @@ function initAll(){
 }
 
 Util.event.add(window, 'load', initAll);
+Util.event.add(window, 'unload', function() {
+  Util.event.flush();
+  Component.releaseAll();
+});

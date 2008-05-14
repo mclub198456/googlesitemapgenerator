@@ -72,9 +72,11 @@ int __cdecl wmain(int argc, wchar_t *argv[]) {
       return_result = MainService::UpdateSetting();
     } else if (wcsicmp(parameter, L"debug") == 0) {
       MainService::RunSitemapService();
-    } else if (wcsicmp(parameter, L"start_config") == 0 ) {
+    } else if (wcsicmp(parameter, L"start_config") == 0) {
       return_result = MainService::StartConfig();
-    }else {
+    } else if (wcsicmp(parameter, L"set_permission") == 0) {
+      return_result = MainService::SetPermission();
+    } else {
       wprintf( L"Unsupported parameter %s\n", parameter);
       return -1;
     }
@@ -98,6 +100,9 @@ int __cdecl wmain(int argc, wchar_t *argv[]) {
 #include <unistd.h>
 #include <string.h>
 
+#include <sys/types.h>
+#include <sys/stat.h>
+
 #include "common/util.h"
 #include "common/sitesettings.h"
 #include "common/apacheconfig.h"
@@ -117,11 +122,14 @@ int __cdecl wmain(int argc, wchar_t *argv[]) {
 //
 // Return 0 if operation is succesful, otherwise return an error code.
 int main(int argc, const char *argv[]) {
-  // requires the root
+  // Requires the root
   if (getuid() != 0) {
     printf("Permission denied. Please run it as a super user.");
     return EACCES;
   }
+  // We will only allow access with owner or group.
+  umask(S_IROTH | S_IWOTH | S_IXOTH);
+
 
   // Parse options from second value.
   for (int i = 2; i < argc; ++i) {

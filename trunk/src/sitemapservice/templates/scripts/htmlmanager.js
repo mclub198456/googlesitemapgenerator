@@ -60,7 +60,9 @@ function TabManager(){
    */
   this.currentTabType_ = null;
 
+  this.tabHeights_ = {};
 }
+
 /**
  * Initializes the object.
  */
@@ -94,13 +96,6 @@ TabManager.prototype.init = function() {
 };
 
 /**
- * Gets current HTML tab page content height.
- */
-TabManager.prototype.getCurrentTabHeight = function() {
-  return this.tabPages_[this.currentTabType_].getPageHeight();
-};
-
-/**
  * Gets the TabManager singleton object.
  * @return {TabManager} The TabManager singleton object
  */
@@ -109,6 +104,38 @@ TabManager.getInstance = function() {
     TabManager.getInstance.instance_ = new TabManager();
   }
   return TabManager.getInstance.instance_;
+};
+
+TabManager.prototype.tabHeightChanged = function() {
+  var tabHeights = this.tabHeights_[this.currentSiteId_];
+  
+  // update the cache
+  tabHeights[this.currentTabType_] = 
+      this.tabPages_[this.currentTabType_].getPageHeight();
+      
+  PageManager.getInstance().adjustPageHeight();
+};
+
+/**
+ * Gets current HTML tab page content height.
+ */
+TabManager.prototype.getCurrentTabHeight = function() {
+  var tabHeights = this.tabHeights_[this.currentSiteId_];
+  if (!tabHeights) { // initialize
+    tabHeights = [];
+    this.tabHeights_[this.currentSiteId_] = tabHeights;
+  }
+
+  if (this.currentTabType_ == null) {
+    return 0;
+  }
+  
+  // using cache if it exists
+  if (!tabHeights[this.currentTabType_]) { // calc the height
+    tabHeights[this.currentTabType_] =
+        this.tabPages_[this.currentTabType_].getPageHeight();
+  }
+  return tabHeights[this.currentTabType_];
 };
 
 /**
@@ -171,6 +198,7 @@ TabManager.prototype.setCurrentSite = function(siteId) {
     return;
 
   /* switch current site id and save it to cookie */
+  var oldSiteId = this.currentSiteId_;
   this.currentSiteId_ = siteId;
   if (Cookie) {
     var cookie = new Cookie(TAB_COOKIE);
@@ -179,42 +207,27 @@ TabManager.prototype.setCurrentSite = function(siteId) {
   }
 
   /* update the siteList */
-  // a HTML table
-  var currentListItem = this.siteListItems_[this.currentSiteId_];
-
   // change the sitelist element display
-  // currentListItem.parentNode is the list
-  var liArray = currentListItem.parentNode.getElementsByTagName('table');
-  for (var i = 0; i < liArray.length; i++) {
-    if (liArray[i] == currentListItem)
-      Util.CSS.changeClass(liArray[i], INACTIVE_SITE, ACTIVE_SITE);
-    else
-      Util.CSS.changeClass(liArray[i], ACTIVE_SITE, INACTIVE_SITE);
-  }
+  Util.CSS.changeClass(this.siteListItems_[this.currentSiteId_], 
+                       INACTIVE_SITE, ACTIVE_SITE);
+  if (oldSiteId != null)
+    Util.CSS.changeClass(this.siteListItems_[oldSiteId], 
+                         ACTIVE_SITE, INACTIVE_SITE);
 
   /* Load the new site */
   // must call from sitesettings since the site need switch dom tree
   SiteSettings.getInstance().load(null, this.currentSiteId_);
-  RuntimeManager.getInstance().load();
-
-  /* set current SiteSetting and html page */
-  // switch the tab manager
-  PageManager.getInstance().switchSite(this.currentSiteId_);
   this.setting_ = SiteSettings.getInstance().site();
-
-  /* switch the tab pages */
-  // hide the old page
-  if (this.currentTabType_ != null)
-    this.tabPages_[this.currentTabType_].hide();
-
-  var that = this;
+  var curSetting = this.setting_;
   Util.object.apply(this.tabPages_, function(tabPage) {
     // set setting to each tab page
-    tabPage.setting_ = that.setting_.settingTab(tabPage.type_);
-    tabPage.page_ = PageManager.getInstance().curTabs_[tabPage.type_];
+    tabPage.setting_ = curSetting.settingTab(tabPage.type_);
   });
-  if (this.currentTabType_ != null)
-    this.tabPages_[this.currentTabType_].show();
+
+  RuntimeManager.getInstance().load();
+
+  /* switch the tab pages */
+  PageManager.getInstance().switchSite(this.currentSiteId_);
 };
 
 /**
@@ -237,7 +250,7 @@ function TabPage(type) {
   /**
    * @type {Element?}
    */
-  this.page_ = null;
+  this.page_ = PageManager.getInstance().tabs_[type];;
 
   /**
    * @type {TabPage.types}
@@ -251,19 +264,18 @@ function TabPage(type) {
 
   var link = Util.checkUniqueAndReturn(this.switcher_, 'A');
   link.href = '#';
-  var that = this;
   Util.event.add(link, 'click', function() {
     // when switch tab, check the old tab.valid
 
     var perf = new Perf('switch tab');
     if (TabManager.getInstance().currentTab().validate()) {
-    	TabManager.getInstance().setCurrentTab(that.type_);
+    	TabManager.getInstance().setCurrentTab(type);
     } else {
       // alert user to choose stay in the tab or discard the change.
       if (confirm(DISCARD_CHANGE_TO_CURRENT_TAB)) {
         // discard the change
         TabManager.getInstance().currentTab().load();
-    	  TabManager.getInstance().setCurrentTab(that.type_);
+    	  TabManager.getInstance().setCurrentTab(type);
       }
     }
     perf.check('done');
@@ -350,68 +362,93 @@ TabPage.prototype.hide = function() {
  * @constructor
  */
 function PageManager() {
+  this.currentType_ = PageManager.statusType.NONE;
+  
   this.loginUsername_ = Util.checkElemExistAndReturn('loginUsername');
   this.loginPassword_ = Util.checkElemExistAndReturn('loginPassword');
   this.loginPage_ = Util.checkElemExistAndReturn('loginPage');
   this.cmdBtnArea_ = Util.checkElemExistAndReturn('cmdbuttons');
   this.menuBar_ = Util.checkElemExistAndReturn('hMenu');
-  this.settingPage_ = Util.checkElemExistAndReturn('content');
+  this.appSettingPage_ = Util.checkElemExistAndReturn('appSettings');
+  this.sitesSettingPage_ = Util.checkElemExistAndReturn('content');
   this.siteListTpl_ = Util.checkElemExistAndReturn('siteListTemplate');
+  this.linkBar_ = Util.checkElemExistAndReturn('linkbar');
+  this.appSettingsLink_ = Util.checkElemExistAndReturn('appSettingsLink');
+  this.siteSettingsLink_ = Util.checkElemExistAndReturn('siteSettingsLink');
 
-  this.siteListContainer_ = Util.checkElemExistAndReturn('siteList');
+  this.siteListContainer_ = Util.checkElemExistAndReturn('siteListContainer');
   this.settingPageBody_ =
       Util.checkElemExistAndReturn('sitemapContainerDiv');
 
-  this.curTabs_ = null;
-  this.global_ = {tabs_: []};
-  this.global_.tabs_[TabPage.types.GENERAL] =
-      Util.checkElemExistAndReturn('generalSitemapBodyg');
-  this.global_.tabs_[TabPage.types.WEB] =
-      Util.checkElemExistAndReturn('webSitemapBodyg');
-  this.global_.tabs_[TabPage.types.NEWS] =
-      Util.checkElemExistAndReturn('newsSitemapBodyg');
-  this.global_.tabs_[TabPage.types.VIDEO] =
-      Util.checkElemExistAndReturn('videoSitemapBodyg');
-  this.global_.tabs_[TabPage.types.MOBILE] =
-      Util.checkElemExistAndReturn('mobileSitemapBodyg');
-  this.global_.tabs_[TabPage.types.CODESEARCH] =
-      Util.checkElemExistAndReturn('codeSearchSitemapBodyg');
-  this.global_.tabs_[TabPage.types.BLOGSEARCH] =
-      Util.checkElemExistAndReturn('blogSearchPingBodyg');
-  this.global_.tabs_[TabPage.types.RUNTIME] =
-      Util.checkElemExistAndReturn('runtimeInfoBodyg');
-  this.site_ = {tabs_: []};
-  this.site_.tabs_[TabPage.types.GENERAL] =
+  this.tabs_ = [];
+  this.tabs_[TabPage.types.GENERAL] =
       Util.checkElemExistAndReturn('generalSitemapBody');
-  this.site_.tabs_[TabPage.types.WEB] =
+  this.tabs_[TabPage.types.WEB] =
       Util.checkElemExistAndReturn('webSitemapBody');
-  this.site_.tabs_[TabPage.types.NEWS] =
+  this.tabs_[TabPage.types.NEWS] =
       Util.checkElemExistAndReturn('newsSitemapBody');
-  this.site_.tabs_[TabPage.types.VIDEO] =
+  this.tabs_[TabPage.types.VIDEO] =
       Util.checkElemExistAndReturn('videoSitemapBody');
-  this.site_.tabs_[TabPage.types.MOBILE] =
+  this.tabs_[TabPage.types.MOBILE] =
       Util.checkElemExistAndReturn('mobileSitemapBody');
-  this.site_.tabs_[TabPage.types.CODESEARCH] =
+  this.tabs_[TabPage.types.CODESEARCH] =
       Util.checkElemExistAndReturn('codeSearchSitemapBody');
-  this.site_.tabs_[TabPage.types.BLOGSEARCH] =
+  this.tabs_[TabPage.types.BLOGSEARCH] =
       Util.checkElemExistAndReturn('blogSearchPingBody');
-  this.site_.tabs_[TabPage.types.RUNTIME] =
+  this.tabs_[TabPage.types.RUNTIME] =
       Util.checkElemExistAndReturn('runtimeInfoBody');
-  this.commonTabParts_ = [];
-  this.commonTabParts_[TabPage.types.GENERAL] =
-      Util.checkElemExistAndReturn('commonGeneralSitemapBody');
-  this.commonTabParts_[TabPage.types.WEB] =
-      Util.checkElemExistAndReturn('commonWebSitemapBody');
-  this.commonTabParts_[TabPage.types.NEWS] =
-      Util.checkElemExistAndReturn('commonNewsSitemapBody');
-  this.commonTabParts_[TabPage.types.VIDEO] =
-      Util.checkElemExistAndReturn('commonVideoSitemapBody');
-  this.commonTabParts_[TabPage.types.MOBILE] =
-      Util.checkElemExistAndReturn('commonMobileSitemapBody');
-  this.commonTabParts_[TabPage.types.CODESEARCH] =
-      Util.checkElemExistAndReturn('commonCodeSearchSitemapBody');
-  this.commonTabParts_[TabPage.types.BLOGSEARCH] =
-      Util.checkElemExistAndReturn('commonBlogSearchPingBody');
+      
+  this.globalSection_ = [];
+  this.globalSection_[TabPage.types.GENERAL] =
+      Util.checkElemExistAndReturn('generalSitemapBodyGlobal');
+  this.globalSection_[TabPage.types.WEB] =
+      Util.checkElemExistAndReturn('webSitemapBodyGlobal');
+  this.globalSection_[TabPage.types.NEWS] =
+      Util.checkElemExistAndReturn('newsSitemapBodyGlobal');
+  this.globalSection_[TabPage.types.VIDEO] =
+      Util.checkElemExistAndReturn('videoSitemapBodyGlobal');
+  this.globalSection_[TabPage.types.MOBILE] =
+      Util.checkElemExistAndReturn('mobileSitemapBodyGlobal');
+  this.globalSection_[TabPage.types.CODESEARCH] =
+      Util.checkElemExistAndReturn('codeSearchSitemapBodyGlobal');
+  this.globalSection_[TabPage.types.BLOGSEARCH] =
+      Util.checkElemExistAndReturn('blogSearchPingBodyGlobal');
+  this.globalSection_[TabPage.types.RUNTIME] =
+      Util.checkElemExistAndReturn('runtimeInfoBodyGlobal');
+      
+  this.siteSection_ = [];
+  this.siteSection_[TabPage.types.GENERAL] =
+      Util.checkElemExistAndReturn('generalSitemapBodySite');
+  this.siteSection_[TabPage.types.WEB] =
+      Util.checkElemExistAndReturn('webSitemapBodySite');
+  this.siteSection_[TabPage.types.NEWS] =
+      Util.checkElemExistAndReturn('newsSitemapBodySite');
+  this.siteSection_[TabPage.types.VIDEO] =
+      Util.checkElemExistAndReturn('videoSitemapBodySite');
+  this.siteSection_[TabPage.types.MOBILE] =
+      Util.checkElemExistAndReturn('mobileSitemapBodySite');
+  this.siteSection_[TabPage.types.CODESEARCH] =
+      Util.checkElemExistAndReturn('codeSearchSitemapBodySite');
+  this.siteSection_[TabPage.types.BLOGSEARCH] =
+      Util.checkElemExistAndReturn('blogSearchPingBodySite');
+  this.siteSection_[TabPage.types.RUNTIME] =
+      Util.checkElemExistAndReturn('runtimeInfoBodySite');
+      
+//  this.commonSection_ = [];
+//  this.commonSection_[TabPage.types.GENERAL] =
+//      Util.checkElemExistAndReturn('commonGeneralSitemapBody');
+//  this.commonSection_[TabPage.types.WEB] =
+//      Util.checkElemExistAndReturn('commonWebSitemapBody');
+//  this.commonSection_[TabPage.types.NEWS] =
+//      Util.checkElemExistAndReturn('commonNewsSitemapBody');
+//  this.commonSection_[TabPage.types.VIDEO] =
+//      Util.checkElemExistAndReturn('commonVideoSitemapBody');
+//  this.commonSection_[TabPage.types.MOBILE] =
+//      Util.checkElemExistAndReturn('commonMobileSitemapBody');
+//  this.commonSection_[TabPage.types.CODESEARCH] =
+//      Util.checkElemExistAndReturn('commonCodeSearchSitemapBody');
+//  this.commonSection_[TabPage.types.BLOGSEARCH] =
+//      Util.checkElemExistAndReturn('commonBlogSearchPingBody');
 }
 
 /**
@@ -425,6 +462,11 @@ PageManager.getInstance = function() {
   return PageManager.getInstance.instance_;
 };
 
+/**
+ * Current page mode that show to user.
+ * @enum
+ */
+PageManager.statusType = {NONE: 0, LOGIN: 1, APPLICATION: 2, SITES: 3};
 
 /**
  * Gets the sites pages container.
@@ -438,23 +480,18 @@ PageManager.prototype.getSitesBodyContainer = function() {
  * Shows login page.
  */
 PageManager.prototype.showLoginPage = function() {
+  this.switchPageType(PageManager.statusType.LOGIN);
+  
   // clear the cookie for remembering the site and tab when user login.
   if (Cookie) {
     var cookie = new Cookie(TAB_COOKIE);
     cookie.remove();
-  }
-
+  } 
+  
   this.loginUsername_.value = 'admin';
-  // show login page
-  Util.CSS.showElement(this.loginPage_);
-
-  // hide main page
-  Util.CSS.hideElement(this.cmdBtnArea_);
-  Util.CSS.hideElement(this.menuBar_);
-  Util.CSS.hideElement(this.settingPage_);
 
   // focus to password
-  Util.checkElemExistAndReturn('loginPassword').focus();
+  this.loginPassword_.focus();
 };
 
 /**
@@ -463,37 +500,105 @@ PageManager.prototype.showLoginPage = function() {
  * called after user pass login.
  */
 PageManager.prototype.showSettingPage = function() {
-  var perf = Perf.getPerf('Loading page');
-  perf.check('preShow');
-  // hide login page and show setting page
-  Util.CSS.hideElement(this.loginPage_);
-  Util.CSS.showElement(this.cmdBtnArea_);
-  Util.CSS.showElement(this.menuBar_);
-  Util.CSS.showElement(this.settingPage_);
+  // hide login page and show setting page  
+  this.switchPageType(PageManager.statusType.SITES);
 
-  perf.check('showPage');
   // Notes: don't change the sequence
   // Gets XML from server
   Controller.updateSettingData();
-  perf.check('updateSettingData');
 
   // update setting page with the data from server
   Controller.updateRuntimeInfo();
-  perf.check('updateRuntimeInfo');
 
   // create setting page, must call after updateSettingData, need to know
   // how many sites to set.
   this.generateSettingPage();
-  perf.check('generateSettingPage');
-
-  // must call it after generateSettingPage
-  PageManager.setupLanguage();
-  perf.check('setupLanguage');
 
   // must call it after generateSettingPage, updateSettingData and
   // updateRuntimeInfo
   TabManager.getInstance().init();
-  perf.check('initTabManager');
+};
+
+/**
+ * Switchs the page mode between application settings and sites settings.
+ */
+PageManager.prototype.switchSettingPage = function() {
+  if (this.currentType_ == PageManager.statusType.SITES) {
+    this.switchPageType(PageManager.statusType.APPLICATION);
+  } else if (this.currentType_ == PageManager.statusType.APPLICATION) {
+    this.switchPageType(PageManager.statusType.SITES);
+  }
+};
+
+/**
+ * Switchs the page mode that show to users.
+ * @param {PageManager.statusType} type  The page mode
+ */
+PageManager.prototype.switchPageType = function(type) {
+  // hide old page
+  switch (this.currentType_) {
+    case PageManager.statusType.LOGIN:
+      Util.CSS.hideElement(this.loginPage_);
+      break;
+    case PageManager.statusType.APPLICATION:
+      Util.CSS.hideElement(this.cmdBtnArea_);
+      Util.CSS.hideElement(this.linkBar_);
+      Util.CSS.hideElement(this.appSettingPage_);
+      break;
+    case PageManager.statusType.SITES:
+      Util.CSS.hideElement(this.cmdBtnArea_);
+      Util.CSS.hideElement(this.linkBar_);
+      Util.CSS.hideElement(this.menuBar_);
+      Util.CSS.hideElement(this.sitesSettingPage_);
+      Util.CSS.hideElement(this.siteListContainer_);
+      break;
+    case PageManager.statusType.NONE:
+      Util.CSS.hideElement(this.loginPage_);
+      Util.CSS.hideElement(this.cmdBtnArea_);
+      Util.CSS.hideElement(this.linkBar_);
+      Util.CSS.hideElement(this.appSettingPage_);
+      Util.CSS.hideElement(this.menuBar_);
+      Util.CSS.hideElement(this.sitesSettingPage_);
+      Util.CSS.hideElement(this.siteListContainer_);
+      break;
+    default:
+      Util.console.error('Invalid page type');
+  }
+  
+  // show new page
+  switch (type) {
+    case PageManager.statusType.LOGIN:
+      Util.CSS.showElement(this.loginPage_);
+      break;
+    case PageManager.statusType.APPLICATION:
+      Util.CSS.showElement(this.cmdBtnArea_);
+      Util.CSS.showElement(this.linkBar_);
+      Util.CSS.showElement(this.appSettingPage_);
+      
+      Util.CSS.addClass(this.appSettingsLink_, READONLY_CLASS);
+      this.appSettingsLink_.removeAttribute('href');
+
+      Util.CSS.removeClass(this.siteSettingsLink_, READONLY_CLASS);
+      this.siteSettingsLink_.href = '#';
+      break;
+    case PageManager.statusType.SITES:
+      Util.CSS.showElement(this.cmdBtnArea_);
+      Util.CSS.showElement(this.menuBar_);
+      Util.CSS.showElement(this.sitesSettingPage_);
+      Util.CSS.showElement(this.linkBar_);
+      Util.CSS.showElement(this.siteListContainer_);
+
+      Util.CSS.addClass(this.siteSettingsLink_, READONLY_CLASS);
+      this.siteSettingsLink_.removeAttribute('href');
+
+      Util.CSS.removeClass(this.appSettingsLink_, READONLY_CLASS);
+      this.appSettingsLink_.href = '#';
+      break;
+    default:
+      Util.console.error('Invalid page type');
+  }
+  
+  this.currentType_ = type;
 };
 
 /**
@@ -506,25 +611,26 @@ PageManager.prototype.showSettingPage = function() {
  *
  */
 PageManager.prototype.adjustPageHeight = function() {
-  var height = TabManager.getInstance().getCurrentTabHeight();
+  // Find the max value between site list height and tab page height
+  var settingHeight = TabManager.getInstance().getCurrentTabHeight();
+  
+  // Using cache, since the length will not change.
+  if (!this.listHeight_) {
+    this.listHeight_ = this.siteListContainer_.offsetHeight;
+  }
+  var listHeight = this.listHeight_;
+  var maxHeight = Math.max(listHeight, settingHeight);
+
+  // adjust to the history max height, which is the height for the max height
+  // tab page. It can prevent changing frequently when switch the tab page.
   if (this.historyHeight_ == null)
-    this.historyHeight_ = height;
-
-  var list = this.siteListContainer_;
-
-  // Find the max value among site list height, tab page height and site list
-  // container height. The last one is equal to the historical max height, which
-  // can keep the height for the max height tab page, prevent changing
-  // frequently when switch the tab page.
-  var maxHeight = Math.max(list.offsetHeight, height);
+    this.historyHeight_ = maxHeight;
   maxHeight = Math.max(this.historyHeight_, maxHeight);
-
-  var listDiv = list.parentNode;
-  var bodyDiv = this.settingPageBody_;
-  listDiv.style.height = maxHeight;
-  bodyDiv.style.height = maxHeight;
-  this.settingPage_.style.height = maxHeight;
   this.historyHeight_ = maxHeight;
+
+  // adjust the page height
+  this.settingPageBody_.style.height = maxHeight;
+  this.sitesSettingPage_.style.height = maxHeight;
 };
 
 /**
@@ -546,13 +652,34 @@ PageManager.InitElementEventHandlerStatic = function() {
   });
 
   Util.event.add(Util.checkElemExistAndReturn('submit'), 'click', 
-                Controller.onSubmitXml);
-  Util.event.add(Util.checkElemExistAndReturn('refresh'), 'click', 
-                Controller.onRefreshPage);
+                 Controller.onSubmitXml);
   Util.event.add(Util.checkElemExistAndReturn('restart'), 'click', 
-                Controller.onSaveXmlAndRestart);
-  Util.event.add(Util.checkElemExistAndReturn('logout'), 'click', 
-                Controller.onLogout);
+                 Controller.onRestart);
+
+  var fn = function(e, target) {
+    if (target.href) {
+      PageManager.getInstance().switchSettingPage();
+    }
+    return false; // always return false as event handler
+  };
+  var link = Util.checkElemExistAndReturn('appSettingsLink');
+  link.href = '#';
+  Util.event.add(link, 'click', fn);
+  
+  link = Util.checkElemExistAndReturn('siteSettingsLink');
+  link.href = '#';
+  Util.event.add(link, 'click', fn);
+  
+  link = Util.checkElemExistAndReturn('projHomeLink');
+  link.href = 'http://code.google.com/p/googlesitemapgenerator/';
+  
+  link = Util.checkElemExistAndReturn('helpLink');
+  link.href = 'http://googlesitemapgenerator.googlecode.com/svn/trunk/doc/' +
+              'gsg-intro.html';
+  
+  link = Util.checkElemExistAndReturn('logoutLink');
+  link.href = '#';
+  Util.event.add(link, 'click', Controller.onLogout);
 
   var inputs = document.getElementsByTagName('INPUT');
   Util.array.apply(inputs, function(input) {
@@ -597,12 +724,6 @@ PageManager.setupLanguage = function() {
     TransMarkSet.transLanguageForInputElem(input);
   });
 
-  // set tips and texts for selects
-  var selects = document.getElementsByTagName('SELECT');
-  Util.array.apply(selects, function(select) {
-    TransMarkSet.transLanguageForSelectElem(select);
-  });
-
   // set tips to links
   var links = document.getElementsByTagName('A');
   Util.array.apply(links, function(link) {
@@ -643,13 +764,18 @@ PageManager.prototype.generateSettingPage = function() {
   PageManager.generateRuntimeTab();
 
   /* generate site list */
+  var div = document.createElement('DIV');
+
   // for Global setting
-  this.generateSiteList(GLOBAL_SETTING_ID);
+  div.appendChild(this.generateSiteList(GLOBAL_SETTING_ID));
 
   // for site setting
-  for (var i = 0; i < SiteSettings.getInstance().sitesNum(); i++) {
-    this.generateSiteList(i.toString());
+  var num = SiteSettings.getInstance().sitesNum();
+  for (var i = 0; i < num; i++) {
+    div.appendChild(this.generateSiteList(i.toString()));
   }
+
+  this.siteListContainer_.appendChild(div);
 };
 
 /**
@@ -657,11 +783,28 @@ PageManager.prototype.generateSettingPage = function() {
  * @param {String} siteId  The id of the new site
  */
 PageManager.prototype.switchSite = function(siteId) {
-  this.curTabs_ = siteId == GLOBAL_SETTING_ID ?
-                this.global_.tabs_ : this.site_.tabs_;
+  if (siteId == GLOBAL_SETTING_ID) { // hide site, show global
+    var tabs = this.siteSection_;
+    Util.array.apply(tabs, function(tab) {      
+      Util.CSS.hideElement(tab);
+    });
 
-  Util.array.applyToMultiple(this.curTabs_, this.commonTabParts_,
-                          function(tab, part) { tab.appendChild(part); });
+    tabs = this.globalSection_;
+    Util.array.apply(tabs, function(tab) {      
+      Util.CSS.showElement(tab);
+    });
+  } else { // hide global, show site
+    var tabs = this.globalSection_;
+    Util.array.apply(tabs, function(tab) {      
+      Util.CSS.hideElement(tab);
+    });
+
+    tabs = this.siteSection_;
+    Util.array.apply(tabs, function(tab) {      
+      Util.CSS.showElement(tab);
+    });    
+  }
+	this.adjustPageHeight();
 };
 
 /**
@@ -693,6 +836,12 @@ PageManager.generateRuntimeTab = function() {
     if (service != ServiceSetting.types.WEBSERVERFILTER) {
     	addRuntimeServiceInfo(service);
     }
+  });
+  
+  // set text to spans
+  var spans = rtBody.getElementsByTagName('SPAN');
+  Util.array.apply(spans, function(span) {
+    TransMarkSet.transLanguageForSpanElem(span);
   });
 };
 
@@ -748,9 +897,8 @@ PageManager.prototype.generateSiteList = function(siteId) {
   /**
    * @type {String} siteName  The logical name of the site
    */
-  var siteName = siteId == GLOBAL_SETTING_ID ?
-                 SiteSettings.getInstance().siteName(GLOBAL_SETTING_ID) :
-                 SiteSettings.getInstance().siteName(siteId);
+  var siteName = SiteSettings.getInstance().siteName(siteId);
+
   /**
    * @type {String} siteLinkTip  The tip of the site link
    */
@@ -758,15 +906,22 @@ PageManager.prototype.generateSiteList = function(siteId) {
                     SettingEditorLanguage.tips.globalLink :
                     SettingEditorLanguage.tips.siteLink;
 
-
   // generate one site list item from copying the template
   var siteListItem = this.siteListTpl_.cloneNode(true);
-  Util.CSS.removeClass(siteListItem, HIDDEN_CLASS);
+  siteListItem.id = '';
+  
+  // To improve performance, using className instead of 
+  // Util.CSS.removeClass(siteListItem, HIDDEN_CLASS)
+  // make sure that the className is set to correct value
+  siteListItem.className = 'inactiveSite';
 
   // find the link
   var alink = siteListItem.rows.item(1).cells.item(1).firstChild;
-  Util.event.add(alink, 'click', function() {
-    var perf = new Perf('switch site');
+  
+  // To improve performance, using onclick instead of Util.event.add
+  // make sure only one function for the 'onclick' event, and no param
+  // needed.
+  alink.onclick = function() {
     // Generally speaking, it should check all tabs in the site.
     // But since program will check the current tab when user switch to another,
     // so we can assume that all the other tabs in the site have been checked.
@@ -781,11 +936,14 @@ PageManager.prototype.generateSiteList = function(siteId) {
         mng.setCurrentSite(siteId);
       }
     }
-    perf.check('done');
-    perf.report();
-  });
+  };
+  Util.event.handlers_.push({elem:alink, name:'onclick'});
 
-  alink.innerHTML = PageManager.addWrapMark(siteName);
+  // To improve performance, first check the length
+  alink.innerHTML = siteName.length > MAX_SITELIST_WIDTH ?
+      PageManager.addWrapMark(siteName) : siteName;
+
+  // add tips
   alink.tip = siteLinkTip;
   Tips.schedule(alink);
 
@@ -793,9 +951,8 @@ PageManager.prototype.generateSiteList = function(siteId) {
     Util.CSS.addClass(alink, SITELIST_GLOBALSETTING_CSS_CLASS);
   }
 
-  this.siteListContainer_.appendChild(siteListItem);
-
   TabManager.getInstance().addSiteListItem(siteListItem, siteId);
+  return siteListItem;
 };
 
 /**
@@ -921,23 +1078,33 @@ PasswordManager.prototype.clear = function(){
  * Checks the new passwords' consistency, submits the password change.
  */
 PasswordManager.prototype.confirm = function() {
-  if (this.newPassword_.value == this.newPassword2_.value) {
-    // request to server
-    if (ServerManager.requestChangePassword(this.oldPassword_.value,
-                                            this.newPassword_.value)) {
-      // change succeed
-      this.password_.value = this.newPassword_.value;
-      this.close();
-    } else {
-      this.error_.innerHTML = ServerManager.errorMsg;
-      Util.CSS.showElement(this.error_);
-      this.clear();
-      this.oldPassword_.focus();
-    }
-  } else {
+  if (!ValidateManager.validators.PASSWORD.check(this.newPassword_, false)) {
+    this.error_.innerHTML = NEW_PASSWORDS_INVALID;
+    Util.CSS.showElement(this.error_);
+    this.clear();
+    this.oldPassword_.focus();
+    return;
+  }
+  
+  if (this.newPassword_.value != this.newPassword2_.value) {
     this.error_.innerHTML = NEW_PASSWORDS_CONFLICT;
     Util.CSS.showElement(this.error_);
     this.clear();
     this.oldPassword_.focus();
+    return;
   }
+  
+  // request to server
+  if (!ServerManager.requestChangePassword(this.oldPassword_.value,
+                                           this.newPassword_.value)) {
+    this.error_.innerHTML = ServerManager.errorMsg;
+    Util.CSS.showElement(this.error_);
+    this.clear();
+    this.oldPassword_.focus();
+    return;
+  }
+  
+  // change succeed
+  this.password_.value = this.newPassword_.value;
+  this.close();
 };

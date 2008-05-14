@@ -29,7 +29,7 @@ BEGIN
             VALUE "FileDescription", "Sitemap Service"
             VALUE "FileVersion", SITEMAP_VERSION1
             VALUE "InternalName", "SitemapService.exe"
-            VALUE "LegalCopyright", "Copyright (C) 2007"
+            VALUE "LegalCopyright", "Copyright (C) 2008"
             VALUE "OriginalFilename", "sitemapservice.exe"
             VALUE "ProductName", PRODUCT_NAME
             VALUE "ProductVersion", SITEMAP_VERSION1

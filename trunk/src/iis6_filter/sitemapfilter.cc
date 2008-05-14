@@ -40,11 +40,7 @@ bool SitemapFilter::Initialize(HMODULE module_handle) {
 
   // Load settings.
   SiteSettings settings;
-  if (!settings.LoadWebserverConfig()) {
-    Util::Log(EVENT_ERROR, "Failed to load webserver config.");
-    return false;
-  }
-  if (!settings.LoadFromFile(settings_file.c_str())) {
+  if (!settings.LoadFromFileForFilter(settings_file.c_str())) {
     Util::Log(EVENT_ERROR, "Failed to load setting from file.");
     return false;
   }
@@ -106,8 +102,8 @@ DWORD SitemapFilter::Process(HTTP_FILTER_CONTEXT *context,
     size = kMaxSiteIdLength;
     suc = context->GetServerVariable(context, "INSTANCE_ID", record.siteid, &size);
     if (!suc) return SF_STATUS_REQ_NEXT_NOTIFICATION;
-    int siteindex = BaseFilter::MatchSite(record.siteid);
-    if (siteindex == -1) return SF_STATUS_REQ_NEXT_NOTIFICATION;
+    bool site_enabled = BaseFilter::MatchSite(record.siteid);
+    if (!site_enabled) return SF_STATUS_REQ_NEXT_NOTIFICATION;
 
     // Save the protocol to reocrd.host.
     int offset = 0;
@@ -204,7 +200,7 @@ DWORD SitemapFilter::Process(HTTP_FILTER_CONTEXT *context,
             record.url, record.host, record.siteid, record.contentHashCode,
             record.last_modified, record.last_filewrite, record.statuscode);
 
-    BaseFilter::Send(&record, siteindex);
+    BaseFilter::Send(&record);
   }
 
   return SF_STATUS_REQ_NEXT_NOTIFICATION;

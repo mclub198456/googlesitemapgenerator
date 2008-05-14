@@ -107,5 +107,5 @@ if (isMinIE6) {
 } else {
   var msg = BROWSER_REQUIRE_MSG + '\nfirefox1.5\nfirefox2.0\nIE6\nIE7\n';
   alert(msg);
-  throw new Error('invalid browser');
+  BROWSER_TYPE = Browser.types.FIREFOX; // default way
 }

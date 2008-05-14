@@ -108,7 +108,8 @@ bool SiteDataManagerImpl::Initialize(const SiteSetting& setting) {
     }
 
     // Get urls in temp files (approximately).
-    siteinfo_->set_url_in_tempfile(filemanager_.GetTempFilesSize());
+    siteinfo_->set_url_in_tempfile(filemanager_.GetTempFilesSize()
+      / (sizeof(VisitingRecord) + sizeof(UrlFprint)));
     siteinfo_->set_url_in_memory(recordtable_->Size());
 
     // Try to push the latest host name.
@@ -173,7 +174,8 @@ bool SiteDataManagerImpl::SaveMemoryData(bool flush, bool block) {
 
      // Update runtime info.
       if (siteinfo_ != NULL && RuntimeInfoManager::Lock(true)) {
-        siteinfo_->set_url_in_tempfile(filemanager_.GetTempFilesSize());
+        siteinfo_->set_url_in_tempfile(filemanager_.GetTempFilesSize()
+          / (sizeof(VisitingRecord) + sizeof(UrlFprint)));
         siteinfo_->set_url_in_memory(0);
         RuntimeInfoManager::Unlock();
       }

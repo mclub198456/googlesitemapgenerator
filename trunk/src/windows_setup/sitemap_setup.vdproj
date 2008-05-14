@@ -93,6 +93,12 @@
         }
         "Entry"
         {
+        "MsmKey" = "8:_499E183136514E9E8589DA0806371324"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_56303BC9E1C44EE3A1ED9EBBC8C49AB4"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
@@ -105,13 +111,13 @@
         }
         "Entry"
         {
-        "MsmKey" = "8:_708424EB5FED4F1EAAD0B2E0FF5F3C38"
+        "MsmKey" = "8:_61A85A3DA0FA430E91D4811F60FEB840"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
-        "MsmKey" = "8:_7507B2B2F4984BC8BFFF58F37945C98F"
+        "MsmKey" = "8:_708424EB5FED4F1EAAD0B2E0FF5F3C38"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -130,12 +136,6 @@
         "Entry"
         {
         "MsmKey" = "8:_86FFE067D91A4E83A91D5CBFE4DCAAC6"
-        "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_87A5B40A9CB64EC2A22E9DE2CF009627"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -208,18 +208,6 @@
         "Entry"
         {
         "MsmKey" = "8:_E3BD3348294CB7D7B7FC97800993CF59"
-        "OwnerKey" = "8:_9FE7B4532D0C459993D30E54800C65BE"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_E3BD3348294CB7D7B7FC97800993CF59"
-        "OwnerKey" = "8:_D4DCCAE0B42D4D589DEE80FE588FF965"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_E3BD3348294CB7D7B7FC97800993CF59"
         "OwnerKey" = "8:_80BF1BADDC0948129C35B89D842E47A6"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -232,7 +220,19 @@
         "Entry"
         {
         "MsmKey" = "8:_E3BD3348294CB7D7B7FC97800993CF59"
+        "OwnerKey" = "8:_D4DCCAE0B42D4D589DEE80FE588FF965"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_E3BD3348294CB7D7B7FC97800993CF59"
         "OwnerKey" = "8:_A0B3BB2B092F46E3AD7E65DE2B39A493"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_E3BD3348294CB7D7B7FC97800993CF59"
+        "OwnerKey" = "8:_9FE7B4532D0C459993D30E54800C65BE"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -293,7 +293,7 @@
         "DisplayName" = "8:Release"
         "IsDebugOnly" = "11:FALSE"
         "IsReleaseOnly" = "11:TRUE"
-        "OutputFilename" = "8:..\\..\\Release\\sitemap_setup.msi"
+        "OutputFilename" = "8:..\\..\\Release\\sitemap_win.msi"
         "PackageFilesAs" = "3:2"
         "PackageFileSize" = "3:-2147483648"
         "CabType" = "3:1"
@@ -343,7 +343,7 @@
             "InstallAction" = "3:2"
             "Arguments" = "8:/start_service"
             "EntryPoint" = "8:"
-            "Sequence" = "3:4"
+            "Sequence" = "3:5"
             "Identifier" = "8:_104B4736_657F_424F_8A46_35B16B761B54"
             "InstallerClass" = "11:FALSE"
             "CustomActionData" = "8:"
@@ -376,6 +376,20 @@
             "InstallerClass" = "11:FALSE"
             "CustomActionData" = "8:"
             }
+            "{4AA51A2D-7D85-4A59-BA75-B0809FC8B380}:_4419410FAEEC44E68D28CFE9940E5863"
+            {
+            "Name" = "8:Set Permission"
+            "Condition" = "8:"
+            "Object" = "8:_9FE7B4532D0C459993D30E54800C65BE"
+            "FileType" = "3:2"
+            "InstallAction" = "3:2"
+            "Arguments" = "8:/set_permission"
+            "EntryPoint" = "8:"
+            "Sequence" = "3:1"
+            "Identifier" = "8:_934BC930_0055_40FB_B1EB_D5F499E91208"
+            "InstallerClass" = "11:FALSE"
+            "CustomActionData" = "8:"
+            }
             "{4AA51A2D-7D85-4A59-BA75-B0809FC8B380}:_4643748265DE48F4A90E40FF33EA04A4"
             {
             "Name" = "8:Update Setting"
@@ -385,7 +399,7 @@
             "InstallAction" = "3:2"
             "Arguments" = "8:/update_setting"
             "EntryPoint" = "8:"
-            "Sequence" = "3:1"
+            "Sequence" = "3:2"
             "Identifier" = "8:_3C0F390E_500E_4C7E_BA64_B791CE74FDBA"
             "InstallerClass" = "11:FALSE"
             "CustomActionData" = "8:"
@@ -399,7 +413,7 @@
             "InstallAction" = "3:2"
             "Arguments" = "8:/install_service"
             "EntryPoint" = "8:"
-            "Sequence" = "3:3"
+            "Sequence" = "3:4"
             "Identifier" = "8:_75E9804E_5660_454B_86A7_1348C19921CD"
             "InstallerClass" = "11:FALSE"
             "CustomActionData" = "8:"
@@ -413,7 +427,7 @@
             "InstallAction" = "3:2"
             "Arguments" = "8:/install_filter"
             "EntryPoint" = "8:"
-            "Sequence" = "3:2"
+            "Sequence" = "3:3"
             "Identifier" = "8:_B88CBAD8_2ECB_48D4_9162_6158B0561B4F"
             "InstallerClass" = "11:FALSE"
             "CustomActionData" = "8:"
@@ -427,7 +441,7 @@
             "InstallAction" = "3:2"
             "Arguments" = "8:/restart_webserver"
             "EntryPoint" = "8:"
-            "Sequence" = "3:6"
+            "Sequence" = "3:7"
             "Identifier" = "8:_AF557590_60AB_41EC_9CE2_01534953A1CF"
             "InstallerClass" = "11:FALSE"
             "CustomActionData" = "8:"
@@ -455,7 +469,7 @@
             "InstallAction" = "3:2"
             "Arguments" = "8:/start_config"
             "EntryPoint" = "8:"
-            "Sequence" = "3:5"
+            "Sequence" = "3:6"
             "Identifier" = "8:_4A55F6B8_7949_40A9_B6E2_D5C143381B0C"
             "InstallerClass" = "11:FALSE"
             "CustomActionData" = "8:"
@@ -735,6 +749,26 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_499E183136514E9E8589DA0806371324"
+            {
+            "SourcePath" = "8:help.url"
+            "TargetName" = "8:help.url"
+            "Tag" = "8:"
+            "Folder" = "8:_396254564EBB4E7F82D5639E516332BC"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_56303BC9E1C44EE3A1ED9EBBC8C49AB4"
             {
             "SourcePath" = "8:..\\sitemapservice\\templates\\images\\ul.gif"
@@ -775,12 +809,12 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_708424EB5FED4F1EAAD0B2E0FF5F3C38"
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_61A85A3DA0FA430E91D4811F60FEB840"
             {
-            "SourcePath" = "8:..\\sitemapservice\\templates\\scripts\\runtimeinfomanager.js"
-            "TargetName" = "8:runtimeinfomanager.js"
+            "SourcePath" = "8:homepage.url"
+            "TargetName" = "8:homepage.url"
             "Tag" = "8:"
-            "Folder" = "8:_C6EB9F82C53E4F228EB7C25F427E9408"
+            "Folder" = "8:_396254564EBB4E7F82D5639E516332BC"
             "Condition" = "8:"
             "Transitive" = "11:FALSE"
             "Vital" = "11:TRUE"
@@ -795,12 +829,12 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_7507B2B2F4984BC8BFFF58F37945C98F"
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_708424EB5FED4F1EAAD0B2E0FF5F3C38"
             {
-            "SourcePath" = "8:..\\..\\document\\sitemap_qa_en_US.pdf"
-            "TargetName" = "8:sitemap_qa_en_US.pdf"
+            "SourcePath" = "8:..\\sitemapservice\\templates\\scripts\\runtimeinfomanager.js"
+            "TargetName" = "8:runtimeinfomanager.js"
             "Tag" = "8:"
-            "Folder" = "8:_396254564EBB4E7F82D5639E516332BC"
+            "Folder" = "8:_C6EB9F82C53E4F228EB7C25F427E9408"
             "Condition" = "8:"
             "Transitive" = "11:FALSE"
             "Vital" = "11:TRUE"
@@ -841,26 +875,6 @@
             "TargetName" = "8:ulborder.gif"
             "Tag" = "8:"
             "Folder" = "8:_961E5DB663F64A81B467547F05F044D0"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:FALSE"
-            "IsolateTo" = "8:"
-            }
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_87A5B40A9CB64EC2A22E9DE2CF009627"
-            {
-            "SourcePath" = "8:..\\..\\document\\sitemap_en_US.pdf"
-            "TargetName" = "8:sitemap_en_US.pdf"
-            "Tag" = "8:"
-            "Folder" = "8:_396254564EBB4E7F82D5639E516332BC"
             "Condition" = "8:"
             "Transitive" = "11:FALSE"
             "Vital" = "11:TRUE"
@@ -1114,7 +1128,7 @@
             }
             "{3C67513D-01DD-4637-8A68-80971EB9504F}:_396254564EBB4E7F82D5639E516332BC"
             {
-            "DefaultLocation" = "8:[ProgramFilesFolder][Manufacturer]\\[ProductName]"
+            "DefaultLocation" = "8:[ProgramFilesFolder][Manufacturer]\\Google Sitemap Generator"
             "Name" = "8:#1925"
             "AlwaysCreate" = "11:FALSE"
             "Condition" = "8:"
@@ -1252,9 +1266,9 @@
         "Product"
         {
         "Name" = "8:Microsoft Visual Studio"
-        "ProductName" = "8:Google Sitemap Generator"
+        "ProductName" = "8:Google Sitemap Generator (Beta)"
         "ProductCode" = "8:{D2B963D9-9957-452C-BEB3-DA0FD7F9DA16}"
-        "PackageCode" = "8:{4C6324FE-062B-4451-AA5E-CD227400CAEB}"
+        "PackageCode" = "8:{0CBE4DDD-0D08-4764-B51A-74CE717B04FC}"
         "UpgradeCode" = "8:{2696ACEC-3F4D-4B5F-AD4A-B951CFF63B12}"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:TRUE"
@@ -1264,7 +1278,7 @@
         "Manufacturer" = "8:Google"
         "ARPHELPTELEPHONE" = "8:"
         "ARPHELPLINK" = "8:"
-        "Title" = "8:Google Sitemap Generator Setup"
+        "Title" = "8:[ProductName] Setup"
         "Subject" = "8:"
         "ARPCONTACT" = "8:Google"
         "Keywords" = "8:"
@@ -1375,7 +1389,7 @@
         {
             "{970C0BB2-C7D0-45D7-ABFA-7EC378858BC0}:_0996C3C5CBCE4EF5B3680EE372CDD6E3"
             {
-            "Name" = "8:Configuration Tool"
+            "Name" = "8:Admin Console"
             "Arguments" = "8:-start_config"
             "Description" = "8:"
             "ShowCmd" = "3:1"
@@ -1387,29 +1401,29 @@
             "Icon" = "8:"
             "Feature" = "8:"
             }
-            "{970C0BB2-C7D0-45D7-ABFA-7EC378858BC0}:_100831808DA14734A782121422ABE48A"
+            "{970C0BB2-C7D0-45D7-ABFA-7EC378858BC0}:_3F008E354E8E40C7B832A3DA498F52AB"
             {
-            "Name" = "8:Google Sitemap Generator Help"
+            "Name" = "8:Online Help"
             "Arguments" = "8:"
             "Description" = "8:"
             "ShowCmd" = "3:1"
             "IconIndex" = "3:0"
             "Transitive" = "11:FALSE"
-            "Target" = "8:_87A5B40A9CB64EC2A22E9DE2CF009627"
+            "Target" = "8:_499E183136514E9E8589DA0806371324"
             "Folder" = "8:_1E8A4BBD9D334F0DBE883F54CB527741"
             "WorkingFolder" = "8:_396254564EBB4E7F82D5639E516332BC"
             "Icon" = "8:"
             "Feature" = "8:"
             }
-            "{970C0BB2-C7D0-45D7-ABFA-7EC378858BC0}:_C02AF57A3DDE41A2BDF4BE7563E07265"
+            "{970C0BB2-C7D0-45D7-ABFA-7EC378858BC0}:_42017F3818B24A42A69071FD660EC534"
             {
-            "Name" = "8:Google Sitemap Generator Q & A"
+            "Name" = "8:Project Home Page"
             "Arguments" = "8:"
             "Description" = "8:"
             "ShowCmd" = "3:1"
             "IconIndex" = "3:0"
             "Transitive" = "11:FALSE"
-            "Target" = "8:_7507B2B2F4984BC8BFFF58F37945C98F"
+            "Target" = "8:_61A85A3DA0FA430E91D4811F60FEB840"
             "Folder" = "8:_1E8A4BBD9D334F0DBE883F54CB527741"
             "WorkingFolder" = "8:_396254564EBB4E7F82D5639E516332BC"
             "Icon" = "8:"
@@ -1427,7 +1441,7 @@
                 {
                     "{688940B3-5CA9-4162-8DEE-2993FA9D8CBC}:_1424D66B26544CE89FEB0AB056E3B9AE"
                     {
-                    "Sequence" = "3:200"
+                    "Sequence" = "3:300"
                     "DisplayName" = "8:Installation Folder"
                     "UseDynamicProperties" = "11:TRUE"
                     "IsDependency" = "11:FALSE"
@@ -1462,7 +1476,7 @@
                     }
                     "{688940B3-5CA9-4162-8DEE-2993FA9D8CBC}:_714B1DE242A54882B1E5BC484C93E8AE"
                     {
-                    "Sequence" = "3:100"
+                    "Sequence" = "3:200"
                     "DisplayName" = "8:License Agreement"
                     "UseDynamicProperties" = "11:TRUE"
                     "IsDependency" = "11:FALSE"
@@ -1798,7 +1812,7 @@
             }
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_9FE7B4532D0C459993D30E54800C65BE"
             {
-            "SourcePath" = "8:..\\..\\Release\\SitemapService.exe"
+            "SourcePath" = "8:..\\..\\Debug\\SitemapService.exe"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_396254564EBB4E7F82D5639E516332BC"

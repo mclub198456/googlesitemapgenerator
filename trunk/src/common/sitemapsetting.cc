@@ -61,7 +61,7 @@ bool SitemapSetting::LoadSetting() {
   if (update_duration_ < 60)
     update_duration_ = 60;
 
-  LoadAttribute("update_start_time", update_start_time_);
+  LoadTimeAttribute("update_start_time", update_start_time_);
   LoadAttribute("file_name", file_name_);
   LoadAttribute("compress", compress_);
   LoadAttribute("max_file_url_number", max_file_url_number_);
@@ -78,7 +78,7 @@ bool SitemapSetting::LoadSetting() {
 void SitemapSetting::SaveSetting() {
   SaveAttribute("enabled", enabled_);
   SaveAttribute("update_duration_in_seconds", update_duration_);
-  SaveAttribute("update_start_time", update_start_time_);
+  SaveTimeAttribute("update_start_time", update_start_time_);
   SaveAttribute("compress", compress_);
   SaveAttribute("file_name", file_name_);
   SaveAttribute("max_file_url_number", max_file_url_number_);

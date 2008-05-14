@@ -95,7 +95,7 @@ ActiveSocket& ActiveSocket::operator=(const ActiveSocket& o) {
 }
 
 
-char* ActiveSocket::GetLocalIp() const {
+std::string ActiveSocket::GetLocalIp() const {
   sockaddr_in local_addr;
 #ifdef WIN32
   int local_addr_length = sizeof(local_addr);
@@ -105,13 +105,15 @@ char* ActiveSocket::GetLocalIp() const {
 
   if (getsockname(socket_, reinterpret_cast<sockaddr *>(&local_addr),
     &local_addr_length) != 0)
-    return NULL;
+    return "";
 
-  return inet_ntoa(local_addr.sin_addr);
+  char* ip = inet_ntoa(local_addr.sin_addr);
+  return ip != NULL ? ip : "";
 }
 
-char* ActiveSocket::GetRemoteIp() const{
-  return remote_addr_ == NULL ? NULL : inet_ntoa(remote_addr_->sin_addr);
+std::string ActiveSocket::GetRemoteIp() const{
+  char* ip = (remote_addr_ == NULL ? NULL : inet_ntoa(remote_addr_->sin_addr));
+  return ip != NULL ? ip : "";
 }
 
 
@@ -155,26 +157,27 @@ std::string ActiveSocket::ReceiveBytes(int reqLen) const {
 }
 
 // the string return without EOL
-std::string ActiveSocket::ReceiveLine() const {
-  std::string ret;
-  ret.reserve(100);
+bool ActiveSocket::ReceiveLine(std::string* line) const {
+  line->clear();
+  line->reserve(100);
 
   while (true) {
     char r;
 
     int res = recv(socket_, &r, 1, 0);
     if (res == 0) {
-      return ret;
+      return true;
     } else if (res == -1) {
-      return "";
+      Util::Log(EVENT_ERROR, "ReceiveLine socket error. (%d)", errno);
+      return false;
     }
 
     if (r != '\x0d' && r != '\x0a')
-      ret.push_back(r);
+      line->push_back(r);
 
     // in Windows, it's 0d0a, in linux, it's 0a (\n)
     if (r == '\x0a') {
-      return ret;
+      return true;
     }
   }
 }
@@ -185,5 +188,9 @@ int ActiveSocket::SendLine(const std::string& s) const {
 }
 
 int ActiveSocket::SendBytes(const char * buffer, int length) const {
-  return send(socket_, buffer, length, 0);
+  if (length > 0) {
+    return send(socket_, buffer, length, 0);
+  } else {
+    return 0;
+  }
 }

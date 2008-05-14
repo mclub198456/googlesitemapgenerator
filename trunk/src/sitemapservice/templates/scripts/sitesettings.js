@@ -87,6 +87,13 @@ BaseSetting.prototype.xpath = function() {
 };
 
 /**
+ * To ask the site index of this setting bottom-up in the Tree.
+ */
+BaseSetting.prototype.getSiteIdx = function() {
+  return null;
+};
+
+/**
  * Checks if the setting group is customized, if any setting component in this
  * setting group is not inherited, it will be treated as customized.
  * @return {Boolean} If the setting is customeized
@@ -282,28 +289,28 @@ function SiteSettings() {
 
   // add the leaf settings of the node
   this.addComponent_(new SimpleSettingComponent(
-      '@auto_add', 'autoAdd', SimpleSettingComponent.types.BOOLEAN));
+      '@auto_add', 'autoAdd', this, SimpleSettingComponent.types.BOOLEAN));
 
   this.addComponent_(new SimpleSettingComponent(
-      '@remote_admin', 'remoteAccess',
+      '@remote_admin', 'remoteAccess', this,
       SimpleSettingComponent.types.BOOLEAN));
 
   this.addComponent_(new SimpleSettingComponent(
-      '@backup_duration_in_seconds', 'backupDurationInSeconds',
+      '@backup_duration_in_seconds', 'backupDurationInSeconds', this,
       SimpleSettingComponent.types.DURATION,
       ValidateManager.validators.DURATION));
 
   this.addComponent_(new SimpleSettingComponent(
-      '@setting_port', 'settingPort',
+      '@setting_port', 'settingPort', this,
       SimpleSettingComponent.types.STRING,
       new ValidateManager('number', '(0,65536)')));
 
   this.addComponent_(new SimpleSettingComponent(
-      '@admin_name', null,
-      SimpleSettingComponent.types.STRING, {readonly: true}));
+      '@admin_name', null, this,
+      SimpleSettingComponent.types.STRING, null, {readonly: true}));
 
   this.addComponent_(new SimpleSettingComponent(
-      '@admin_password', 'password',
+      '@admin_password', 'password', this,
       SimpleSettingComponent.types.STRING, 
       ValidateManager.validators.PASSWORD));
   /**
@@ -316,9 +323,11 @@ function SiteSettings() {
    * The sub node of site setting.
    * @type {SiteSetting}
    */
-  this.site_ = new NormalSiteSetting('SiteSetting', this.global_);
+  this.site_ = new NormalSiteSetting('SiteSetting', this, this.global_);
 
   this.currentSite_ = GLOBAL_SETTING_ID;
+  
+  this.timestamp_ = null;
 }
 SiteSettings.inheritsFrom(BaseSetting);
 
@@ -331,6 +340,22 @@ SiteSettings.getInstance = function() {
     SiteSettings.getInstance.instance_ = new SiteSettings();
   }
   return SiteSettings.getInstance.instance_;
+};
+
+/**
+ * Sets the timestamp of this sitesettings.
+ * @param {String} ts  The timestamp
+ */
+SiteSettings.prototype.SetTimestamp = function(ts) {
+  this.timestamp_ = ts
+};
+
+/**
+ * Gets the timestamp of this sitesettings.
+ * @return {String} The timestamp
+ */
+SiteSettings.prototype.timestamp = function() {
+  return this.timestamp_;
 };
 
 /**
@@ -480,6 +505,15 @@ SiteSettings.prototype.siteId = function(opt_siteIdx) {
 };
 
 /**
+ * Gets the site index.
+ * @param {SiteSetting} site  The site object
+ * @return {String|Number} The site index
+ */
+SiteSettings.prototype.getIndex = function(site) {
+  return site == this.global_ ? GLOBAL_SETTING_ID : this.currentSite_;
+};
+
+/**
  * Gets the port setting.
  * @return {Number} The port of the configuration
  */
@@ -493,7 +527,7 @@ SiteSettings.prototype.getPort = function() {
  * @constructor
  * @param {String} xpath  The xpath of the node
  */
-function SiteSetting(xpath) {
+function SiteSetting(xpath, ownerSetting) {
   if (arguments[0] == 'inheritsFrom') {
     // called by inheritsFrom function
     return;
@@ -503,38 +537,41 @@ function SiteSetting(xpath) {
 
   this.name_ = null;
   this.id_ = null;
+  this.ownerSetting_ = ownerSetting;
 
   // Adds attached settings
 
   // add simple components
-  this.addComponent_(new SimpleSettingComponent(
-      '@enabled', 'siteEnabled',
-      SimpleSettingComponent.types.BOOLEAN));
+  this.addComponent_(new RadioSettingComponent(
+      '@enabled', 'siteEnabled', this,
+      new LabelManager(
+          ['siteEnabledLabel'], 'siteEnabled', 'siteEnabledSite'
+      )));
       
   this.addComponent_(new SimpleSettingComponent(
-      '@max_url_life_in_days', 'maxUrlLifeInDays',
+      '@max_url_life_in_days', 'maxUrlLifeInDays', this,
       SimpleSettingComponent.types.STRING,
       ValidateManager.validators.NUMBER));
       
   this.addComponent_(new SimpleSettingComponent(
-      '@max_url_in_memory', 'maxSiteUrlInMemory',
+      '@max_url_in_memory', 'maxSiteUrlInMemory', this,
       SimpleSettingComponent.types.STRING,
       ValidateManager.validators.NUMBER));
 
   this.addComponent_(new SimpleSettingComponent(
-      '@max_url_in_disk', 'maxUrlInDisk',
+      '@max_url_in_disk', 'maxUrlInDisk', this,
       SimpleSettingComponent.types.STRING,
       ValidateManager.validators.NUMBER));
 
   this.addComponent_(new SimpleSettingComponent(
-      '@add_generator_info', 'addGeneratorInfo',
+      '@add_generator_info', 'addGeneratorInfo', this,
       SimpleSettingComponent.types.BOOLEAN));
 
   // add list
   this.addComponent_(new ListSettingComponent(
       'UrlReplacements',
       {containerId: 'generalUrlReplaceListContainer',
-      listTplId: 'urlRepListTpl'}));
+      listTplId: 'urlRepListTpl'}, this));
 
   // BINDING
   this.getComponent_('max_url_in_disk').registListener(
@@ -550,20 +587,21 @@ function SiteSetting(xpath) {
    * @type {Array.<SitemapSetting>}
    */
   this.sitemaps_ = [
-    new WebSitemapSetting('WebSitemapSetting'),
-    new NewsSitemapSetting('NewsSitemapSetting'),
-    new VideoSitemapSetting('VideoSitemapSetting'),
-    new MobileSitemapSetting('MobileSitemapSetting'),
-    new CodeSearchSitemapSetting('CodeSearchSitemapSetting'),
-    new BlogSearchSitemapSetting('BlogSearchPingSetting')
+    new WebSitemapSetting('WebSitemapSetting', this),
+    new NewsSitemapSetting('NewsSitemapSetting', this),
+    new VideoSitemapSetting('VideoSitemapSetting', this),
+    new MobileSitemapSetting('MobileSitemapSetting', this),
+    new CodeSearchSitemapSetting('CodeSearchSitemapSetting', this),
+    new BlogSearchSitemapSetting('BlogSearchPingSetting', this)
   ];
 
   /**
    * Other sub setting nodes except sitemap.
    */
-  this.webServerFilter_ = new WebServerFilterSetting('WebserverFilterSetting');
-  this.fileScanner_ = new FileScannerSetting('FileScannerSetting');
-  this.logParser_ = new LogParserSetting('LogParserSetting');
+  this.webServerFilter_ = 
+      new WebServerFilterSetting('WebserverFilterSetting', this);
+  this.fileScanner_ = new FileScannerSetting('FileScannerSetting', this);
+  this.logParser_ = new LogParserSetting('LogParserSetting', this);
 
   /**
    * All sub setting nodes.
@@ -574,6 +612,10 @@ function SiteSetting(xpath) {
   ]);
 }
 SiteSetting.inheritsFrom(BaseSetting);
+
+SiteSetting.prototype.getSiteIdx = function() {
+  return this.ownerSetting_.getIndex(this);
+};
 
 /**
  * Sets the access right of the components of this setting, since there are more
@@ -733,20 +775,17 @@ SiteSetting.prototype.setInherit = function(isInherited) {
 /**
  * This class represents GlobalSetting, which inherits from SiteSetting.
  * @param {String} xpath  The xpath of the setting group
- * @param {SiteSettings} owner  The SiteSettings object this setting belongs to
+ * @param {SiteSettings} ownerSetting  The SiteSettings object this setting
+ * belongs to
  */
-function GlobalSetting(xpath, owner) {
+function GlobalSetting(xpath, ownerSetting) {
   if (arguments[0] == 'inheritsFrom') {
     // called by inheritsFrom function
     return;
   }
-  GlobalSetting.prototype.parent.constructor.call(this, xpath);
+  GlobalSetting.prototype.parent.constructor.call(this, xpath, ownerSetting);
 
   this.name_ = GLOBAL_SETTING_NAME;
-  /**
-   * @type {SiteSettings}
-   */
-  this.owner_ = owner;
 }
 GlobalSetting.inheritsFrom(SiteSetting);
 
@@ -767,7 +806,7 @@ GlobalSetting.prototype.isCustomized = function() {
 GlobalSetting.prototype.validate = function() {
   // Apply to sitesettings components too
   return GlobalSetting.prototype.parent.validate.call(this) &&
-         BaseSetting.prototype.validate.call(this.owner_);
+         BaseSetting.prototype.validate.call(this.ownerSetting_);
 };
 
 /**
@@ -778,14 +817,14 @@ GlobalSetting.prototype.validate = function() {
 GlobalSetting.prototype.load = function(xml) {
   GlobalSetting.prototype.parent.load.call(this, xml);
   // Load sitesettings components' values
-  BaseSetting.prototype.load.call(this.owner_, this.owner_xml_);
+  BaseSetting.prototype.load.call(this.ownerSetting_, this.ownerSetting_.xml_);
 };
 
 /**
  * Focus on the first setting element in the general tab in global setting.
  */
 GlobalSetting.prototype.focusOnFirst = function() {
-  BaseSetting.prototype.focusOnFirst.call(this.owner_);
+  BaseSetting.prototype.focusOnFirst.call(this);
 };
 
 /**
@@ -795,7 +834,7 @@ GlobalSetting.prototype.focusOnFirst = function() {
 GlobalSetting.prototype.save = function() {
   GlobalSetting.prototype.parent.save.call(this);
   // save sitesettings components' values
-  BaseSetting.prototype.save.call(this.owner_);
+  BaseSetting.prototype.save.call(this.ownerSetting_);
 };
 
 /**
@@ -807,7 +846,7 @@ GlobalSetting.prototype.save = function() {
 GlobalSetting.prototype.setAccess = function(readonly, reason) {
   GlobalSetting.prototype.parent.setAccess.call(this, readonly, reason);
   // save sitesettings components' values
-  BaseSetting.prototype.setAccess.call(this.owner_, readonly, reason);
+  BaseSetting.prototype.setAccess.call(this.ownerSetting_, readonly, reason);
 };
 //////////// Class NormalSiteSetting /////////////////
 /**
@@ -815,13 +854,14 @@ GlobalSetting.prototype.setAccess = function(readonly, reason) {
  * @param {String} xpath  The xpath of the setting group
  * @param {GlobalSetting} global  The Global Setting object.
  */
-function NormalSiteSetting(xpath, global) {
+function NormalSiteSetting(xpath, ownerSetting, global) {
   if (arguments[0] == 'inheritsFrom') {
     // called by inheritsFrom function
     return;
   }
 
-  NormalSiteSetting.prototype.parent.constructor.call(this, xpath);
+  NormalSiteSetting.prototype.parent.constructor.call(this, xpath, 
+                                                      ownerSetting);
 
   this.customize_ = new CustomizeSettingComponent('generalCustomize', this);
 
@@ -837,20 +877,20 @@ function NormalSiteSetting(xpath, global) {
 
   this.addComponent_(this.customize_);
   this.addComponent_(new SimpleSettingComponent(
-      '@name', null, SimpleSettingComponent.types.STRING,
+      '@name', null, this, SimpleSettingComponent.types.STRING, null,
       {isSiteSpecial: true, readonly: true}));
 
   this.addComponent_(new SimpleSettingComponent(
-      '@site_id', null, SimpleSettingComponent.types.STRING,
+      '@site_id', null, this, SimpleSettingComponent.types.STRING, null,
       {isSiteSpecial: true, readonly: true}));
 
   this.addComponent_(new SimpleSettingComponent(
-      '@host', 'host',
+      '@host', 'host', this,
       SimpleSettingComponent.types.STRING, new ValidateManager('host'),
       {isSiteSpecial: true}));
 
   this.addComponent_(new SimpleSettingComponent(
-      '@log_path', 'logPath',
+      '@log_path', 'logPath', this,
       SimpleSettingComponent.types.STRING, new ValidateManager('logPath'),
       {isSiteSpecial: true}));
 
@@ -921,7 +961,7 @@ ServiceType.prototype.name = function() {
  * @param {String} xpath  The service xpath
  * @param {ServiceSetting.types} type  The service type
  */
-function ServiceSetting(xpath, type) {
+function ServiceSetting(xpath, type, ownerSite) {
   if (arguments[0] == 'inheritsFrom') {
     // called by inheritsFrom function
     return;
@@ -934,6 +974,7 @@ function ServiceSetting(xpath, type) {
   // parent method.
   ServiceSetting.prototype.parent.constructor.call(this, xpath);
   this.type_ = type;
+  this.ownerSite_ = ownerSite;
 
   // Add common components for sitemap setting.
   // If the sub sitemap has different components, can use
@@ -964,6 +1005,10 @@ ServiceSetting.types = {
 ServiceSetting.prototype.type = function() {
   return this.type_;
 };
+
+ServiceSetting.prototype.getSiteIdx = function() {
+  return this.ownerSite_.getSiteIdx();
+};
 //////////// Class SitemapSetting /////////////////
 /**
  * This class represents a sitemap, which inherits from ServiceSetting.
@@ -972,7 +1017,7 @@ ServiceSetting.prototype.type = function() {
  * @param {TabPage.types} settingTabType  Which tab page this sitemap setting is
  *   on.
  */
-function SitemapSetting(xpath, serviceType, settingTabType) {
+function SitemapSetting(xpath, serviceType, settingTabType, ownerSite) {
   if (arguments[0] == 'inheritsFrom') {
     // called by inheritsFrom function
     return;
@@ -984,7 +1029,8 @@ function SitemapSetting(xpath, serviceType, settingTabType) {
   // so directly using 'this.parent.xxx' to call parent method will cause
   // death-cycle call. We have to use explicit parent class name to call the
   // parent method.
-  SitemapSetting.prototype.parent.constructor.call(this, xpath, serviceType);
+  SitemapSetting.prototype.parent.constructor.call(this, xpath, serviceType,
+                                                   ownerSite);
   /**
    * @type {TabPage.types}
    */
@@ -999,36 +1045,39 @@ function SitemapSetting(xpath, serviceType, settingTabType) {
   if (serviceType != ServiceSetting.types.BLOGSEARCHPING) {
 
     // add simple components
+    var enableText = prefix + 'Enabled';
     this.addComponent_(new SimpleSettingComponent(
-        '@enabled', prefix + 'Enabled',
+        '@enabled', enableText, this,
+        SimpleSettingComponent.types.BOOLEAN, null, null,
+        new LabelManager([enableText + 'Label'], enableText, 
+                         enableText + 'Site')));
+
+    this.addComponent_(new SimpleSettingComponent(
+        '@compress', prefix + 'Compress', this,
         SimpleSettingComponent.types.BOOLEAN));
 
     this.addComponent_(new SimpleSettingComponent(
-        '@compress', prefix + 'Compress',
-        SimpleSettingComponent.types.BOOLEAN));
-
-    this.addComponent_(new SimpleSettingComponent(
-        '@update_duration_in_seconds', prefix + 'Duration',
+        '@update_duration_in_seconds', prefix + 'Duration', this,
         SimpleSettingComponent.types.DURATION,
         ValidateManager.validators.DURATION));
 
     this.addComponent_(new SimpleSettingComponent(
-        '@update_start_time', prefix + 'UpdateStartTime', 
+        '@update_start_time', prefix + 'UpdateStartTime', this,
         SimpleSettingComponent.types.STRING,
         ValidateManager.validators.DATE));
 
     this.addComponent_(new SimpleSettingComponent(
-        '@file_name', prefix + 'FileName', 
+        '@file_name', prefix + 'FileName', this,
         SimpleSettingComponent.types.STRING, 
         ValidateManager.validators.XMLFILE));
 
     this.addComponent_(new SimpleSettingComponent(
-        '@max_file_url_number', prefix + 'MaxFileUrl', 
+        '@max_file_url_number', prefix + 'MaxFileUrl', this,
         SimpleSettingComponent.types.STRING,
         new ValidateManager('number', '[1,50000]')));
 
     this.addComponent_(new SimpleSettingComponent(
-        '@max_file_size', prefix + 'MaxFileSize',  
+        '@max_file_size', prefix + 'MaxFileSize', this,
         SimpleSettingComponent.types.SPACESIZE,
         new ValidateManager('number', '(0,10485760]')));
 
@@ -1036,15 +1085,15 @@ function SitemapSetting(xpath, serviceType, settingTabType) {
     this.addComponent_(new ListSettingComponent(
         'IncludedUrls',
         {containerId: prefix + 'SitemapIncludedUrlListContainer',
-        listTplId: 'urlPatternListTpl'}));
+        listTplId: 'urlPatternListTpl'}, this));
     this.addComponent_(new ListSettingComponent(
         'ExcludedUrls',
         {containerId: prefix + 'SitemapExcludedUrlListContainer',
-        listTplId: 'urlPatternListTpl'}));
+        listTplId: 'urlPatternListTpl'}, this));
     this.addComponent_(new ListSettingComponent(
         'NotifyUrls',
         {containerId: prefix + 'SitemapNotifyUrlListContainer',
-        listTplId: 'urlListTpl'}));
+        listTplId: 'urlListTpl'}, this));
   }
 }
 SitemapSetting.inheritsFrom(ServiceSetting);
@@ -1116,13 +1165,13 @@ SitemapSetting.getSitemapPrefix_ = function(type) {
  * This class represents a web sitemap, which inherits from SitemapSetting.
  * @param {String} xpath  The xpath of the sitemap
  */
-function WebSitemapSetting(xpath) {
+function WebSitemapSetting(xpath, ownerSite) {
   this.parent.constructor.call(this, xpath,
                                ServiceSetting.types.WEBSITEMAP,
-                               TabPage.types.WEB);
+                               TabPage.types.WEB, ownerSite);
   // add simple components
   this.addComponent_(new SimpleSettingComponent(
-      '@included_in_robots_txt', 'robotsIncluded',
+      '@included_in_robots_txt', 'robotsIncluded', this,
       SimpleSettingComponent.types.BOOLEAN));
 }
 WebSitemapSetting.inheritsFrom(SitemapSetting);
@@ -1132,13 +1181,13 @@ WebSitemapSetting.inheritsFrom(SitemapSetting);
  * This class represents a news sitemap, which inherits from SitemapSetting.
  * @param {String} xpath  The xpath of the sitemap
  */
-function NewsSitemapSetting(xpath) {
+function NewsSitemapSetting(xpath, ownerSite) {
   this.parent.constructor.call(this, xpath,
                                ServiceSetting.types.NEWSSITEMAP,
-                               TabPage.types.NEWS);
+                               TabPage.types.NEWS, ownerSite);
   // add simple components
   this.addComponent_(new SimpleSettingComponent(
-      '@expire_duration_in_seconds', 'newsExpireDuration',
+      '@expire_duration_in_seconds', 'newsExpireDuration', this,
       SimpleSettingComponent.types.DURATION,
       ValidateManager.validators.DURATION));
 }
@@ -1149,10 +1198,10 @@ NewsSitemapSetting.inheritsFrom(SitemapSetting);
  * This class represents a video sitemap, which inherits from SitemapSetting.
  * @param {String} xpath  The xpath of the sitemap
  */
-function VideoSitemapSetting(xpath) {
+function VideoSitemapSetting(xpath, ownerSite) {
   this.parent.constructor.call(this, xpath,
                                ServiceSetting.types.VIDEOSITEMAP,
-                               TabPage.types.VIDEO);
+                               TabPage.types.VIDEO, ownerSite);
 }
 VideoSitemapSetting.inheritsFrom(SitemapSetting);
 
@@ -1161,10 +1210,10 @@ VideoSitemapSetting.inheritsFrom(SitemapSetting);
  * This class represents a mobile sitemap, which inherits from SitemapSetting.
  * @param {String} xpath  The xpath of the sitemap
  */
-function MobileSitemapSetting(xpath) {
+function MobileSitemapSetting(xpath, ownerSite) {
   this.parent.constructor.call(this, xpath,
                                ServiceSetting.types.MOBILESITEMAP,
-                               TabPage.types.MOBILE);
+                               TabPage.types.MOBILE, ownerSite);
 }
 MobileSitemapSetting.inheritsFrom(SitemapSetting);
 
@@ -1174,10 +1223,10 @@ MobileSitemapSetting.inheritsFrom(SitemapSetting);
  * which inherits from SitemapSetting.
  * @param {String} xpath  The xpath of the sitemap
  */
-function CodeSearchSitemapSetting(xpath) {
+function CodeSearchSitemapSetting(xpath, ownerSite) {
   this.parent.constructor.call(this, xpath,
                                ServiceSetting.types.CODESEARCHSITEMAP,
-                               TabPage.types.CODESEARCH);
+                               TabPage.types.CODESEARCH, ownerSite);
 }
 CodeSearchSitemapSetting.inheritsFrom(SitemapSetting);
 
@@ -1187,25 +1236,29 @@ CodeSearchSitemapSetting.inheritsFrom(SitemapSetting);
  * which inherits from SitemapSetting.
  * @param {String} xpath  The xpath of the sitemap
  */
-function BlogSearchSitemapSetting(xpath) {
+function BlogSearchSitemapSetting(xpath, ownerSite) {
   this.parent.constructor.call(this, xpath,
                                ServiceSetting.types.BLOGSEARCHPING,
-                               TabPage.types.BLOGSEARCH);
+                               TabPage.types.BLOGSEARCH, ownerSite);
 
   var prefix = SitemapSetting.getSitemapPrefix_(
       ServiceSetting.types.BLOGSEARCHPING);
   this.clearComponents_();
 
   // add simple components
+  // we have to add this again since the components have been cleared
   if (this.customize_)
     this.addComponent_(this.customize_);
 
+  var enableText = prefix + 'Enabled';
   this.addComponent_(new SimpleSettingComponent(
-      '@enabled', prefix + 'Enabled',
-      SimpleSettingComponent.types.BOOLEAN));
+      '@enabled', enableText, this,
+      SimpleSettingComponent.types.BOOLEAN, null, null,
+      new LabelManager([enableText + 'Label'], enableText, 
+                       enableText + 'Site')));
 
   this.addComponent_(new SimpleSettingComponent(
-      '@update_duration_in_seconds', prefix + 'Duration',
+      '@update_duration_in_seconds', prefix + 'Duration', this,
       SimpleSettingComponent.types.DURATION,
       ValidateManager.validators.DURATION));
 
@@ -1213,11 +1266,11 @@ function BlogSearchSitemapSetting(xpath) {
   this.addComponent_(new ListSettingComponent(
       'IncludedUrls',
       {containerId: prefix + 'PingIncludedUrlListContainer',
-      listTplId: 'urlPatternListTpl'}));
+      listTplId: 'urlPatternListTpl'}, this));
   this.addComponent_(new ListSettingComponent(
       'ExcludedUrls',
       {containerId: prefix + 'PingExcludedUrlListContainer',
-      listTplId: 'urlPatternListTpl'}));
+      listTplId: 'urlPatternListTpl'}, this));
 }
 BlogSearchSitemapSetting.inheritsFrom(SitemapSetting);
 
@@ -1227,13 +1280,12 @@ BlogSearchSitemapSetting.inheritsFrom(SitemapSetting);
  * which inherits from BaseSetting.
  * @param {String} xpath  The xpath of the node
  */
-function WebServerFilterSetting(xpath) {
+function WebServerFilterSetting(xpath, ownerSite) {
   this.parent.constructor.call(this, xpath,
-                               ServiceSetting.types.WEBSERVERFILTER);
+                               ServiceSetting.types.WEBSERVERFILTER, ownerSite);
   // add components
-  this.addComponent_(new SimpleSettingComponent(
-      '@enabled', 'webserverFilterEnabled',
-      SimpleSettingComponent.types.BOOLEAN));
+  this.addComponent_(new RadioSettingComponent(
+      '@enabled', 'webserverFilterEnabled', this));
 }
 WebServerFilterSetting.inheritsFrom(ServiceSetting);
 
@@ -1243,19 +1295,21 @@ WebServerFilterSetting.inheritsFrom(ServiceSetting);
  * which inherits from BaseSetting.
  * @param {String} xpath  The xpath of the node
  */
-function LogParserSetting(xpath) {
+function LogParserSetting(xpath, ownerSite) {
   this.parent.constructor.call(this, xpath,
-                               ServiceSetting.types.LOGPARSER);
+                               ServiceSetting.types.LOGPARSER, ownerSite);
 
   // add components
-  this.addComponent_(new SimpleSettingComponent(
-      '@enabled', 'logParserEnabled',
-      SimpleSettingComponent.types.BOOLEAN));
+  this.addComponent_(new RadioSettingComponent(
+      '@enabled', 'logParserEnabled', this));
 
   this.addComponent_(new SimpleSettingComponent(
-      '@update_duration_in_seconds', 'logParserDuration',
+      '@update_duration_in_seconds', 'logParserDuration', this,
       SimpleSettingComponent.types.DURATION,
-      ValidateManager.validators.DURATION));
+      ValidateManager.validators.DURATION, null,
+      new LabelManager(
+          ['logParserDuration_text1', 'logParserDuration_text2']
+      )));
 
   // binding
   this.getComponent_('enabled').registListener(
@@ -1270,18 +1324,20 @@ LogParserSetting.inheritsFrom(ServiceSetting);
  * which inherits from BaseSetting.
  * @param {String} xpath  The xpath of the node
  */
-function FileScannerSetting(xpath) {
+function FileScannerSetting(xpath, ownerSite) {
   this.parent.constructor.call(this, xpath,
-                               ServiceSetting.types.FILESCANNER);
+                               ServiceSetting.types.FILESCANNER, ownerSite);
   // add components
-  this.addComponent_(new SimpleSettingComponent(
-      '@enabled', 'fileScannerEnabled',
-      SimpleSettingComponent.types.BOOLEAN));
+  this.addComponent_(new RadioSettingComponent(
+      '@enabled', 'fileScannerEnabled', this));
 
   this.addComponent_(new SimpleSettingComponent(
-      '@update_duration_in_seconds', 'fileScannerDuration',
+      '@update_duration_in_seconds', 'fileScannerDuration', this,
       SimpleSettingComponent.types.DURATION,
-      ValidateManager.validators.DURATION));
+      ValidateManager.validators.DURATION, null,
+      new LabelManager(
+          ['fileScannerDuration_text1', 'fileScannerDuration_text2']
+      )));
 
   // binding
   this.getComponent_('enabled').registListener(
