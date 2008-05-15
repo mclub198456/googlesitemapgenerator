@@ -171,6 +171,12 @@
         }
         "Entry"
         {
+        "MsmKey" = "8:_BAF2D5DE74F3464E9701EFB5EC0FF12D"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_CC8DAF49B30B4AE09953589568C2740C"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
@@ -196,12 +202,6 @@
         "Entry"
         {
         "MsmKey" = "8:_D9AA8D361EE9441C9F6CD874B450F293"
-        "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_DCAD9505EDC646CAB14D382575B5A6AD"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -949,6 +949,26 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_BAF2D5DE74F3464E9701EFB5EC0FF12D"
+            {
+            "SourcePath" = "8:tos.rtf"
+            "TargetName" = "8:tos.rtf"
+            "Tag" = "8:"
+            "Folder" = "8:_396254564EBB4E7F82D5639E516332BC"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_CC8DAF49B30B4AE09953589568C2740C"
             {
             "SourcePath" = "8:..\\sitemapservice\\templates\\images\\urborder.gif"
@@ -1015,26 +1035,6 @@
             "TargetName" = "8:ub.gif"
             "Tag" = "8:"
             "Folder" = "8:_961E5DB663F64A81B467547F05F044D0"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:FALSE"
-            "IsolateTo" = "8:"
-            }
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_DCAD9505EDC646CAB14D382575B5A6AD"
-            {
-            "SourcePath" = "8:license.rtf"
-            "TargetName" = "8:license.rtf"
-            "Tag" = "8:"
-            "Folder" = "8:_396254564EBB4E7F82D5639E516332BC"
             "Condition" = "8:"
             "Transitive" = "11:FALSE"
             "Vital" = "11:TRUE"
@@ -1268,7 +1268,7 @@
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:Google Sitemap Generator (Beta)"
         "ProductCode" = "8:{D2B963D9-9957-452C-BEB3-DA0FD7F9DA16}"
-        "PackageCode" = "8:{0CBE4DDD-0D08-4764-B51A-74CE717B04FC}"
+        "PackageCode" = "8:{958D9642-2134-4F46-BB11-51EBF92D342B}"
         "UpgradeCode" = "8:{2696ACEC-3F4D-4B5F-AD4A-B951CFF63B12}"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:TRUE"
@@ -1503,7 +1503,7 @@
                             "ContextData" = "8:"
                             "Attributes" = "3:0"
                             "Setting" = "3:2"
-                            "Value" = "8:_DCAD9505EDC646CAB14D382575B5A6AD"
+                            "Value" = "8:_BAF2D5DE74F3464E9701EFB5EC0FF12D"
                             "UsePlugInResources" = "11:TRUE"
                             }
                             "Sunken"
@@ -1656,7 +1656,7 @@
                             "ContextData" = "8:"
                             "Attributes" = "3:0"
                             "Setting" = "3:2"
-                            "Value" = "8:_DCAD9505EDC646CAB14D382575B5A6AD"
+                            "Value" = "8:_BAF2D5DE74F3464E9701EFB5EC0FF12D"
                             "UsePlugInResources" = "11:TRUE"
                             }
                             "Sunken"
@@ -1812,7 +1812,7 @@
             }
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_9FE7B4532D0C459993D30E54800C65BE"
             {
-            "SourcePath" = "8:..\\..\\Debug\\SitemapService.exe"
+            "SourcePath" = "8:..\\..\\Release\\SitemapService.exe"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_396254564EBB4E7F82D5639E516332BC"
