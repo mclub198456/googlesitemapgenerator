@@ -78,7 +78,7 @@ var CANCEL_CUSTOMIZE_SETTING_MSG =
 var NEW_PASSWORDS_CONFLICT =
     'Error: Input passwords are not equal,<br /> please enter again';
 var NEW_PASSWORDS_INVALID =
-    'Error: The new input password doesn\'t match' +
+    'Error: New input password doesn\'t match' +
     '<br /> the length requirement, please enter again';
 
 var VALIDATING_ONSAVE_FAIL_MSG =
@@ -174,12 +174,12 @@ SettingEditorLanguage.tips = {
   addRule: 'Add a new rule.',
   backupDuration: 'How long of the interval to save the in-memory URLs to ' +
       'the disk storage.',
-  settingPort: 'Which port the Google Sitemap Generator is listening ' +
+  settingPort: 'Which port Google Sitemap Generator is listening ' +
       'for the configuration.',
-  siteEnabled: 'Control the Google Sitemap Generator service ' +
+  siteEnabled: 'Control Google Sitemap Generator service ' +
       'for the site.',
-  siteEnabled_true: 'Start the Google Sitemap Generator service for the site.',
-  siteEnabled_false: 'Stop the Google Sitemap Generator service for the site.',
+  siteEnabled_true: 'Start Google Sitemap Generator service for the site.',
+  siteEnabled_false: 'Stop Google Sitemap Generator service for the site.',
   webserverFilterEnabled: 'Control Google Sitemap Generator using ' +
       'web server filter to collect URLs for the site.',
   webserverFilterEnabled_true: 'Enable web server filter for the site.',
@@ -197,16 +197,16 @@ SettingEditorLanguage.tips = {
   maxUrlLife: 'This defines the maximum age of the URLs that will be ' +
       'included in the Sitemap.\n The age of a URL is the duration from ' +
       'last access time to now.',
-  maxUrlInMemory: 'The max URL numbers that Google Sitemap Generator can ' +
+  maxUrlInMemory: 'Max URL numbers that Google Sitemap Generator can ' +
       'store in the memory.',
-  maxUrlInDisk: 'The max URL numbers that Google Sitemap Generator can ' +
+  maxUrlInDisk: 'Max URL numbers that Google Sitemap Generator can ' +
       'store in all the Sitemap files.',
   sitemapEnabled: 'If checked, Google Sitemap Generator will generate the ' +
       'Sitemap.',
   compress: 'If checked, the generated Sitemap files will be compressed.',
-  filename: 'The Sitemap file name. If there are more than one Sitemap file, ' +
+  filename: 'Sitemap file name. If there are more than one Sitemap file, ' +
       'it will be the Sitemap index file name.',
-  UpdateStartTime: 'The start time of this Sitemap service.',
+  UpdateStartTime: 'Start time of this Sitemap service.',
   UpdateDuration: 'It defines how long the Sitemap file will be regenerated.',
   UpdateDurationForBlogSearchPing: 
       'It defines how long the ping for blog search will be sent',
@@ -243,8 +243,8 @@ SettingEditorLanguage.tips = {
  */
 SettingEditorLanguage.texts = {
   passwordHints:
-      'Hint: The length of new password should be<br />  at least six',
-  URLSources: 'The sources of URLs',
+      'Hint: Length of new password should be<br />  at least six',
+  URLSources: 'Sources of URLs',
   appSettingsLink: 'Application settings',
   siteSettingsLink: 'Site settings',
   projHomeLink: 'Home',
@@ -319,14 +319,14 @@ SettingEditorLanguage.texts = {
   mobileEnabled: 'Enable mobile Sitemap generation',
   codeSearchEnabled: 'Enable code search Sitemap generation',
   blogSearchEnabled: 'Enable blog search Sitemap generation',
-  siteEnabled: 'The Google Sitemap Generator service',
+  siteEnabled: 'Google Sitemap Generator service',
   webEnabledSite: 'Enable web Sitemap generation for this site',
   newsEnabledSite: 'Enable news Sitemap generation for this site',
   videoEnabledSite: 'Enable video Sitemap generation for this site',
   mobileEnabledSite: 'Enable mobile Sitemap generation for this site',
   codeSearchEnabledSite: 'Enable code search Sitemap generation for this site',
   blogSearchEnabledSite: 'Enable blog search Sitemap generation for this site',
-  siteEnabledSite: 'The Google Sitemap Generator service for this site',
+  siteEnabledSite: 'Google Sitemap Generator service for this site',
   siteEnabled_true: 'Start',
   siteEnabled_false: 'Stop',
   maxUrlLife: 'Time to live for URLs',
