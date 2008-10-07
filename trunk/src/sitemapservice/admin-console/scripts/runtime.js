@@ -228,7 +228,7 @@ RuntimeManager.prototype.set_ = function(rtInfos, xml) {
 };
 
 RuntimeManager.prototype.setSpaceInfo_ = function(id, cost, ttl) {
-    var usage = cost * 100 / ttl + '%';
+    var usage = (cost * 100 / ttl).toFixed(5) + '%';
     var graph = document.getElementById(id + '-graph');
     if (graph) graph.style.width = usage;
     _gel(id + '-cost').innerHTML = Util.getSpaceString(cost);
