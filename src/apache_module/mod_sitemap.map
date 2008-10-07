@@ -1,0 +1,4 @@
+GOOG_SITEMAP_VER_1.0.0.01283 {
+  global: google_sitemap_generator_module;
+  local: *;
+};

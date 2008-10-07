@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<!--
+Setting for a single site.
+It can be retrieved by -get_site_setting command,
+and merged to sitesettings.xml by -set_site_setting command.
+See command-line-options.txt for more details.
+-->
+
+<!--
+SiteSetting: XML element contains settings for a speicific site.
+site_id: unique ID of site. For IIS, it's same with IIS identifier.
+    For Apache, it's a combination of IP address and ServerName.
+host: host name of this site. It is OPTIONAL.
+log_path: log file (directory) path. It is OPTIONAL.
+enabled: a flag indicating whether this site is enabled in Sitemap Generator.
+max_url_in_disk: maximum number of urls stored in disk.
+    Multiple accesses for same URL are counted as one.
+max_url_in_memory: maximum number of urls stored in memory.
+    Multiple accesses for same URL are counted as one.
+max_url_life_in_days: maximum life of a URL.
+    URL not visited in max_ulr_life_in_days will be removed automatically.
+add_generator_info: whether generator info should be added into sitemap file.
+    Generator info is an XML comment and doesn't affect the sitemap.
+-->
+<SiteSetting site_id="1"
+             name="abc"
+             host="http://www.example.com"
+             log_path="C:\WINDOWS\system32\LogFiles\W3SVC1"
+             enabled="true"
+             max_url_in_disk="5000000"
+             max_url_in_memory="100000"
+             max_url_life_in_days="365"
+             add_generator_info="true">
+  <!-- UrlReplacements will be removed later. Please ignore it. -->
+  <UrlReplacements>
+    <UrlReplacement find="/*[session=*]" replace="/*[]" />
+  </UrlReplacements>
+  
+  <!--
+  IncludedQueryFields specifies query fields included in sitemap.
+  All the other query fields will be removed automatically.
+  e.g.
+    http://www.example.com/page?category=sports&sort=increase
+    will be converted to
+    http://www.example.com/page?category=sports
+  -->
+  <IncludedQueryFields>
+    <QueryField name="sports" />
+  </IncludedQueryFields>
+
+  <!--
+  WebSitemapSetting specifies settings for generating web sitemap file.
+  enabled: whether web sitemap file should be generated.
+  update_duration_in_seconds: web sitemap file generating period.
+  update_start_time: when the sitemap file should be generated.
+      In this case, the sitemap will be generated every 24 hours (86460 seconds)
+      from 2008-07-08 01AM.
+  compress: whether this sitemap file should be compressed or not.
+  file_name: sitemap file name. This file is stored in site root directory.
+  max_file_url_number: maximum number of URLs in single sitemap file.
+      If URL number exceeds this value, sitemap index file will be used.
+  max_file_size: maximum file size of a single sitemap file.
+  included_in_robots_txt: whether this sitemap file should be submitted by robots.txt
+      If this flag is true, the following line will be added to robots.txt:
+        Sitemap: http://www.example.com/web_sitemap_bde11376.xml.gz
+  -->
+  <WebSitemapSetting enabled="true"
+                     update_duration_in_seconds="86460"
+                     update_start_time="2008-07-08 01:00:00"
+                     compress="false"
+                     file_name="web_sitemap_bde11276.xml"
+                     max_file_url_number="20000"
+                     max_file_size="5242880"
+                     included_in_robots_txt="false">
+    <!--
+    What kinds of URL should be included in sitemap file.
+    A URL can be included if and only if this URL was included by <IncludedUrls>
+    and was not excluded by <ExcludedUrls>.
+    -->
+    <IncludedUrls />
+    
+    <!--
+    What kinds of URL should be excluded from sitemap file.
+    Asterisk (*) can be used in URL pattern. One asterisk can be matched to any
+    number of characters, including zero.
+    For example, "/*.jpg" can be matched to "/a.jpg" and "/a/b/c.jpg".
+    -->
+    <ExcludedUrls>
+      <Url value="/robots.txt" />
+      <Url value="/*.jpg" />
+      <Url value="/*.gif" />
+      <Url value="/*.png" />
+      <Url value="/*.css" />
+      <Url value="/*.js" />
+      <Url value="/*.swf" />
+      <Url value="/*?*" />
+      <Url value="/*password*" />
+    </ExcludedUrls>
+    
+    <!--
+    Everytime a sitemap is generated, following search engine will be notified.
+    A PING will be sent to following URLs.
+    -->
+    <NotifyUrls>
+      <Url value="http://www.google.com/webmasters/sitemaps/ping?sitemap=" />
+      <Url value="http://search.yahooapis.com/SiteExplorerService/V1/ping?sitemap=" />
+      <Url value="http://submissions.ask.com/ping?sitemap=" />
+      <Url value="http://api.moreover.com/ping?u=" />
+      <Url value="http://webmaster.live.com/ping.aspx?siteMap=" />
+    </NotifyUrls>
+  </WebSitemapSetting>
+  
+  <!--
+  Other sitemaps settings.
+  Please ignore them.
+  -->
+  <NewsSitemapSetting />
+  <VideoSitemapSetting />
+  <MobileSitemapSetting />
+  <CodeSearchSitemapSetting />
+  <BlogSearchPingSetting />
+  
+  <!--
+  WebserverFilterSetting provides setting related to webserver plugin.
+  enabled: If this value is false, URLs sent from webserver plugin will be
+      rejected by Sitemap Generator service, and vice versa.
+  -->
+  <WebserverFilterSetting enabled="true" />
+  
+  <!-- Please ignore following settings -->
+  <LogParserSetting enabled="false" update_duration_in_seconds="86400" />
+  <FileScannerSetting enabled="false" update_duration_in_seconds="86400" />
+
+</SiteSetting>

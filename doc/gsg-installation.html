@@ -1,0 +1,276 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<html xmlns="http://www.w3.org/1999/xhtml">
+ 
+</head>
+<head>
+<title>Google Sitemap Generator: Installation</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<link rel="stylesheet" type="text/css" href="http://code.google.com/css/dev_docs.css" />
+<link rel="stylesheet" type="text/css" href="../local_extensions.css" />
+</head>
+<body id="GSGinstall" bgcolor="#FFFFFF">
+<a name="top"></a>
+<div id="header">
+  <div id="logo"> <a href="http://code.google.com/"><img src="images/sitemapgen_150x55.GIF" alt="Return to Google Code homepage" width="150" height="55"/> </a> </div>
+  <h1 id="doc_title">Google Sitemap Generator </h1>
+</div>
+<!-- ########## END PAGE HEADER ########## -->
+<div id="wrapper">
+  <!-- ########## SIDE NAVIGATION ########## -->
+  <div id="sidenav">
+    <ul>
+      <li><a href="gsg-intro.html">Introduction</a></li>
+      <li>Installation</li>
+      <li><a href="gsg-configuration.html">Configuration</a></li>
+      <li> </li>
+    </ul>
+  </div>
+</div>
+<!-- ########## END SIDE NAVIGATION ########## -->
+<!-- ########## PAGE CONTENT ########## -->
+<div id="pagecontent">
+  <h1 id="page_title">Installation <a name="GSGinstall" id="GSGinstall"></a></h1>
+  <p>This document explains how to install and uninstall Google Sitemap Generator. </p>
+  <p>In this document: </p>
+  <ol class="toc">
+    <li><a href="#gsg_i_wininstall">Windows Installation</a>
+      <ol class="toc">
+        <li><a href="#gsg_i_winprereq">Prerequisites</a></li>
+        <li><a href="#gsg_i_wininstallproc">Installation steps</a></li>
+        <li><a href="#gsg_i_winresults">Results of the installation</a></li>
+        <li><a href="#gsg_i_winuninstall">Uninstallation</a></li>
+      </ol>
+    </li>
+    <li><a href="#gsg_i_lin">Linux Installation</a>
+      <ol class="toc">
+        <li><a href="#gsg_i_linprereq">Prerequisites</a></a></li>
+        <li><a href="#gsg_i_lininstallproc">Installation steps</a></a></li>
+        <li><a href="#gsg_i_linresults">Results of the installation</a></li>
+        <li><a href="#gsg_i_linuninstall">Uninstallation steps</a></li>
+      </ol>
+    </li>
+    <li><a href="#gsg_i_news">Special Configuration for News Sitemaps </a></li>
+  </ol>
+  <h2><a name="gsg_i_wininstall" id="gsg_i_wininstall"> </a> Windows Installation </h2>
+  <p>This section provides installation instructions for Windows platforms. </p>
+  <h3><a name="gsg_i_winprereq" id="gsg_i_winprereq"></a>Prerequisites</h3>
+  <p>These are the prerequisites for installation: </p>
+  <ul>
+    <li><strong>System and web server</strong>. 
+      Google has
+      tested on the following platforms:
+      <ul>
+        <li>Microsoft Windows  2003 Server English or Chinese (32 bit or 64 bit) with  Internet Information Service (IIS) 6.0 </li>
+        <li>Microsoft Windows  2008 Server (32 bit or 64 bit) with  IIS 7.0 </li>
+      </ul>
+    </li>
+    <li><strong>Free disk space</strong>.  The number of unique URLs on your website determines the disk space needed.  Calculate the necessary disk space based on the  formula of 1GB of disk space for 1 million URLs. </li>
+    <li><strong>Web server access</strong>. Administrator access to the web server, through a console or remote desktop. </li>
+    <li><strong>Authorization for submitting News Sitemaps (Optional). </strong> If your site submits News Sitemaps, you must verify that you are the site owner and be authorized to submit Google News content. If you haven't yet performed these steps, see the Webmaster Help Center for instructions. </li>
+  </ul>
+  <h3><a name="gsg_i_wininstallproc" id="gsg_i_wininstallproc"></a>Installation Process </h3>
+  <p>Installation of  Google Sitemaps Generator restarts the World Wide Web Publishing service. Be sure to perform the installation at a time when the restart won't cause a problem. </p>
+  <p>Follow these steps to install Google Sitemaps Generator: </p>
+  <ol>
+    <li>From <a href="http://code.google.com/p/googlesitemapgenerator" target="_blank"><code>http://code.google.com/p/googlesitemapgenerator</code></a>, download the latest version of <code>sitemap_setup.msi</code>. </li>
+    <li>Run the file<code> </code>to launch the setup program. </li>
+    <li>Read and accept the license agreement.</li>
+    <li> Specify an installation folder on a disk that has the necessary disk space. A progress bar appears while  Google Sitemap Generator  installs its Windows  service and IIS filter and then restarts the World Wide Web Publishing service. Several windows may open and close during this time. </li>
+    <li>When the &quot;Installation Complete&quot; message appears, click Close to remove it. </li>
+  </ol>
+  <p>When the installation is done, a web browser opens to the address http://<em>your-address</em>:8181. Now you're ready to configure Google Sitemaps Generator. View the <a href="gsg-configuration.html">configuration document</a> for more information. </p>
+  <h3><a name="gsg_i_winresults" id="gsg_i_winresults"></a>Results of the Installation </h3>
+  <p>Installation of Google Sitemap Generator has the following effects:</p>
+  <ul>
+    <li> The program files reside in the folder specified during installation. The default folder is <code>C:\Program Files\Google\Google Sitemap Generator</code>. </li>
+    <li><span id="bjc52">A Windows service named Google Sitemap Generator is installed.</span></li>
+    <li><span>An IIS   module or filter  are installed at global level (applied to all sites). </span>
+      <ul>
+        <li><span>For   IIS 6, the ISAPI filter   GoogleSitemapGeneratorFilter is  installed.</span></li>
+        <li><span>For   IIS 7, the IIS module GoogleSitemapGeneratorModule  is installed. </span></li>
+      </ul>
+    </li>
+  </ul>
+  <h3><a name="gsg_i_winuninstall" id="gsg_i_winuninstall"></a>Uninstallation Steps</h3>
+  <ol>
+    <li><strong> </strong>From the Windows Control Panel's Add or Remove Programs window, find &ldquo;Google Sitemap Generator&rdquo; and click Remove. </li>
+    <li>When you are prompted &quot;Are you sure you want to remove Google Sitemap Generator...,&quot; click Yes. As Google Sitemap Generator  uninstalls its Windows  service and IIS filter, and restarts the World Wide Web Publishing service, you'll see a progress bar. </li>
+    <li>When the &quot;Installation Complete&quot; message appears, click Close to remove the message. If you plan to reinstall Google Sitemap Generator in the future, you're done!</li>
+    <li>If you don't plan to reinstall Google Sitemap Generator in the future, you can manually remove the historical data and the configuration file. These files are in website-specific directories that are under <code>C:\Program Files\Google\Google Sitemap Generator</code> unless you  specified an alternative path during installation.<span class="style1"> </span></li>
+  </ol>
+  </ol>
+  <p class="backtotop"><a href="#top">Back to top</a></p>
+  <h2><a name="gsg_i_lin" id="gsg_i_lin"></a>Linux Installation </h2>
+  <p>This section provides installation instructions for Linux platforms. </p>
+  <h3><a name="gsg_i_linprereq" id="gsg_i_linprereq"></a>Prerequisites</h3>
+  <p> You can install Google Sitemaps Generator 
+    on Linux systems of the following types: </p>
+  <ul>
+    <li>Red Hat Enterprise  Linux 3 (32 bit or 64 bit) </li>
+    <li>Red Hat Enterprise  Linux 4 (32 bit or 64 bit) </li>
+    <li>SUSE Linux Enterprise  Server 10.0 (32 bit or 64 bit) </li>
+    <li>Debian etch r0 </li>
+    <li>Fedora 7 </li>
+    <li>Mandriva 2007 </li>
+    <li>CentOS 4.6 </li>
+    <li>Ubuntu 6.10  (32 bit or 64 bit) </li>
+  </ul>
+  <p>The product might work on other Linux versions, but Google does not claim to have tested those verisons. </p>
+  <p>Google has tested this program with Apache  web server versions 1.3, 2.0, and 2.2. </p>
+  </p>
+  <p>You'll  need 100MB to IGB free disk space. The number of unique URLs on your website determines the disk space needed.  You can calculate the necessary disk space based on the  formula of 1GB of disk space for 1 million URLs. </p>
+  <h3><a name="gsg_i_lininstallproc" id="gsg_i_lininstallproc"></a>Installation Process </h3>
+  <p>Follow these steps to install Google Sitemaps Generator: </p>
+  <ol>
+    <li>From <a href="http://code.google.com/p/googlesitemapgenerator" target="_blank"><code>http://code.google.com/p/googlesitemapgenerator</code></a>, download the <code>sitemap_install_i386.tar.gz</code> or <code>sitemap_install_x86_64.tar.gz</code></li>
+    <li><strong> </strong>Using the root account, extract the install package, as follows:
+      <pre>sudo tar –zxvf  sitemap-install.tar.gz</pre>
+    </li>
+    <li>Run the install  script. You'll need to know where the Apache binary is. You can enter the command with the path to the Apache binary or without it. </li>
+    <ul>
+      <li> If you have the path to the Apache binary, you can enter it as follows:
+        <pre>sudo sitemap-install/install.sh –-apache-bin=<em>your_apache_binary_path</em> </pre>
+      </li>
+      <li>Alternatively, you can omit the <code>apache-bin</code> flag, and enter the command as follows:
+        <pre>sudo sitemap-install/install.sh </pre>
+        The install script   finds Apache, and asks you to confirm:<br />
+        <br />
+        <pre>Which is apache bin?[/usr/sbin/apache2] </pre>
+        Press Enter to accept the specified value, or specify a different path.  If there are multiple Apache servers installed, be careful that the displayed path is correct and enter the correct path if the displayed path is incorrect. <br />
+      </li>
+    </ul>
+    <li>When the install script prints Apache parameters, check them and stop the installation immediately if any parameter is incorrect.
+      <pre>
+  ********************************************************************* 
+    From your apache  binary, we have detected that, 
+    1) Apache version is: [Version 2.0] 
+    2) Apache architecture is: [32 bits] 
+    3) Apache root configuration file is:  [/etc/apache2/apache2.conf] 
+    4) Apache pid file is: [/var/run/apache2.pid] 
+   If you find any  thing above is incorrect, please DO NOT continue. 
+    *********************************************************************
+	 Do you want to  proceed? [N/y]</pre>
+    </li>
+    <li> If nothing is wrong,  Enter "y" to continue. The install script then displays the  installation paths of the program:<br />
+      <pre>********************************************************************* 
+      This application  assumes that,
+      1) Apache httpd is installed, and DSO is  enabled. 
+      Following  directories will be used by this application: 
+      1) /var/spool/google-sitemap-generator 
+      2) /usr/share/google-sitemap-generator 
+      3) /etc/google-sitemap-generator 
+      4) /var/lock/google-sitemap-generator 
+      Following files  will be used by this application: 
+      1) /usr/sbin/google-sitemap-generator-ctl 
+      2) /var/log/google-sitemap-generator.log 
+      3) /var/run/google-sitemap-generator.pid 
+      You could remove  all application files by running following command. 
+      sudo  /usr/share/google-sitemap-generator/uninstall.sh 
+      ********************************************************************* 
+      Do you want to  proceed? [N/y]</pre>
+      If you choose &quot;y&quot; to continue, the install script copies  the program files and configures the system.<br />
+      <br />
+      When the installation is done, a web browser opens to the address http://<em>your-address</em>:8181.  Now you're ready to configure Google Sitemaps Generator. View the <a href="gsg-configuration.html">configuration document</a> for more information. </li>
+    </li>
+  </ol>
+  <h3><a name="gsg_i_linresults" id="gsg_i_linresults"></a>Results of the Installation </h3>
+  <p>This section describes the changes that the installation makes to your system. The section covers: </p>
+  <ul>
+    <li><a href="#gsg_i_linfiles">Files installed</a></li>
+    <li><a href="#gsg_i_linapache">Changes to the Apache configuration file</a></li>
+    <li><a href="#gsg_i_linctl">The control script </a></li>
+  </ul>
+  <h4><a name="gsg_i_linfiles" id="gsg_i_linfiles"></a>Files installed </h4>
+  <p>Installation of Google Sitemaps Generator creates the following files: </p>
+  <table width="95%" border="1" summary="This table lists the files created by installation. The left column contains the file name and the right column contains the description.
+">
+    <caption>
+    Files Created by Installing Google Sitemaps Generator
+    </caption>
+    <tr>
+      <th width="54%" scope="col">File</th>
+      <th width="46%" scope="col">Description</th>
+    </tr>
+    <tr>
+      <td><code>/usr/share/google-sitemap-generator</code></td>
+      <td>Path to the program files. </td>
+    </tr>
+    <tr>
+      <td><code>/var/spool/google-sitemap-generator</code></td>
+      <td>Path of internal database for URL  storage. In the running process, this directory uses  100MB to 1GB disk space, according to the number of URLs.</td>
+    </tr>
+    <tr>
+      <td><code>/etc/google-sitemap-generator/sitesettings.xml</code></td>
+      <td> Configuration file. </td>
+    </tr>
+    <tr>
+      <td><code>/var/log/google-sitemap-generator.log</code></td>
+      <td>Log file </td>
+    </tr>
+    <tr>
+      <td><code>/usr/sbin/google-sitemap-generato-ctl</code></td>
+      <td>Control script of the program.</td>
+    </tr>
+    <tr>
+      <td><code>/etc/init.d/google-sitemap-generator</code></td>
+      <td>The script used by system service. This  script can automatically start the program when system starts.</td>
+    </tr>
+  </table>
+  <p>At runtime, the software also generates a lock file (<code>/var/lock/google-sitemap-generator)</code> and a PID file (<code>/var/run/google-sitemap-generator.pid</code>). </p>
+  <h4><a name="gsg_i_linapache" id="gsg_i_linapache"></a>Changes to the Apache configuration file </h4>
+  <p> During installation, the  installation script first backs up the Apache configuration file and then modifies the configuration file. The installation script does the following: </p>
+  <ul>
+    <li>Backs  up the configuration file to this location: <code>/usr/share/google-sitemap-generator/httpd.install.con</code>f</li>
+    <li>Adds the following line to enable  Apache to load the Sitemap filter: <br />
+      <pre>LoadModule google_sitemap_genrator_module  /usr/share/google-sitemap-generator/mod_sitemap.so</pre>
+    </li>
+  </ul>
+  <p> During uninstallation, the change is rolled back and the modified configuration file is saved here: <br />
+    <code>/usr/share/google-sitemap-generator/httpd.uninstall.conf</code>. </p>
+  <h4><a name="gsg_i_linctl" id="gsg_i_linctl"></a>The control script </h4>
+  <p>Once installation is complete,  Google Sitemaps Generator service will automatically start when the system starts. When the system is running, you can control  the Generator service by running<code> /usr/sbin.google-sitemap-generator-ctl</code>. You must have root privileges in order to run the script. </p>
+  <p>Use the following command to control the Google Sitemaps Generator service: </p>
+  <pre>sudo google-sitemap-generator-ctl –<em>flag</em></pre>
+  <p> The <em>flag</em> variable can have one of the following values: </p>
+  <ul>
+    <li><code>restart</code></li>
+    <li><code>start</code></li>
+    <li>
+      <coe><code>stop</code></coe>
+      <br />
+    </li>
+  </ul>
+  </p>
+  <p> Note that this control script  controls the Google Sitemap Generator service, but does not control the Sitemap  filter in Apache. To control the filter, you'll need to use the Apache controller. </p>
+  <h3><a name="gsg_i_linuninstall" id="gsg_i_linuninstall"></a>Uninstallation Steps </h3>
+  <p>Before starting, note that the Apache server must be stopped in order for uninstallation to occur. If the Apache server is running, you will be asked to stop it. </p>
+  <p>To uninstall Google Sitemap Generator, use the root account to run the uninstall script, as follows: </p>
+  <pre>sudo  /usr/share/google-sitemap-generator/uninstall.sh</pre>
+  <p>The last lines of the uninstallation script  are as follows:</p>
+  <pre>[Info] Do you want to remove all the files which could be used later? 
+[Info] It is strongly recommended to keep them. 
+[Info] If NO, you could rerun this script to remove all of them.[N/y] </pre>
+  <p>Respond as follows: </p>
+  <ul>
+    <li>Respond &quot;y&quot; if you won't be reinstalling Google Sitemap Generator. You can accept the default answer and  remove the generated data and configuration  file.</li>
+    <li>Respond &quot;N&quot; if you might want to reinstall Google Sitemap Generator. By responding &quot;N,&quot; you save the generated data and configuration file. </li>
+  </ul>
+   <h2><a name="gsg_i_news" id="gsg_i_news"></a>Special Configuration for  News Sitemaps </h2>
+  <p>If your site submits News Sitemaps, you must now configure Webmaster Central to accept the generated News Sitemaps. To configure Google Webmaster Tools, go to <a href="http://www.google.com/webmasters/tools">http://www.google.com/webmasters/tools</a> and add a Sitemap of the News type. </p>
+  <p class="backtotop"><a href="#top">Back to top</a></p>
+</div>
+<p id="date">
+Updated on
+<!-- javascript to display the date this page was updated -->
+<script type="text/javascript">
+<!-- hide script from old browsers
+    var lm = new Date(document.lastModified);
+    document.write(lm.toDateString());
+//-->
+</script>
+<!-- end javascript -->
+</p>
+</body>
+</html>

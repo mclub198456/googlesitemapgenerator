@@ -1,0 +1,58 @@
+CC = @CC@
+
+CFLAGS = @CFLAGS@
+CCOMPILE = @CC@ @DEFS@ @CPPFLAGS@ @CFLAGS@
+LDFLAGS = @LDFLAGS@
+
+SRCS = asteriskfilter.cc recordfileio.cc sitemapwriter.cc \
+  recordfilemanager.cc recordfilestat.cc hosttable.cc \
+  recordmerger.cc urlfilterbuilder.cc recordtable.cc recordfilebinaryio.cc \
+  sitemapelement.cc urlfilter.cc informer.cc basesitemapservice.cc \
+  plainsitemapservice.cc videositemapservice.cc mobilesitemapservice.cc \
+  codesearchsitemapservice.cc websitemapservice.cc newssitemapservice.cc \
+  blogsearchpingservice.cc servicecontroller.cc pagecontroller.cc \
+  httplanguageheaderparser.cc lineparser.cc logparser.cc filescanner.cc \
+  urlproviderservice.cc runtimeinfomanager.cc baseruntimeinfo.cc \
+  applicationinfo.cc siteinfo.cc urlproviderinfo.cc \
+  webserverfilterinfo.cc sitemapserviceinfo.cc blogsearchpingserviceinfo.cc \
+  robotstxtfilter.cc sitedatamanager.cc servicerunner.cc httpgetter.cc \
+  urlfprintio.cc newsdatamanager.cc backupservice.cc urlreceivethread.cc \
+  settingupdatelistener.cc daemon.cc main.cc \
+  passwordmanager.cc \
+  httpsettingmanager.cc httpmanager.cc securitymanager.cc webpagemanager.cc \
+  sessionmanager.cc sitemanager.cc querystringfilter.cc \
+  sitesettingmanager.cc \
+  pagehandler.cc adminconsolethread.cc httpcontext.cc
+
+OBJS = $(SRCS:.cc=.o)
+DEPS = $(SRCS:.cc=.P)
+
+DEP_LIBS = ../common/libcommon.a \
+ ../../third_party/tinyxml/libtinyxml.a \
+ ../../third_party/zlib/libzlib.a \
+ ../../third_party/md5/libmd5.a \
+ @LIB_STDCXX@
+
+.SUFFIXES:
+.SUFFIXES: .o .cc
+.cc.o:
+	@$(CCOMPILE) -M $< -o $(*F).d; \
+	 cp -f $(*F).d $(*F).P; \
+	 sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
+	     -e '/^$$/ d' -e 's/$$/ :/' < $(*F).d >> $(*F).P; \
+	 rm -f $(*F).d
+	$(CCOMPILE) -o $@ -c $<
+
+all: sitemap-daemon
+
+sitemap-daemon: $(DEP_LIBS) $(OBJS)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o sitemap-daemon \
+	$(OBJS) $(DEP_LIBS)
+
+-include $(DEPS)
+
+.PHONY: clean
+clean:
+	@rm -f *.o
+	@rm -f *.P
+	@rm -f sitemap-daemon

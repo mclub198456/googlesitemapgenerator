@@ -1,0 +1,37 @@
+
+CC = @CC@
+RANLIB = @RANLIB@
+AR = ar
+
+CCOMPILE = @CC@ @DEFS@ @CPPFLAGS@ @CFLAGS@
+
+SRCS = adler32.c compress.c crc32.c gzio.c uncompr.c deflate.c \
+  trees.c zutil.c inflate.c inftrees.c infback.c inffast.c
+
+OBJS = $(SRCS:.c=.o)
+DEPS = $(SRCS:.c=.P)
+
+.SUFFIXES:
+.SUFFIXES: .o .c
+.c.o:
+	@$(CCOMPILE) -M $< -o $(*F).d; \
+	 cp -f $(*F).d $(*F).P; \
+	 sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
+	     -e '/^$$/ d' -e 's/$$/ :/' < $(*F).d >> $(*F).P; \
+	 rm -f $(*F).d
+	$(CCOMPILE) -o $@ -c $<
+
+all: libzlib.a
+
+libzlib.a: $(OBJS)
+	-rm -f libzlib.a
+	$(AR) cru libzlib.a $^
+	$(RANLIB) libzlib.a
+
+-include $(DEPS)
+
+.PHONY: clean
+clean:
+	@rm -f *.o
+	@rm -f *.P
+	@rm -f libzlib.a

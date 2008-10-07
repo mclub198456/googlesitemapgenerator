@@ -1,0 +1,36 @@
+
+CC = @CC@
+RANLIB = @RANLIB@
+AR = ar
+
+CCOMPILE = @CC@ @DEFS@ @CPPFLAGS@ @CFLAGS@
+
+SRCS = md5.c
+
+OBJS = $(SRCS:.c=.o)
+DEPS = $(SRCS:.c=.P)
+
+.SUFFIXES:
+.SUFFIXES: .o .c
+.c.o:
+	@$(CCOMPILE) -M $< -o $(*F).d; \
+	 cp -f $(*F).d $(*F).P; \
+	 sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
+	     -e '/^$$/ d' -e 's/$$/ :/' < $(*F).d >> $(*F).P; \
+	 rm -f $(*F).d
+	$(CCOMPILE) -o $@ -c $<
+
+all: libmd5.a
+
+libmd5.a: $(OBJS)
+	-rm -f libmd5.a
+	$(AR) cru libmd5.a $^
+	$(RANLIB) libmd5.a
+
+-include $(DEPS)
+
+.PHONY: clean
+clean:
+	@rm -f *.o
+	@rm -f *.P
+	@rm -f libmd5.a
