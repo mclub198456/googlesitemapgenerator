@@ -1,0 +1,89 @@
+You can use commands to control Google Sitemap Generator:
+* Windows:
+    C:\\Program Files\Google\Google Sitemap Generator\SitemapService.exe
+* Linux/FreeBSD:
+    /usr/sbin/google-sitemap-generator-ctl
+
+Following options are supported by above commands:
+
+-start (Linux/FreeBSD only)
+  Start Google Sitemap Generator.
+  * Windows: Use Services Administrative Tool.
+
+  Sample:
+    sudo google-sitemap-generator-ctl -start
+ 
+
+-stop (Linux/FreeBSD only)
+  Stop Google Sitemap Generator.
+  * Windows: Use Services Administrative Tool.
+
+  Sample:
+    google-sitemap-generator-ctl -stop
+
+
+-restart (Linux/FreeBSD only)
+  Restart Google Sitemap Generator.
+  If it is not running, it will be started.
+  * Windows: Use Services Aministrative Tool.
+
+  Sample:
+    google-sitemap-generator-ctl -restart
+
+
+-reload_setting
+  Reload setting file from disk.
+  New setting file can take effect after this command.
+
+  Sample:
+    SitemapService.exe -reload_setting
+
+
+-update_setting remote_admin=true/false
+  Update setting file with new configuration from IIS/Apache.
+  [remote_admin]: A flag indicating whether remote admin console is available.
+                  This param is OPTIONAL.
+
+  Sample:
+    SitemapService.exe -update_setting remote_admin=false
+      Merge setting from IIS and disable remote admin.
+
+    google-sitemap-generator-ctl -update_setting
+      Merge setting from Apache and keep remote admin as original value.
+
+
+-change_password
+  Run this command to change password.
+
+  Sample:
+    SitemapService.exe -change_password
+
+
+-get_site_setting site_id=12345 file=12345.xml
+  Get setting for single site. The setting will be saved as an XML file.
+  See site-setting.xml for schema of the XML file.
+  [site_id]: ID of site. For Windows system, this ID is same with ID in IIS.
+             For Linux with Apache, please find site ID from sitesettings.xml.
+             This param is REQUIRED.
+  [file]: File used to store site setting. Setting for specific site will be
+          written to this file.
+          This param is REQUIRED.
+
+  Sample:
+    SitemapService.exe -get_site_setting site_id=12 file=C:\\site12.xml
+      Get site setting for site 12, and save the setting to C:\\site12.xml
+
+
+-set_site_setting site_id=12345 file=12345.xml
+  Set setting for single site. The setting should be given as an XML file.
+  See site-setting.xml for schema of the XML file.
+  If some value is missing in given XML file. Old setting value will be used.
+  In other words, you can only pass XML values which you want to change.
+  [site_id]: See -get_site_setting above.
+  [file]: See -get_site_setting above.
+
+  Sample:
+    SitemapService.exe -set_site_setting site_id=12, file=C:\\site12.xml
+      Load site setting from C:\\site12.xml for site 12, and merge this setting
+      to Google Sitemap Generator application setting.
+

@@ -1,0 +1,50 @@
+MOD_NAME="mod_sitemap.@APACHE_VERSION@.so"
+DAEMON_NAME="sitemap-daemon"
+
+INSTALL_DIR="sitemap-install"
+
+.PHONY: all
+all:
+	$(MAKE) -C third_party/zlib all
+	$(MAKE) -C third_party/tinyxml all
+	$(MAKE) -C third_party/md5 all
+	$(MAKE) -C src/common all
+	$(MAKE) -C src/apache_module all
+	$(MAKE) -C src/sitemapservice all
+	$(MAKE) -C src/admin_console_cgi all
+
+.PHONY: clean
+clean:
+	$(MAKE) -C third_party/zlib clean
+	$(MAKE) -C third_party/tinyxml clean
+	$(MAKE) -C third_party/md5 clean
+	$(MAKE) -C src/common clean
+	$(MAKE) -C src/apache_module clean
+	$(MAKE) -C src/sitemapservice clean
+	$(MAKE) -C src/admin_console_cgi clean
+	@rm -rf $(INSTALL_DIR)
+
+.PHONY: distclean
+distclean: clean
+	rm -f configure Makefile config.status config.cache config.log
+	rm -f third_party/zlib/Makefile third_party/tinyxml/Makefile
+	rm -f third_party/md5/Makefile
+	rm -f src/common/Makefile src/apache_module/Makefile
+	rm -f src/sitemapservice/Makefile
+	rm -f src/admin_console_cgi/Makefile
+
+.PHONY: installer
+installer: all
+	@rm -rf $(INSTALL_DIR)
+	@mkdir -p $(INSTALL_DIR)
+	@cp -f src/linux_install/* $(INSTALL_DIR)
+	@cp -f src/sitemapservice/sitemap-daemon $(INSTALL_DIR)/$(DAEMON_NAME)
+	@cp -f src/admin_console_cgi/admin-console-cgi $(INSTALL_DIR)
+	@cp -f src/apache_module/mod_sitemap.so $(INSTALL_DIR)/$(MOD_NAME)
+	@cp -f -R src/sitemapservice/admin-console $(INSTALL_DIR)
+	@chmod -R a+rwx $(INSTALL_DIR)
+	@chmod a+rx .
+
+.PHONY: install
+install: installer
+	sudo $(INSTALL_DIR)/install.sh

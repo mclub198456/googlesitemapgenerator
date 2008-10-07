@@ -1,0 +1,49 @@
+CC = @CC@
+RANLIB = @RANLIB@
+AR = ar
+
+CCOMPILE = @CC@ @DEFS@ @CPPFLAGS@ @CFLAGS@
+
+SRCS = basesetting.cc sitemapsetting.cc websitemapsetting.cc \
+  newssitemapsetting.cc videositemapsetting.cc \
+  mobilesitemapsetting.cc codesearchsitemapsetting.cc \
+  blogsearchpingsetting.cc criticalsection.cc \
+  fileutil.cc timesupport.cc url.cc hash.cc \
+  urlloopbuffer.cc kmp.cc urlpipe.cc \
+  urlreplacement.cc urlreplacer.cc patternfinder.cc \
+  util.cc port.cc sitesetting.cc webserverconfig.cc \
+  apacheconfig.cc sitesettings.cc thread.cc \
+  webserverfiltersetting.cc logparsersetting.cc \
+  filescannersetting.cc basefilter.cc cmdlineflags.cc \
+  queryfield.cc settingmanager.cc interproclock.cc \
+  urlsetting.cc mutex.cc mutexset.cc sharedmemory.cc \
+  httprequest.cc httpresponse.cc messagepipe.cc messageconverter.cc \
+  httpconst.cc accesscontroller.cc logger.cc
+  
+OBJS = $(SRCS:.cc=.o)
+DEPS = $(SRCS:.cc=.P)
+
+.SUFFIXES:
+.SUFFIXES: .o .cc
+.cc.o:
+	@$(CCOMPILE) -M $< -o $(*F).d; \
+	 cp -f $(*F).d $(*F).P; \
+	 sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
+	     -e '/^$$/ d' -e 's/$$/ :/' < $(*F).d >> $(*F).P; \
+	 rm -f $(*F).d
+	$(CCOMPILE) -o $@ -c $<
+
+all: libcommon.a
+
+libcommon.a: $(OBJS)
+	-rm -f libcommon.a
+	$(AR) cru libcommon.a $(OBJS)
+	$(RANLIB) libcommon.a
+
+-include $(DEPS)
+
+.PHONY: clean
+clean:
+	@rm -f *.o
+	@rm -f *.P
+	@rm -f libcommon.a

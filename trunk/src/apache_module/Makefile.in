@@ -1,0 +1,40 @@
+CC = @CC@
+CFLAGS = @CFLAGS@
+CCOMPILE = @CC@ @DEFS@ @CPPFLAGS@ -I"@INCLUDE_APACHE@" -I"@INCLUDE_APR@" \
+  @CFLAGS@
+LDFLAGS = @LDFLAGS@
+
+SRCS = sitemapmodule.cc mod_sitemap.cc
+OBJS = $(SRCS:.cc=.o)
+DEPS = $(SRCS:.cc=.P)
+ 
+DEP_LIBS = ../common/libcommon.a \
+  ../../third_party/tinyxml/libtinyxml.a \
+  ../../third_party/zlib/libzlib.a \
+  ../../third_party/md5/libmd5.a \
+  @LIB_STDCXX@
+
+.SUFFIXES:
+.SUFFIXES: .o .cc
+.cc.o:
+	@$(CCOMPILE) -M $< -o $(*F).d; \
+	 cp -f $(*F).d $(*F).P; \
+	 sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
+	     -e '/^$$/ d' -e 's/$$/ :/' < $(*F).d >> $(*F).P; \
+	 rm -f $(*F).d
+	$(CCOMPILE) -o $@ -c $<
+
+all: mod_sitemap.so
+
+mod_sitemap.so: $(DEP_LIBS) $(OBJS)
+	$(CC) -shared $(CFLAGS) $(LDFLAGS) -o mod_sitemap.so \
+	$(OBJS) $(DEP_LIBS) \
+	-Wl,--version-script=mod_sitemap.map
+
+-include $(DEPS)
+
+.PHONY: clean
+clean:
+	@rm -f *.o
+	@rm -f *.P
+	@rm -f mod_sitemap.so

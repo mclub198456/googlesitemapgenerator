@@ -1,0 +1,142 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+ 
+<title>Google Sitemap Generator: Introduction</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<link rel="stylesheet" type="text/css" href="http://code.google.com/css/dev_docs.css" />
+<link rel="stylesheet" type="text/css" href="../local_extensions.css" />
+<style type="text/css">
+<!--
+.style1 {color: #FF0000}
+-->
+</style>
+</head>
+<body id="gsg_intro" bgcolor="#FFFFFF">
+<a name="top"></a>
+<div id="header">
+  <div id="logo"><img src="images/sitemapgen_150x55.GIF" alt="Google Sitemap Generator" width="150" height="55"/></a></div>
+  <h1 id="doc_title">Google Sitemap Generator </h1>
+</div>
+<!-- ########## END PAGE HEADER ########## -->
+<div id="wrapper">
+  <!-- ########## SIDE NAVIGATION ########## -->
+  <div id="sidenav">
+    <ul>
+      <li id="gsg_intro_link"><a href="gsg_intro.html">Introduction</a></li>
+      <li id="gsg_install_link"><a href="gsg-installation.html">Installation</a></li>
+      <li id="gsg_conf_link"><a href="gsg-configuration.html">Configuration</a></li>
+      <li> </li>
+    </ul>
+  </div>
+</div>
+<!-- ########## END SIDE NAVIGATION ########## -->
+<!-- ########## PAGE CONTENT ########## -->
+<div id="pagecontent">
+  <h1 id="page_title">Introduction</h1>
+  <p>Google Sitemap Generator is software that you install on your web server. Once installed, 
+    Google Sitemap Generator automatically generates Sitemaps by analyzing the way that users access  your content. Google Sitemap Generator can also submit Web Sitemaps automatically. </p>
+  <p>This document is an overview of Google Sitemap Generator. For more information about the 
+    Sitemaps protocol, see <a href="http://www.sitemaps.org/">http://www.sitemaps.org/</a>. For information about Google-specific 
+    functions and Webmaster Tools, see <a href="http://google.com/support/webmasters/">http://google.com/support/webmasters/</a>.</p>
+  <p>In this document: </p>
+  <ol class="toc">
+    <li><a href="#gsg_about">About Google Sitemap Generator</a></li>
+    <li><a href="#gsg_issues">Installation and Deployment Issues</a></li>
+    <li><a href="#gsg_req">Configuration Options  </a></li>
+    <li><a href="#gsg_sec">Security Concerns</a></li>
+    <li><a href="#gsg_comm">Community</a></li>
+  </ol>
+  <h2>About Google Sitemap Generator<a name="gsg_about" id="gsg_about"></a></h2>
+  <p>Typical Sitemap generators create Sitemaps by crawling your website, much as a search 
+    engine does, so those tools may not improve coverage. Crawling  may not be the most efficient mechanism to discover new content in databases or large websites, so it may also fail to improve freshness. </p>
+  <p><span class="style1">Google Sitemap Generator takes a different approach: it monitors your web server traffic 
+    and detects updates to your site whenever a user accesses a new page. </span>The main features of Google 
+    Sitemap Generator are:</p>
+  <ul>
+    <li>Creation of Sitemaps based on web server traffic, web server logs and web server files. </li>
+    <li> Efficient generation of web, video, news, mobile and code search Sitemaps. </li>
+    <li>Easy configuration. Once you’ve done the initial configuration, no further administration 
+      is needed. But if you do want to tweak the settings, a web-based UI is available for 
+      remote configuration. </li>
+    <li>Easy filtering of URLs, based on URL patterns.</li>
+    <li>Automatic calculation of certain metadata, such as modified time and change frequency.</li>
+    <li> Automatic submission of Sitemaps for web search. </li>
+  </ul>
+  <p>Google previously released sitemapgen, a Python-based tool, to Sourceforge. Google 
+    Sitemap Generator is a next-generation tool that relies on web server filtering rather than 
+    crawling, provides enhanced features, and supports more formats. If you’re new to Sitemap 
+    generators, we suggest starting with the new tool.</p>
+	<p class="backtotop"><a href="#top">Back to top</a></p>
+  <h2>Installation and Deployment Issues<a name="gsg_issues" id="gsg_issues"></a></h2>
+  <p>Check out our system requirements and determine how best to deploy Google Sitemap Generator 
+    in your environment! For full installation information, refer to the <a href="gsg-installation.html">Installation</a> document. </p>
+  <h3>System requirements<a name="gsg_req" id="gsg_req"></a> </h3>
+  <p>Google Sitemap Generator runs on a variety of operating systems and web servers. See the <a href="gsg-installation.html">installation document</a> for the Windows and Linux prerequisites. </p>
+  
+  <p>Based on our performance tests, Google Sitemap Generator has minimal performance 
+    impact on a web server. </p>
+  <h3>Load-balanced web servers</h3>
+  <p>For a site that is served by multiple, load-balanced web servers, you can choose from the 
+    following deployment options: </p>
+  <ul>
+    <li> Install Google Sitemap Generator on one web server, set up a new domain name for 
+      this web server, and submit your Sitemaps to Google by using cross-domain 
+      submission.  This is Google’s recommended solution. However, note that cross-
+      domain submissions may not work for other search engines.</li>
+    <li> Install Google Sitemap Generator on one web server and make sure that the generated Sitemaps are copied to the other web servers. This is Google’s secondary 
+      recommendation. </li>
+    <li>Install Google Sitemap Generator on all web servers, and configure them using the 
+      same settings. All the web servers will then generate Sitemaps. </li>
+  </ul>
+  <h3>Multiple sites on a single web server </h3>
+  <p> If multiple sites share the same web server, you can install Google Sitemap Generator once 
+    on the web server for all sites. Use the Google Sitemap Generator configuration UI to 
+    specify the sites for which you want to generate Sitemaps, and to specify settings on a per-
+    site basis.</p>
+	<p class="backtotop"><a href="#top">Back to top</a></p>
+  <h2> Configuration Options</h2>
+  <p> Google Sitemap Generator has the following configuration options: </p>
+  <ul>
+    <li>Excluding URLs from a Sitemap file. Use the configuration UI to automatically 
+      exclude URLs that match specified patterns. </li>
+    <li>Removing user session keys or other per-user sensitive information. You can 
+      configure Google Sitemap Generator to replace specified URL parameters with fixed 
+      values, or to remove them completely. </li>
+  </ul>
+  <p>For more information about configuration, see the <a href="gsg-configuration.html">configuration</a> document. </p>
+  <p class="backtotop"><a href="#top">Back to top</a></p>
+  <h2> Security Concerns <a name="gsg_sec" id="gsg_sec"></a></h2>
+  <p class="style1"> Google Sitemap Generator is being released through the open source community, so that you can download and examine it. But we know that you don’t want Google Sitemap Generator to send any private data to Google! The only information that is shared with Google is the Sitemaps file. </p>
+  <p class="style1">Based on the <a href="http://www.sitemaps.org/protocol.php">Sitemaps protocol</a>, a Sitemap file contains  a change frequency and priority for each URL. Google Sitemaps Generator sets the priority based partly on page views, but the resulting Sitemaps file does not contain any information about page views or other information you wouldn't want to expose. The only difference between a  generated Sitemap file and a manually created Sitemap file is that a generated Sitemap can include information to identify its origin, as in the following example. Inclusion of this information is optional and can easily be turned off. </p>
+  <p class="style1">
+    <pre>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;urlset  xmlns=&quot;<a href="http://www.sitemaps.org/schemas/sitemap/0.9" target="_blank">http://www.sitemaps.org/schemas/sitemap/0.9</a>&quot;
+xmlns:gen=&quot;<a href="http://www.google.com/schemas/sitemap-generator/1.0" target="_blank">http://www.google.com/schemas/sitemap-generator/1.0</a>&quot;&gt;
+ &lt;gen:info&gt;
+   &lt;gen:name&gt;Google Sitemap Generator&lt;/gen:name&gt;
+   &lt;gen:version&gt;1.0.0.2&lt;/gen:version&gt;
+   &lt;gen:date&gt;2008-06-29T08:30:24Z&lt;/gen:date&gt;
+ &lt;/gen:info&gt;
+&lt;/urlset&gt;</pre>
+  </p>
+  <p class="style1">However, please note that you are responsible for scrubbing a Sitemaps file of all user data before submitting it to Google. To accomplish this, you perform test generations of Sitemaps files and examine them for any URLs that should not be included. For more information, refer to the <a href="gsg-configuration.html" target="#gsg_con_testing">testing section</a> of the <a href="gsg-configuration.html">configuration document</a>. </p>
+  
+  <h2>Community<a name="gsg_comm" id="gsg_comm"></a></h2>
+  <p> If you have questions or want to know what others are asking, check out our   <a href="http://groups.google.com/group/Google_Webmaster_Help-Sitemap/topics?start=">discussion 
+    group</a>. </p>
+	<p class="backtotop"><a href="#top">Back to top</a></p>
+</div>
+<p id="date">
+Updated on
+<!-- javascript to display the date this page was updated -->
+<script type="text/javascript">
+<!-- hide script from old browsers
+    var lm = new Date(document.lastModified);
+    document.write(lm.toDateString());
+//-->
+</script>
+<!-- end javascript -->
+</p>
+</body>
+</html>

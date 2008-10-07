@@ -1,0 +1,265 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>Google Sitemap Generator: Configuration</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<link rel="stylesheet" type="text/css" href="http://code.google.com/css/dev_docs.css" />
+<link rel="stylesheet" type="text/css" href="../local_extensions.css" />
+</head>
+<body id="GSGinstall" bgcolor="#FFFFFF">
+<a name="top" id="top"></a>
+<div id="header">
+  <div id="logo"> <a href="http://code.google.com/"><img src="images/sitemapgen_150x55.GIF" alt="Return to Google Code homepage" width="150" height="55"/> </a> </div>
+  <h1 id="doc_title">Google Sitemap Generator: Configuration </h1>
+</div>
+<!-- ########## END PAGE HEADER ########## -->
+<div id="wrapper">
+  <!-- ########## SIDE NAVIGATION ########## -->
+  <div id="sidenav">
+    <ul>
+      <li><a href="gsg-intro.html">Introduction</a></li>
+      <li><a href="gsg-installation.html">Installation</a></li>
+      <li>Configuration</li>
+    </ul>
+  </div>
+</div>
+<!-- ########## END SIDE NAVIGATION ########## -->
+<!-- ########## PAGE CONTENT ########## -->
+<div id="pagecontent">
+  <p>This document explains how to configure Google Sitemap Generator. </p>
+  <p>In this document: </p>
+  <ol class="toc">
+    <li><a href="#gsg_confirst">Logging in</a></li>
+    <li><a href="#gsgcon_pwd">Changing the Password and Defining Administration Console Settings </a></li>
+    <li><a href="#gsg_con_xsite">Setting Defaults for All Sites and Values for Specific Sites </a></li>
+    <li><a href="#gsg_con_changes">Applying Changes</a></li>
+    <li><a href="#gsg_con_modifyingURLs">Transforming URLs for Inclusion in a Sitemap </a></li>
+    <li><a href="#gsg_con_patterns">Defining Inclusion and Exclusion URL Patterns </a></li>
+    <li><a href="#gsg_con_testing">Testing and Modifying Sitemap Content</a></li>
+    <li><a href="#gsg_con_live">Going live</a></li>
+    <li><a href="#gsg_con_submitting"> </a></li>
+  </ol>
+  <h2>Logging In <a name="gsg_confirst" id="gsg_con_first"></a></h2>
+  <p>To log in to the administration console, enter a URL that matches this format into your browser: </p>
+  <p><code>http://localhost:8181</code></p>
+  <p>Once you've enabled remote access, you can use the hostname or IP address of the server instead of <code>localhost</code>, as in the these examples: </p>
+  <ul>
+    <li><code>http://apache31.example.com:8181</code></li>
+    <li><code>http://12.345.67.89:8181 </code></li>
+  </ul>
+  <p>The first time that you access the administration console, log in using the username &quot;admin&quot; and the password &quot;admin.&quot; You'll then need to change the administration password and define settings, as the next sections describe. </p>
+  <p>By default, the  adminstration console appears pre-populated with a list of the websites on this server. Along the left are links that let you set defaults for all sites and settings for specific sites. Along the top are tabs that show settings for different types of Sitemaps (Web, News, Video, and so on). The best way to configure Google Sitemaps Generator for the first time is as follows:</p>
+  <ol>
+    <li>Change the password and define other administration console settings. </li>
+    <li>Define the    defaults for all sites, including  the types of Sitemaps that you want to generate. </li>
+    <li>Define settings for specific web sites. </li>
+  </ol>
+  <p class="backtotop"><a href="#top">Back to top</a></p>
+  <h2>Changing the Password and Defining Administration Console Settings <a name="gsgcon_pwd" id="gsgcon_pwd"></a></h2>
+  <p>When you first log in, change your password and enable the administration console for remote administration. </p>
+  <p>To change your password: </p>
+  <ol>
+    <li>Click <strong>Application Settings</strong> in the upper right corner of the page. </li>
+    <li>On the settings page, next to <strong>Sign In Password</strong>, click <strong>change</strong>. <span class="style1"></span></li>
+    <li>Enter a new  password and confirm the new password. </li>
+    <li>Click <strong>Save </strong> and then, in the upper right, click <strong>Site settings </strong> to return to the main console page. </li>
+  </ol>
+  <p>Now examine and define the settings   specified in the following table. </p>
+  <table width="95%" border="1" summary="Two column table. First column lists the settings, and the second column provides a description or commentary on the setting." >
+    <tr>
+      <th scope="col">Setting</th>
+      <th scope="col">Description</th>
+    </tr>
+    <tr>
+      <td>Automatically add websites from webserver</td>
+      <td>This option automatically adds websites to this administration console, as it finds them on the web server. By default, this option is selected. </td>
+    </tr>
+    <tr>
+      <td>Allow remote administration</td>
+      <td> This option lets you access this administration console from systems other than the webserver. By default, this option is not selected; you must explicitly enable remote administration.</td>
+    </tr>
+    <tr>
+      <td>Backup duration</td>
+      <td>This option specifies how often Google Sitemaps Generator writes  URLs from memory to disk, in minutes. The minimum value is 10 minutes. </td>
+    </tr>
+    <tr>
+      <td>Configuration port</td>
+      <td>This option specifies the  port that this administration console uses. By default, the port is 8181. </td>
+    </tr>
+  </table>
+  <p class="backtotop"><a href="#top">Back to top</a></p>
+  <h2>Setting  Defaults for All Sites and Values for Specific Sites </h2>
+  <p>When configuring Google Sitemaps Generator, you first define a set of defaults for all sites and then override them as needed for specific websites. Your overall process should be as follows: </p>
+  <ol class="input">
+    <li>Start with <strong>Defaults for All Sites </strong>. These values  are inherited by the individual sites.
+      <ol class="alpha">
+        <li>Define the general settings and click <strong>Save</strong>. One general setting is documented in detail below; see the section on Transforming URLs for information on how to fill in the <strong>Replaced URLs</strong> section. </li>
+        <li>For each type of Sitemap (Web, News, Video, and so on), click the tab and select <strong>Enable Sitemap generation</strong>, then define  type-specific settings for each  type of Sitemap. </li>
+      </ol>
+    </li>
+    <li>Set site-specific overrides. Click the name of a site, and notice that its default values are the same as the defaults for all sites. Override the settings as needed to meet the needs of each site. </li>
+    <li>Click <strong>Save</strong> when you are done, and click <strong>Resart</strong> to restart  the Google Sitemaps Generator service with the new values. </li>
+  </ol>
+  <p>For help with each setting, view the tip that appears when you pause the mouse pointer over the field. </p>
+  <p class="backtotop"><a href="#top">Back to top</a></p>
+  <h2>Applying Changes <a name="gsg_con_changes" id="gsg_con_changes"></a></h2>
+  <p>Values  are saved when you click the <strong>Save</strong> button but they take effect only when you restart the Google Sitemaps Generator service. To restart the service, click the <strong>Restart</strong> button or use other administrative methods for restarting the service. </p>
+  <p>You'll occasionally see a message informing you that a change to a value that you've edited will take effect when you next  start the web server. </p>
+  <p>A  value that you see in the administration console is not the same as the values in use if either of the following is true: </p>
+  <ul>
+    <li>You  have not yet restarted the Google Sitemaps Generator service. </li>
+    <li>The value requires restart of the web server and you have not yet done so. </li>
+  </ul>
+  <p class="backtotop"><a href="#top">Back to top</a></p>
+  <h2>Transforming URLs for Inclusion in a Sitemap <a name="gsg_con_modifyingURLs" id="gsg_con_modifyingURLs"></a></h2>
+  <p> On the General Settings tab, the <strong>Replaced URLs</strong> section lets you  transform URLs so that the Sitemap version of a URL is different from the web server version of the same URL. This feature is useful for the following purposes: </p>
+  <ul>
+    <li>To remove  a session ID or other unnecessary parameters </li>
+    <li>To replace  complex or cluster-based host names with simple domain names</li>
+    <li>To suppress  private details about users </li>
+  </ul>
+  <p>To transform URLs, you specify two types of patterns: </p>
+  <ul>
+    <li>The pattern in the <strong>Find</strong> field identifies the original URL, before transformation, and includes one or more &quot;find strings.&quot; </li>
+    <li>The pattern in the <strong>Replace</strong> field specifies how to transform the original URL and includes  one or more &quot;replacement strings.&quot; </li>
+  </ul>
+  <h3>Pattern syntax </h3>
+  <p>Pattern syntax is as follows: </p>
+  <ul>
+    <li>Characters outside  square brackets are static and are not transformed. </li>
+    <li>A set of square  brackets ([]) encloses each find string and each replacement string. </li>
+    <li>An asterisk  (*) wildcard in the find string matches zero or more characters in the URL. </li>
+    <li>The number of find strings must match the number of replacement strings. </li>
+  </ul>
+  <h3>How transformation works </h3>
+  <p>Consider this find/replace pair: </p>
+  <ul>
+    <li><strong>Find:</strong> <code>/*aaa[12*]zzz[45].html</code></li>
+    <li><strong>Replace:</strong> <code>[234][543]</code></li>
+  </ul>
+  <p>Google Sitemap Generator identifies the find strings  [12*] and [45] in the following URLs: </p>
+  <ul>
+    <li>http://example.com/aaa123zzz45.html</li>
+    <li>http://example.org/aaa12bcd-zzz45.html</li>
+  </ul>
+  <p>Google Sitemap Generator  replaces anything that matches 12* with 234 and it replaces anything that matches 45 with 543, keeping the other characters intact: </p>
+  <ul>
+    <li>http://example.com/aaa234zzz543.html</li>
+    <li>http://example.org/aaa234zzz543.html</li>
+  </ul>
+  <h3>Examples</h3>
+  <p>The examples in this section show how you could achieve the purposes mentioned at the top of this section. Ellipses are used to omit unnecessary detail. </p>
+  <h4>Example 1: To remove Session ID or other parameters</h4>
+  <ul class="nolist">
+    <li>Find Field: *[session=*]</li>
+    <li>Replace Field: [] </li>
+    <li>Original URL: http://example.com/...page.php?session=48484 </li>
+    <li>Transformed URL: example.com/...page.php? </li>
+  </ul>
+  <h4>Example 2: To suppress a specific host name and replacing it with a generic domain name</h4>
+  <ul class="nolist">
+    <li>Find Field: [/host*.domain.com]/* </li>
+    <li>Replace Field: [/www.domain.com] </li>
+    <li>Original URL: http://host27.example.com... </li>
+    <li>Transformed URL:    http://www.example.com...</li>
+  </ul>
+  <h4>Example 3: To suppress private details </h4>
+  <ul class="nolist">
+    <li>Find Field: *[username=*]</li>
+    <li>Replace Field: [username=guest] </li>
+    <li>Original URL: http://example.com/...page.php?username=johnm </li>
+    <li>Transformed URL:    http://example.com/...page.php?username=guest</li>
+  </ul>
+  <p class="backtotop"><a href="#top">Back to top</a></p>
+  <h2>Defining Inclusion and Exclusion URL patterns <a name="gsg_con_patterns" id="gsg_con_patterns"></a></h2>
+  <p>You'll need to define URL patterns  to determine how Google Sitemaps Generator selects the URLs that are included in each Sitemap and determines the URLs to exclude from each Sitemap. Each Sitemap type has a set of <strong>Included URLs</strong> and <strong>Excluded URLs</strong>. This section describes how to fill in the &quot;inclusion patterns&quot; and &quot;exclusion patterns&quot; that you enter into those fields. URLs that match the inclusion patters are whitelisted, and the URLs that match the exclusion patterns are blacklisted.</p>
+  <p>It's important to write URL patterns to specify the content of Sitemaps. If you do not enter URL patterns, Google Sitemaps Generator includes all URLs  and the Sitemap file will become quite large, unless its size is limited by other configuration settings.<span class="style1"> </span></p>
+  <h3>How patterns are used </h3>
+  <p>A URL is included in Sitemaps files under these conditions: </p>
+  <ul>
+    <li>It matches an inclusion pattern, and does not match an exclusion pattern. </li>
+    <li>You do not enter any inclusion patterns or exclusion patterns. That is, in the absence of patterns, all URLs are included.</li>
+  </ul>
+  <p>A URL is excluded from Sitemaps files under these conditions: </p>
+  <ul>
+    <li>It matches an exclusion pattern. The URL is excluded even if it also matches an inclusion pattern. </li>
+    <li>It matches neither an  inclusion pattern nor an exclusion pattern. </li>
+  </ul>
+  <h3>How to construct a URL pattern </h3>
+  <p>These are the basic syntax rules for URL patterns: </p>
+  <ul>
+    <li>Start with a slash (/).</li>
+    <li>Use the  asterisk (*) to match zero or more characters.</li>
+    <li>Do not use http: or https: at the start of the pattern. </li>
+  </ul>
+  <p>For example, if the pattern is <code>/*news.html</code>, these are some matched URLs: </p>
+  <ul>
+    <li>http://www.example.com/sports-news.html</li>
+    <li>http://www.example.org/20080506news.html</li>
+  </ul>
+  <h3>How to use URL patterns to protect confidential data </h3>
+  <p>Examine the software   on your server and your web server logs to determine what types of  URLs might contain private information. For example, the list of default excluded URLs in the global data includes <code>*password*</code>. This value:</p>
+  <ul>
+    <li> Excludes any URL that contains a password parameter. </li>
+    <li>Excludes any file whose URL contains the word &quot;password.&quot;</li>
+  </ul>
+  <p>Suppression of a file from Sitemaps does not necessarily hide the file from the web. For example, imagine that you are using the default <code>*password* </code>exclusion rule with a site that has  a file about passwords called <code>creating_passwords.html</code>. The is meant for publication but won't be included in the Sitemaps file. However, unless you use the <code>robots.txt</code> file or otherwise prevent access,  the file will be found by  search engine crawlers</p>
+  <h2>Testing and Modifying Sitemap Content<a name="gsg_con_testing" id="gsg_con_testing"></a></h2>
+  <p class="backtotop"><a href="#top">Back to top</a></p>
+  <p>Test the results of the configuration by viewing sample Sitemap files, and then modifying the configuration until the Sitemap file is exactly what you want it to be. </p>
+  <p class="warning"><strong>Warning:</strong> It is crucial to execute this testing procedure! You are responsible for verifying that you are not exposing  content or user data to the search engine. </p>
+  <p>Your testing procedure should be something like the following. You will need to perform the testing and modification process with one site at a time. Start with the first site and go through the entire process before adding more sites. </p>
+  <ol>
+    <li>In <strong>Defaults for All Sites</strong>, ensure that Sitemaps won't be submitted to any search engines, as follows:
+      <ul>
+        <li>If there are values in the <strong>Search Engine Notification</strong> section, remove them. </li>
+        <li>Ensure that <span transmark="text:robotsIncluded;tip:robotsIncluded"><strong>Include Sitemap URL in robots.txt</strong></span> is not selected. </li>
+      </ul>
+    </li>
+    <li>For the first site, in <strong>General Settings</strong>, select <strong>Start</strong> to enable Sitemap generation for the site as a whole. <span class="style1"> </span></li>
+    <li>Work through the site as follows:
+      <ol class="alpha">
+        <li>For each type of Sitemap that you want to generate, click on the appropriate tab. </li>
+        <li>At the very top, select the option to enable Sitemap generation for that type of Sitemap.</li>
+        <li>Specify  a test Sitemap file name. Specify a separate filename for each type of Sitemap. </li>
+        <li>Modify the value for the option <strong>Frequency of Sitemap generation</strong> to increase the frequency. For example, change the value to 10 to create a Sitemap every 10 minutes. </li>
+      </ol>
+    </li>
+    <li>Click Save to save  your changes and click <strong>Restart</strong> to restart the Google Sitemap Generator service. </li>
+    <li>Let Sitemap  generation run for at least 10 minutes while the website is in use. <span class="style1"></span></li>
+    <li>Examine the generated Sitemap file, looking for URLs that contain the following types of information: </li>
+    <ul>
+      <li>Administration URLs</li>
+      <li>Information about users who are logged in </li>
+      <li>Passwords</li>
+      <li>Overly complex URLs </li>
+      <li>Session IDs </li>
+    </ul>
+    <li>Modify the patterns listed under <strong>Excluded URLs</strong> patterns and repeat the process until the Sitemaps file does not include any unwanted information. </li>
+    <li>Allow Google Sitemap Generator to run in test mode for a period of time <span class="style1"> </span>to catch issues that will show up rarely. </li>
+  </ol>
+  <p class="backtotop"><a href="#top">Back to top</a></p>
+  <h2>Going Live<a name="gsg_con_live" id="gsg_con_live"></a> </h2>
+  <p>When you are satisfied with the Sitemaps file, do the following: </p>
+  <ol>
+    <li>Change the generated Sitemaps file names back to their regular names. </li>
+    <li>Enable submission of  Web Sitemaps by entering URLs in the <strong>Search Engine Notification</strong> section. </li>
+    <li>Save all your changes. </li>
+    <li>Submit all other types of Sitemaps by using the methods described on <a href="http://www.google.com/intl/en/webmasters/">Google Webmaster Central</a>.</li>
+    <li>Monitor the results of your Sitemaps on the live site. For information on how to do this, view the <a href="http://www.google.com/support/webmasters/">Webmaster Help Center</a>. </li>
+  </ol>
+   <p class="backtotop"><a href="#top">Back to top</a></p>
+</div>
+<p id="date">
+Updated on
+<!-- javascript to display the date this page was updated -->
+<script type="text/javascript">
+<!-- hide script from old browsers
+    var lm = new Date(document.lastModified);
+    document.write(lm.toDateString());
+//-->
+</script>
+<!-- end javascript -->
+</p>
+</body>
+</html>
