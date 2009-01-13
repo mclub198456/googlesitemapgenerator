@@ -1,0 +1,385 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>Google Sitemap Generator: Reference</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<link rel="stylesheet" type="text/css" href="http://code.google.com/css/dev_docs.css" />
+</head>
+<body id="gsg-reference">
+<a name="top" id="top"></a>
+<!-- ########## PAGE HEADER ########## -->
+<div id="header">
+  <div id="logo"><a href="http://code.google.com/"><img src="http://code.google.com/images/code_sm.png" border="0" alt="Return to Google Code homepage" /></a></div>
+  <h1 id="doc_title">Google Sitemap Generator</h1>
+</div>
+<!-- ########## END PAGE HEADER ########## -->
+<div id="wrapper">
+  <!-- ########## SIDE NAVIGATION ########## -->
+  <div id="sidenav">
+    <ul>
+      <li id="gsg_intro_link"><a href="gsg-intro.html">Introduction</a></li>
+      <li id="gsg_install_link"><a href="gsg-installation.html">Installation</a></li>
+      <li id="gsg_conf_link"><a href="gsg-configuration.html">Configuration</a></li>
+      <li id="gsg_ref_link"><a href="gsg-reference.html">Reference</a></li>
+    </ul>
+  </div>
+</div>
+<!-- ########## END SIDE NAVIGATION ########## -->
+<!-- ########## PAGE CONTENT ########## -->
+<div id="pagecontent">
+  <h1 id="page_title">Reference</h1>
+  <p>This document contains reference information for Google Sitemap Generator administrators. </p>
+  <p>In this document:  </p>
+  <ol class="toc">
+    <li><a href="#gsg_ref_install">Installation Command</a> </li>
+    <li><a href="#gsg_ref_winadmin">Administration Command for Windows</a> </li>
+    <li><a href="#gsg_ref_linadmin">Administration Command for Linux</a></li>
+    <li><a href="#gsg_ref_status">Status Values</a></li>
+    <li><a href="#gsg_ref_sitesettings">Site Configuration Settings</a></li>
+    <li><a href="#gsg_ref_sitemaptypesettings">Sitemap Type Configuration Settings</a></li>
+    <li>
+      <ol>
+        <li><a href="#gsg_ref_web">Web Sitemap configuration</a></li>
+        <li><a href="#gsg_ref_mob">Mobile Sitemap configuration</a></li>
+        <li><a href="#gsg_ref_cod">Code Search Sitemap configuration</a></li>
+        <li><a href="#gsg_ref_blog">Blog Search configuration</a></li>
+      </ol>
+    </li>
+  </ol>
+  <h2><a name="gsg_ref_install" id="gsg_ref_install"></a> Installation Command</h2>
+  <p>The installation command is for Linux only. </p>
+  <p>This is the command format: </p>
+  <p><code>sitemap-install/install.sh </code>[<em>option</em>]...</p>
+  <p> The <em>option </em>variable can be  one of the following: </p>
+  <ul>
+    <li> <code>-h</code>: Displays help about these  command line options. </li>
+    <li> <code>-d</code> <em>directory: </em> Specifies  a non-default installation  directory. </li>
+    <li> <code>-a</code> <em>Apache-binary-filename</em>: Specifies the Apache binary file path. You can also specify this value interactively, in response to the installation script. </li>
+    <li> <code>-c</code> <em>Apache-config-filename</em>: Specifies the Apache root configuration file.</li>
+    <li> <code>-g</code> <em>Apache-group</em>: Specifies the user group name under which Apache is running. </li>
+    <li> <code>-t</code> <em>Apache-control-filename</em>: Specifies the Apache control script. </li>
+  </ul>
+  <p> All of these  parameters are optional. Use a space to separate multiple options.</p>
+  <p>Example: <code>sitemap-install/install.sh -t /usr/sbin/apache2ctl -g www-data </code></p>
+  <p class="backtotop"><a href="#top">Back to top</a></p>
+  <h2> <a name="gsg_ref_winadmin" id="gsg_ref_winadmin"></a> Administration Command for Windows</h2>
+  <p>This command controls the Google Sitemap Generator service. To start or stop the service, use the Windows Services interface. </p>
+  <p>This is the command format: </p>
+  <p><code>SitemapService.exe</code> <em>option </em></p>
+  <p>The <em>option </em>variable  can be one of the following: </p>
+  <ul>
+    <li><code>remote_admin {enable | disable}</code>: Lets an administrator  log on from a remote computer. </li>
+    <li><code>reset_password</code>: Enters interactive mode to set the administrative password. </li>
+    <li><code>-v</code> or <code>version</code>: Displays the current version.</li>
+    <li><code>-h</code> or <code>help</code>: Lists the command line options. </li>
+  </ul>
+  <p>You can specify only one option at a time. </p>
+  <p class="backtotop"><a href="#top">Back to top</a></p>
+  <h2><a name="gsg_ref_linadmin" id="gsg_ref_linadmin"></a> Administration Command for Linux </h2>
+  <p>This command controls the Google Sitemap Generator daemon.</p>
+  <p>This is the command format: </p>
+  <p><code>sitemap-daemon </code> <em>option </em></p>
+  <p>The <em>option </em>variable  can be one of the following: </p>
+  <ul>
+    <li><code>remote_admin {enable | disable}</code>: Lets an administrator  log on from a remote computer. </li>
+    <li><code>service {start | stop | restart}</code>: Starts, stops, or restarts the Google Sitemap Generator daemon.</li>
+    <li><code>reset_password</code>: Enters interactive mode to set the administrative password. </li>
+    <li><code>-v</code> or <code>version </code>: Displays the current version.</li>
+    <li><code>-h</code> or <code>help</code>: Lists the command line options. </li>
+  </ul>
+  <p>You can specify only one option at a time. </p>
+  <h2><a name="gsg_ref_status" id="gsg_ref_status"></a>Status Values </h2>
+  <p>The <strong>Site Status</strong> page displays status information under the headers<strong> URL collectors</strong>  and  <strong>Sitemap creators</strong>. This section describes the meaning of the status values. </p>
+  <p>These are the status values for the URL collectors (webserver filter, file scanner, and log parser): </p>
+  <ul>
+    <li><strong>Running</strong>: The URL collector is working or ready to work.
+      <ul>
+          <li>For the  web server filter, the Running status means that the webserver filter is running. The webserver filter normally runs continuously. </li>
+          <li> For the log parser and file scanner, the Running status means that it is  running or available and waiting for its next scheduled    operation. To view the frequency at which  these components run, display the site-specific <strong>Site Configuration</strong> page and find the <strong>Execution interval</strong></strong> value in the <strong>URL collectors</strong> section. </li>
+      </ul>
+    </li>
+    <li><strong>Disabled</strong>: The URL collector is not enabled. This is the default status for the file scanner and log parser. To enable the file scanner or log parser, display the site-specific <strong>Site Configuration</strong> page, and make a selection under <strong>URL collectors</strong>. </li>
+    <li><strong>Failed</strong>: An error occurred. Check the Google Sitemap Generator log file for information:
+      <ul>
+        <li><strong>Windows</strong>:  C:\Program Files\Google\Google Sitemap Generator\google-sitemap-generator.log </li>
+        <li> <strong>Linux</strong>:  /usr/local/google-sitemap-generator/log/google-sitemap-generator.log </li>
+      </ul>
+    </li>
+  </ul>
+  <p>These are the status values for the Sitemap collectors (Web, Mobile, Code Search, and Blog Search):</p>
+  <ul>
+    <li><strong>Running</strong>: The Sitemap creator is working or ready to work. A Sitemap creator can be running without generating Sitemaps, based on other configurations, such as the values specified under <strong>Sitemap generation schedule</strong> on the Sitemap type pages. A Sitemap creator can create Sitemaps that are not submitted, if automatic Sitemap submission is disabled. </li>
+    <li><strong>Disabled</strong>: The relevant Sitemap type is not enabled. To enable a Sitemap type, go to the <strong>Site configuration</strong> page and select it in the <strong>Sitemap types</strong> section. </li>
+    <li><strong>Failed</strong>: An error occurred. Check the log file for information:
+      <ul>
+          <li><strong>Windows</strong>:  C:\Program Files\Google\Google Sitemap Generator\google-sitemap-generator.log </li>
+        <li><strong>Linux</strong>:  /usr/local/google-sitemap-generator/log/google-sitemap-generator.log </li>
+      </ul>
+    </li>
+  </ul>
+  <p class="backtotop"><a href="#top">Back to top</a></p>
+  <h2><a name="gsg_ref_sitesettings" id="gsg_ref_sitesettings"></a>Site Configuration Settings </h2>
+  <p>The following table lists and explains the site configuration settings. </p>
+  <table width="90%" border="1" summary="For each site configuration setting, gives a description and lists the default value.
+">
+    <tr>
+      <th scope="col" width="20%">Option or Section</th>
+      <th scope="col" width="40%">Description</th>
+      <th scope="col" width="40%">Default Value </th>
+    </tr>
+    <tr>
+      <td>Host name </td>
+      <td>The name used in generated Sitemaps. </td>
+      <td>Google Sitemap Generator deduces the host name by monitoring site traffic. </td>
+    </tr>
+    <tr>
+      <td>Pathname for log files </td>
+      <td> The Apache or IIS web server log that the Google Sitemap Generator log parser monitors. The value can resolve to a file or a directory. If the value resolves to a directory, the log parser monitors all files in the directory, but it does not monitor files in any subdirectories.
+        <p >Linux example: /var/log/apach2/access.log </p >
+        <p> Windows example: C:\WINDOWS\system32\LogFiles\W3SVC1 </p></td>
+      <td>System dependent</td>
+    </tr>
+    <tr>
+      <td> Resource limits
+        </ul></td>
+      <td> Specifies the resources that Google Sitemap Generator uses on this web server. 
+        You can override these site-level default values on a per-site basis.
+        <p><strong>Maximum age of URLs included in Sitemap file </strong> lets you exclude old URLs from Sitemaps files, to prevent files from becoming bloated with URLs that are already known. </p>
+        <p><strong>Maximum number of URLs in memory </strong>and <strong>Maximum number of URLs on disk </strong> help you  limit the web server resources used by Google Sitemap Generator. As Google Sitemap Generator finds URLs, it enforces these limits and removes  older URLs as needed. These values  apply to unique URLs; each URL can appear  only once in the cache and once on disk.</p>
+        <p>The  number of URLs in memory should be smaller than the number of URLs on disk, because the memory cache is periodically written to disk. </p></td>
+      <td> Maximum age of URLs included in Sitemap file: 365 days
+        </p>
+        <p>Maximum number of URLs in memory: 100000</p>
+        <p>Maximum number of URLs on disk: 500000</p></td>
+    </tr>
+    <tr>
+      <td>URL collectors </td>
+      <td> Specifies the way that URLs are collected.
+        </p>
+        <p>You can activate or deactivate the web server filter, file scanner, and log parser. </p>
+        <p>The web server filter runs continuously when activated, but the file scanner and log parser run at intervals that you can specify. </p></td>
+      <td> Web server filter: Default value is set at installation.
+        <p>File scanner and log parser: Disabled by default. </p>
+        <p>Default execution interval for the file scanner and log parser: 1440 minutes</p></td>
+    </tr>
+    <tr>
+      <td>URL query fields </td>
+      <td>Includes specified URL query fields in generated Sitemaps, overriding the default exclusion of all query fields.
+        <p>Read the privacy notice and test the generated Sitemaps to ensure that you do not inadvertently compromise user privacy by including inappropriate query fields in Sitemaps.</p></td>
+      <td>All query fields are excluded by default. </td>
+    </tr>
+    <tr>
+      <td>Sitemap types </td>
+      <td>Enables and disables the generation of URLs for Web, Mobile, Code Search, and Blog Search. </td>
+      <td> Enabled: Web
+        <p>Disabled: All others </p></td>
+    </tr>
+  </table>
+  <p class="backtotop"><a href="#top">Back to top</a></p>
+  <h2><a name="gsg_ref_sitemaptypesettings" id="gsg_ref_sitemaptypesettings"></a> Sitemap Type Configuration Settings</h2>
+  <p>This section lists and explains the configuration settings that are specific to specific types of Sitemaps. It contains sections for the following types of Sitemaps: </p>
+  <ul>
+    <li><a href="#gsg_ref_web">Web</a></li>
+    <li><a href="#gsg_ref_mob">Mobile</a></li>
+    <li><a href="#gsg_ref_cod">Code Search</a></li>
+    <li><a href="#gsg_ref_blog">Blog Search</a></li>
+  </ul>
+  <h3><a name="gsg_ref_web" id="gsg_ref_web"></a><br />
+    Web Sitemap Configuration </h3>
+  <p>The following table describes the configuration settings for Web Sitemaps. </p>
+  <table width="90%" border="1" summary="For each Web configuration setting, gives a description and lists the default value.
+">
+    <tr>
+      <th scope="col" width="20%">Option or Section</th>
+      <th scope="col" width="40%">Description</th>
+      <th scope="col" width="40%">Default Values </th>
+    </tr>
+    <tr>
+      <td>Sitemap generation schedule </td>
+      <td>Specifies the  time of the first Sitemap generation  and the frequency of subsequent Sitemap generation.
+       
+        <p>The default value of 1 day can cause some lag between the time that you make configuration changes and the time that you see the results in a Web Sitemap file. To test the results of configuration changes, or to test Sitemap generation in general, consider shortening this schedule, at least temporarily. </p>
+        <p>You can use the start date and time to defer the effective start time for Google Sitemap Generator, even after it is running and  Sitemap types are enabled. </p></td>
+      <td> Start time and date: Installation time
+        <p>Interval: 1 day</p></td>
+    </tr>
+    <tr>
+      <td>Sitemap file settings </td>
+      <td> Configures settings that affect each Sitemap file.
+        <p><strong>Sitemap file name </strong>specifies the first Sitemap file for this Sitemap type. </p>
+        <p> <strong>Maximum number of URLs</strong> specifies the maximum number of unique URLs per file. For example, if this value is set to 20000 and the number of URLs is 100000, Google Sitemap Generator creates five Sitemap files. </p>
+        <p><strong>Maximum file size</strong> specifies the size of each Sitemap file. </p></td>
+      <td> Sitemap file compression: Enabled
+        </p>
+        <p>File name: <code>web_sitemap_</code><em>auto-generated-number</em><code>.xml </code></p>
+        <p>Maximum number of URLs: 20000 </p>
+        <p>Maximum file size: 5120 KB </p></td>
+    </tr>
+    <tr>
+      <td>Sitemap file submission </td>
+      <td>Specifies the mechanism for informing search engines about your Sitemaps.
+        .
+        <p>The <strong>Include Sitemap URL in robots.txt</strong> option lets the robots.txt file point to the Sitemap file. Search engine crawlers will then follow the link to the URLs in the Sitemap file. The line looks something like this: Sitemap://example.com/sitemap.xml/gz </p>
+        <p><strong>Search engine notification URLs</strong> provide the ping URLs that  notify various search engines about your Sitemaps. Google Sitemap Generator automatically adds the Sitemap filename to the ping request. </p>
+        <p>This section enables or disables automatic submission of Web Sitemaps. </p></td>
+      <td>Default values are determined by an installation question about whether to start up with automatic submission of Web Sitemaps enabled or disabled. The default value for the installation question is to start with automatic submission disabled.
+        </p>      </td>
+    </tr>
+    <tr>
+      <td>Sitemap URL filter <a name="gsg_ref_filterrules" id="gsg_ref_filterrules"></a></td>
+      <td> Defines URL patterns that determine how Google Sitemap Generator selects the URLs that are included in each Sitemap.
+        <p>The <strong>Time-to-live for URLs</strong> value specifies how long to keep  content in your Sitemap file. </p>
+        </p>
+        <p>The values under <strong>Included URL patterns</strong> (inclusion patterns) and <strong>Excluded URL patterns</strong> (exclusion patterns)  determine how Google Sitemap Generator selects the URLs that it sends to the search engines. </p>
+        <h4>How the patterns work </h4>
+        <p>A URL is included in Sitemaps files if both of the following are true: </p>
+        <ul>
+          <li>It matches an inclusion pattern. </li>
+          <li>It does not match an exclusion pattern. </li>
+        </ul>
+        <p>A URL is excluded from Sitemap files if either of the following is true: </p>
+        <ul>
+          <li>It matches an exclusion pattern.</li>
+          <li>It is included by the inclusion and exclusion patterns in this section, but is prohibited by the settings under <strong>URL query fields</strong>. </li>
+        </ul>
+        <p>All URLs are excluded and Sitemaps files are empty, if the following is true: </p>
+        <ul>
+          <li>Both  <strong>Included URL patterns</strong> and <strong>Excluded URL patterns</strong> fields are empty. </li>
+        </ul>
+        <h4>Pattern syntax rules </h4>
+        <p>Construct patterns as follows: </p>
+        <ul>
+          <li>Start with a slash (/).</li>
+          <li>Use the  asterisk (*) to match zero or more characters.</li>
+          <li>Do not use http: or https: at the start of the pattern. </li>
+        </ul>
+         
+        <h4>Example</h4>
+        <p>For the pattern  /*staff.html, these are some matched URLs: </p>
+        <ul>
+          <li>http://www.example.com/sports-staff.html</li>
+          <li>http://www.example.org/20080506staff.html</li>
+        </ul>		</td>
+      <td> Included URL patterns: /* (all files)
+      
+        <p>Excluded URL patterns: Files whose names contain  "password&quot;; all .swf, .js, .css, .png, .gif, and .jpg files; and  robots.txt. </p>
+        <p>Excluded URL patterns: none</p></td>
+    </tr>
+  </table>
+  <p class="backtotop"><a href="#top">Back to top</a></p>
+  <h3><a name="gsg_ref_mob" id="gsg_ref_mob"></a><br />
+    Mobile Sitemap Configuration</h3>
+  <p>The following table describes the configuration settings for Mobile Sitemaps. </p>
+  <table width="90%" border="1" summary="For each Mobile configuration setting, gives a description and lists the default value.
+">
+    <tr>
+      <th scope="col" width="20%">Option or Section</th>
+      <th scope="col" width="40%">Description</th>
+      <th scope="col" width="40%">Default Values </th>
+    </tr>
+    <tr>
+      <td>Sitemap generation schedule </td>
+      <td>Specifies the start time for generating Sitemaps and the frequency of Sitemap generation.
+        <p>You can use the start date and time to defer the start time for Google Sitemap Generator, even after Google Sitemap Generator is running and Mobile Sitemap types are enabled. </p></td>
+      <td>Start time and date: Installation time
+        <p>Interval: 1 day</p></td>
+    </tr>
+    <tr>
+      <td>Sitemap file settings </td>
+      <td> Configures settings that affect the Sitemap files.
+        <p><strong>Sitemap file name </strong>specifies the first Sitemap file for this Sitemap type. </p>
+        <p> <strong>Maximum number of URLs</strong> specifies the maximum number of unique URLs per file. For example, if this value is set to 20000 and the number of URLs is 100000, Google Sitemap Generator creates five Sitemap files. </p>
+        <p><strong>Maximum file size</strong> specifies the size of each Sitemap file. </p></td>
+      <td> Sitemap file compression: Enabled
+        </p>
+        <p>File name: <code>mobile_sitemap_</code><em>auto-generated-number</em><code>.xml </code></p>
+        <p>Maximum number of URLs: 20000 </p>
+        <p>Maximum file size: 5120 KB </p></td>
+    </tr>
+    <tr>
+      <td>Sitemap URL filter </td>
+      <td> Defines URL patterns that determine how Google Sitemap Generator selects the URLs that are included in each Sitemap. 
+      <p>Refer to the <a href="#gsg_ref_filterrules">information for this setting under Web Sitemaps</a>.  </p></td>
+      <td>Refer to the information for this setting under Web Sitemaps. </td>
+    </tr>
+  </table>
+  <p class="backtotop"><a href="#top">Back to top</a></p>
+  <h3><a name="gsg_ref_cod" id="gsg_ref_cod"></a><br />
+    Code Search  Sitemap configuration </h3>
+  <p>The following table describes the configuration settings for Code Search Sitemaps. </p>
+  <table width="90%" border="1" summary="For each Web configuration setting, gives a description and lists the default value.
+">
+    <tr>
+      <th scope="col" width="20%">Option or Section</th>
+      <th scope="col" width="40%">Description</th>
+      <th scope="col" width="40%">Default Values </th>
+    </tr>
+    <tr>
+      <td>Sitemap generation schedule </td>
+      <td>Specifies the start time for generating Sitemaps and the frequency of Sitemap generation.
+        <p>You can use the start date and time to defer the start time for Google Sitemap Generator, even after Google Sitemap Generator is running and Code Search Sitemap types are enabled. </p></td>
+      <td>Start time and date: Installation time
+        <p>Interval: 1 day</p></td>
+    </tr>
+    <tr>
+      <td>Sitemap file settings </td>
+      <td> Configures settings that affect the Sitemap files.
+        <p><strong>Sitemap file name </strong>specifies the first Sitemap file for this Sitemap type. </p>
+        <p> <strong>Maximum number of URLs</strong> specifies the maximum number of unique URLs per file. For example, if this value is set to 20000 and the number of URLs is 100000, Google Sitemap Generator creates five Sitemap files. </p>
+        <p><strong>Maximum file size</strong> specifies the size of each Sitemap file. </p></td>
+      <td>Sitemap file compression: enabled
+        </p>
+        <p>File name: <code>codesearch_sitemap_</code><em>auto-generated-number</em><code>.xml </code></p>
+        <p>Maximum number of URLs: 20000 </p>
+        <p>Maximum file size: 5120 KB </p></td>
+    </tr>
+    <tr>
+      <td>Sitemap URL filter </td>
+      <td> Defines URL patterns that determine how Google Sitemap Generator selects the URLs that are included in each Sitemap. </p>
+      <p>Refer to the <a href="#gsg_ref_filterrules">information for this setting under Web Sitemaps</a>. </p>
+      <p>Be careful to ensure that the file extensions specified here actually match the file extensions in use. If they do not match, the Sitemap could be empty. </p> </td>
+      <td> Included URL patterns: All files with the extensions .vb, .c, .cxx, .cpp, .h, .cc, and .java. 
+        <p>Excluded URL patterns: none</p>
+      <p>&nbsp;</p></td>
+    </tr>
+  </table>
+  <p class="backtotop"><a href="#top">Back to top</a></p>
+  <h3><a name="gsg_ref_blog" id="gsg_ref_blog"></a><br />
+    Blog Search Configuration </h3>
+  <p>The following table describes the configuration settings for Blog Search Sitemaps. For Blog Search, Google Sitemap Generator does not generate and then submit Sitemaps files, as it does for other content types. Instead, Google Sitemap Generator monitors the web server traffic for new content and then dynamically pings search engines periodically when it finds the new content. </p>
+  <table width="90%" border="1" summary="For each Blogsearch configuration setting, gives a description and lists the default value.
+">
+    <tr>
+      <th scope="col"  width="20%">Option or Section</th>
+      <th scope="col" width="40%">Description</th>
+      <th scope="col" width="40%">Default Values </th>
+    </tr>
+    <tr>
+      <td>Ping schedule </td>
+      <td> Specifies the frequency with which Google Sitemap Generator pings search engines to notify them about new blog content. </td>
+      <td>Start time and date: Installation time
+        <p>Interval: 1 day</p></td>
+    </tr>
+    <tr>
+      <td>Sitemap URL filter </td>
+      <td>Defines URL patterns that determine how Google Sitemap Generator selects the URLs that are sent to the search engines. You can use this filter to specify the blogs that you want to include and exclude.
+      </td>
+      <td>Included URL patterns: * (all files)
+        <p>Excluded URL patterns: none</p></td>
+    </tr>
+  </table>
+  <p class="backtotop"><a href="#top">Back to top</a></p>
+  <p class="backtotop">&nbsp;</p>
+</div>
+<p id="date"> Updated on
+  <!-- javascript to display the date this page was updated -->
+  <script type="text/javascript">
+<!-- hide script from old browsers
+    var lm = new Date(document.lastModified);
+    document.write(lm.toDateString());
+//-->
+</script>
+  <!-- end javascript -->
+</p>
+</body>
+</html>
