@@ -1,4 +1,4 @@
-// Copyright 2008 Google Inc.
+// Copyright 2009 Google Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -113,6 +113,9 @@ class SiteSettings : public BaseSetting {
   void set_global_setting(const SiteSetting &global_setting) {
     global_setting_ = global_setting;
   }
+  SiteSetting* mutable_global_setting() {
+    return &global_setting_;
+  }
 
   const bool remote_admin() { return remote_admin_; }
   void set_remote_admin(bool remote_admin) {
@@ -146,6 +149,11 @@ class SiteSettings : public BaseSetting {
     apache_conf_ = apache_conf;
   }
 
+  const std::string& apache_group() const { return apache_group_; }
+  void set_apache_group(const std::string& apache_group) {
+    apache_group_ = apache_group;
+  }
+
  private:
 
   // The time duration when service program should backup data to disk
@@ -162,6 +170,9 @@ class SiteSettings : public BaseSetting {
 
   // path of apache configuration file
   std::string                   apache_conf_;
+
+  // Group name of apache.
+  std::string                   apache_group_;
 
   // admin related config
   bool                          remote_admin_;

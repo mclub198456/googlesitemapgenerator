@@ -1,4 +1,4 @@
-// Copyright 2008 Google Inc.
+// Copyright 2009 Google Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,9 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "common/version.h"
 #include "common/interproclock.h"
 #include "common/port.h"
 #include "common/accesscontroller.h"
+#include "common/settingmanager.h"
+#include "sitemapservice/websitemapservice.h"
+
+void PrintHelp(int exit_code);
+
+int ProcessRemoteAdmin(int argc, const char* argv[]);
 
 #ifdef WIN32
 
@@ -28,20 +35,24 @@
 
 using std::string;
 
+// Print available command options for user.
+void PrintHelp(int exit_code) {
+  printf("\
+Usage: SitemapService.exe [ reset_password ]\n\
+                          [ remote_admin {enable | disable} ]\n\
+                          [ help | -h ] [ version | v ]\n\
+Options:\n\
+  remote_admin        : change \"remote_admin\" flag in setting\n\
+  reset_password      : enter interactive mode to reset admin password\n\
+  version | -v        : show current version\n\
+  help | -h           : list available command line options (this page)\n\
+");
+
+  exit(exit_code);
+}
+
 // Entry point for the process.
 // It will call different functions based on command line type.
-//
-// Command Line             Purpose
-// "install_service"    Install this process as a Windows Service
-// "uninstall_service"  Uninstall this process from Windows Service
-// "start_service"      Ask service manager to start sitemap service
-// "stop_service"       Ask service manager to stop sitemap service
-// "restart_webserver"  Ask service manager to restart webserver
-// "install_filter"     Install web server filter
-// "uninstall_filter"   Uninstall web server filter
-// "update_setting"     Update setting file and save non-duplicated attributes
-// "debug"          Launch the work function directly for debugging purpose
-//  none                Started by Windows ServiceControlManager directly.
 //
 // Return 0 if operation is succesful, otherwise return an error code.
 int __cdecl main(int argc, const char *argv[]) {
@@ -55,49 +66,72 @@ int __cdecl main(int argc, const char *argv[]) {
   CmdLineFlags* flags = CmdLineFlags::GetInstance();
   if (!flags->Parse(argc, argv)) {
     fprintf(stderr, "Failed to parse command line args.\n");
-    return -1;
+    PrintHelp(-1);
   }
 
   if (argc > 1) {
     int return_result = 0;
     const char * parameter = argv[1];
-    if (parameter[0] == '-' || parameter[0] == '/')
-      parameter++;
 
-    printf("%s...\n", parameter);
+    if (stricmp(parameter, "-h") == 0
+      || stricmp(parameter, "help") == 0) {
+      PrintHelp(0);
+    } else if (stricmp(parameter, "-v") == 0
+               || stricmp(parameter, "version") == 0) {
+      printf("Google Sitemap Generator (Beta) Version [%s]\n",
+             SITEMAP_VERSION1);
+      return 0;
+    } else if (stricmp(parameter, "remote_admin") == 0) {
+      return ProcessRemoteAdmin(argc, argv);
+    }
+
     Logger::Log(EVENT_CRITICAL, "Command option: [%s]", parameter);
 
     // Call different functions based on command line type
     if (stricmp(parameter, "install_service") == 0) {
+      printf("Installing Google Sitemap Generator as a Windows service...\n");
       return_result = MainService::InstallService();
     } else if (stricmp(parameter, "uninstall_service") == 0) {
+      printf("Uninstalling Google Sitemap Generator service...\n");
       return_result = MainService::UninstallService();
     } else if (stricmp(parameter, "start_service") == 0) {
+      printf("Starting the Google Sitemap Generator service...\n");
       return_result = MainService::ControlService("start", "GoogleSitemapGenerator");
     } else if (stricmp(parameter, "stop_service") == 0) {
+      printf("Stoping the Google Sitemap Generator service...\n");
       return_result = MainService::ControlService("stop", "GoogleSitemapGenerator");
     } else if (stricmp(parameter, "reload_setting") == 0) {
       return_result = MainService::ReloadSetting();
     } else if (stricmp(parameter, "restart_webserver") == 0) {
+      printf("Restarting IIS...\n");
       return_result = MainService::ControlService("stop", "w3svc");
       return_result = MainService::ControlService("start", "w3svc");
     } else if (stricmp(parameter, "install_filter") == 0) {
+      printf("Installing Sitemap plugin for IIS...\n");
       return_result = IisConfig::InstallFilter() ? 0 : 1;
     } else if (stricmp(parameter, "uninstall_filter") == 0) {
       return_result = IisConfig::UninstallFilter() ? 0 : 1;
     } else if (stricmp(parameter, "update_setting") == 0) {
+      printf("Updating application settings according to IIS configuration...\n");
       return_result = MainService::UpdateSetting();
     } else if (stricmp(parameter, "debug") == 0) {
       MainService::RunSitemapService();
     } else if (stricmp(parameter, "start_config") == 0) {
+      printf("Opening the Admin Console...\n");
       return_result = MainService::StartConfig();
     } else if (stricmp(parameter, "set_permission") == 0) {
+      printf("Changing access permission for program files...\n");
       return_result = MainService::SetPermission();
-    } else if (stricmp(parameter, "set_password") == 0) {
+    } else if (stricmp(parameter, "reset_password") == 0) {
+      printf("Set the password for the Admin Console...\n");
       return_result = PasswordManager::CreatePassword() ? 0 : 1;
     } else if (stricmp(parameter, "change_password") == 0) {
       return_result = PasswordManager::ChangePassword() ? 0 : 1;
+    } else if (stricmp(parameter, "clean_robots") == 0) {
+      printf("Removing Sitemap lines from robots.txt...");
+      return_result = WebSitemapService::CleanRobotsTxt() ? 0 : 1;
     } else if (stricmp(parameter, "reset_firewall") == 0) {
+      printf("Removing firewall setting for Google Sitemap Generator...");
       if (!ServiceController::ChangeFirewallSetting(false)) {
         fprintf(stderr, "WARNING: Failed to reset firewall setting.");
       }
@@ -119,22 +153,25 @@ int __cdecl main(int argc, const char *argv[]) {
           flags->site_id(), flags->file()) ? 0 : 1;
       }
     } else if (stricmp(parameter, "install_admin_console") == 0) {
+      printf("Creating Admin Console site in IIS...\n");
       return_result = IisConfig::InstallAdminConsole() ? 0 : 1;
     } else if (stricmp(parameter, "uninstall_admin_console") == 0) {
+      printf("Removing Admin Console site from IIS...\n");
       return_result = IisConfig::UninstallAdminConsole() ? 0 : 1;
     } else {
       printf("Unsupported parameter %s\n", parameter);
-      return -1;
+      PrintHelp(-1);
     }
 
-    if (return_result == 0)
+    if (return_result == 0) {
       printf("%s successful!\n", parameter);
-    else
+    } else {
       printf("%s failed. Error code=%d!\n", parameter, return_result);
+    }
 
     return return_result;
   } else {
-    // Otherwise, the service is probably started by the Service Control Manager.
+    // The service started by the Service Controller Manager.
     return MainService::RunService();
   }
 }
@@ -153,17 +190,25 @@ int __cdecl main(int argc, const char *argv[]) {
 #include "sitemapservice/passwordmanager.h"
 #include "sitemapservice/sitesettingmanager.h"
 
+// Print available command options for user.
+void PrintHelp(int exit_code) {
+  printf("\
+Usage: sitemap-daemon [ service {start | stop | restart} ]\n\
+                      [ reset_password ]\n\
+                      [ remote_admin {enable | disable} ]\n\
+                      [ help | -h ] [ version | v ]\n\
+Options:\n\
+  service             : control sitemap-daemon service\n\
+  remote_admin        : change \"remote_admin\" flag in setting\n\
+  reset_password      : enter interactive mode to reset admin password\n\
+  version | -v        : show current version\n\
+  help | -h           : list available command line options (this page)\n\
+");
+
+  exit(exit_code);
+}
+
 // Entry point for the process.
-// It will call different functions based on command line type.
-//
-// Command Line       Purpose
-// "start"            Start daemon
-// "stop"             Stop daemon
-// "restart"          Restart daemon
-// "debug"            Run the servce as a stand alone application.
-// "update_setting"   Update default setting file.
-//  none              Same as "debug"
-//
 // Return 0 if operation is succesful, otherwise return an error code.
 int main(int argc, const char *argv[]) {
   // Requires the root
@@ -176,10 +221,13 @@ int main(int argc, const char *argv[]) {
   CmdLineFlags* flags = CmdLineFlags::GetInstance();
   if (!flags->Parse(argc, argv)) {
     fprintf(stderr, "Failed to parse command line args.\n");
-    return -1;
+    PrintHelp(-1);
   }
   if (flags->check_apache_conf()) {
     ApacheConfig::SetConfFilePath(flags->apache_conf().c_str());
+  }
+  if (flags->check_apache_group()) {
+    AccessController::set_apache_group(flags->apache_group());
   }
 
   if (!Util::InitFlags()) {
@@ -194,38 +242,35 @@ int main(int argc, const char *argv[]) {
   if (argc > 1) {
     int return_result = 0;
     const char * parameter = argv[1];
-    if (parameter[0] == '-' || parameter[0] == '/')
-      parameter++;
 
     Logger::Log(EVENT_CRITICAL, "Command option: [%s]", parameter);
 
     // Call different functions based on command line type
-    if (strcasecmp(parameter, "start") == 0) {
-      printf("Start sitemap daemon...\n");
-      return_result = Daemon::Start();
-      if (return_result == 0) {
-        printf("Start successful.\n");
-      } else {
-        fprintf(stderr, "Failed to start.\n");
+    if (strcasecmp(parameter, "service") == 0) {
+      if (argc != 3) {
+        fprintf(stderr, "Invalid number of args for service command.\n");
+        PrintHelp(1);
       }
-    } else if (strcasecmp(parameter, "stop") == 0) {
-      printf("Stop sitemap daemon...\n");
-      return_result = Daemon::Stop();
-      if (return_result == 0) {
-        printf("Stop successful.\n");
+      printf("%s sitemap daemon...\n", argv[2]);
+      if (strcasecmp(argv[2], "start") == 0) {
+        return_result = Daemon::Start();
+      } else if (strcasecmp(argv[2], "stop") == 0) {
+        return_result = Daemon::Stop();
+      } else if (strcasecmp(argv[2], "restart") == 0) {
+        return_result = Daemon::Restart();
       } else {
-        fprintf(stderr, "Failed to stop.\n");
-      }
-
-    } else if (strcasecmp(parameter, "restart") == 0) {
-      printf("Restart sitemap daemon...\n");
-      return_result = Daemon::Restart();
-      if (return_result == 0) {
-        printf("Restart successful.\n");
-      } else {
-        fprintf(stderr, "Failed to restart.\n");
+        fprintf(stderr, "Unrecognized option for service command.\n");
+        PrintHelp(1);
       }
 
+      if (return_result == 0) {
+        printf("%s successful.\n", argv[2]);
+      } else {
+        fprintf(stderr, "Failed to %s.\n", argv[2]);
+      }
+
+    } else if (strcasecmp(parameter, "remote_admin") == 0) {
+      return ProcessRemoteAdmin(argc, argv);
     } else if (strcasecmp(parameter, "reload_setting") == 0) {
       return_result = Daemon::ReloadSetting();
     } else if (strcasecmp(parameter, "debug") == 0) {
@@ -233,13 +278,15 @@ int main(int argc, const char *argv[]) {
     } else if (strcasecmp(parameter, "update_setting") == 0) {
       SettingManager* setting_manager = SettingManager::default_instance();
       return_result = setting_manager->UpdateSettingFile() ? 0 : 1;
-    } else if (strcasecmp(parameter, "set_password") == 0) {
+    } else if (strcasecmp(parameter, "reset_password") == 0) {
       return_result = PasswordManager::CreatePassword() ? 0 : 1;
     } else if (strcasecmp(parameter, "change_password") == 0) {
       return_result = PasswordManager::ChangePassword() ? 0 : 1;
+    } else if (strcasecmp(parameter, "clean_robots") == 0) {
+      return_result = WebSitemapService::CleanRobotsTxt() ? 0 : 1;
     } else if (strcasecmp(parameter, "get_site_setting") == 0) {
       if (!flags->check_site_id() || !flags->check_file()) {
-        fprintf(stderr, "Error: [site_id] and [file] is required.");
+        fprintf(stderr, "Error: [site_id] and [file] is required.\n");
         return -1;
       } else {
         return_result = SiteSettingManager::GetSiteSettingToFile(
@@ -247,22 +294,73 @@ int main(int argc, const char *argv[]) {
       }
     } else if (strcasecmp(parameter, "set_site_setting") == 0) {
       if (!flags->check_site_id() || !flags->check_file()) {
-        fprintf(stderr, "Error: [site_id] and [file] is required.");
+        fprintf(stderr, "Error: [site_id] and [file] is required.\n");
         return -1;
       } else {
         return_result = SiteSettingManager::SetSiteSettingFromFile(
           flags->site_id(), flags->file()) ? 0 : 1;
       }
+    } else if (strcasecmp(parameter, "help") == 0
+      || strcasecmp(parameter, "-h") == 0) {
+      PrintHelp(0);
+    } else if (strcasecmp(parameter, "version") == 0
+      || strcasecmp(parameter, "-v") == 0) {
+      printf("Google Sitemap Generator (Beta) Version [%s]\n",
+             SITEMAP_VERSION1);
     } else {
       fprintf(stderr, "Unsupported parameter %s\n", parameter);
-      return -1;
+      PrintHelp(-1);
     }
 
     return return_result;
   } else {
-    // Otherwise, start the service as a console app.
-    return Daemon::RunService();
+    PrintHelp(0);
+    return 0;
   }
 }
 
 #endif // __linux__
+
+int ProcessRemoteAdmin(int argc, const char* argv[]) {
+  int return_result = 0;
+
+  if (argc != 3) {
+    fprintf(stderr, "Invalid number of args for remote_admin command.\n");
+    PrintHelp(1);
+  }
+
+  std::string remote_admin;
+  if (stricmp(argv[2], "enable") == 0) {
+    remote_admin = "true";
+  } else if (stricmp(argv[2], "disable") == 0) {
+    remote_admin = "false";
+  } else {
+    fprintf(stderr, "Unrecognized option for remote_admin command.\n");
+    PrintHelp(1);
+  }
+
+  SettingManager* setting_manager = SettingManager::default_instance();
+  return_result = setting_manager->SetApplicationAttribute(
+    "remote_admin", remote_admin) ? 0 : 1;
+  if (return_result == 0) {
+    printf("Set remote_admin successful.\n");
+  } else {
+    fprintf(stderr, "Failed to set remote_admin.\n");
+  }
+  if (return_result == 0) {
+    printf("Try to reload setting to make remote_admin take effect...\n");
+#ifdef WIN32
+    return_result = MainService::ReloadSetting();
+#else
+    return_result = Daemon::ReloadSetting();
+#endif
+    if (return_result != 0) {
+      fprintf(stderr, "Faild to reload setting.\n");
+    } else {
+      printf("Setting is reloaded successfully.\n");
+    }
+  }
+
+  return return_result;
+}
+

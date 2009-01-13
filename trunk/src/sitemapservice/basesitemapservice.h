@@ -1,4 +1,4 @@
-// Copyright 2008 Google Inc.
+// Copyright 2009 Google Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -101,6 +101,9 @@ class BaseSitemapService : public ServiceInterface {
   // are multiple sitemap file. In this case, only the first sitemap is kept.
   // And of course, these two values can't be true simutaneously.
   bool EndGenerating(bool alwaysindex, bool noindex);
+
+  // Get sitemap url, like: http://example.com/sitemap.xml.gz
+  std::string BuildSitemapUrl();
 
   // Submit sitemap files to search engine.
   // The way to submit sitemap is defined in sitemap setting.

@@ -1,4 +1,4 @@
-// Copyright 2008 Google Inc.
+// Copyright 2009 Google Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -31,6 +31,7 @@
 #if APACHE_VERSION >= 20
 #include "apr_strings.h"
 #include "apr_tables.h"
+#include "apr_time.h"
 #else
 #define apr_table_get(table, name) ap_table_get(table, name)
 #endif
@@ -166,7 +167,7 @@ int SitemapModule::Process(request_rec* req) {
     // static file or files like SHTML
     if (record.contentHashCode == req->finfo.st_size ||
         BaseFilter::TreatAsStatic(req->filename)) {
-      record.last_filewrite = req->finfo.st_mtime / 1000000;
+      record.last_filewrite = req->finfo.st_mtime;
     }
   }
 #endif

@@ -1,4 +1,4 @@
-// Copyright 2008 Google Inc.
+// Copyright 2009 Google Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -89,9 +89,6 @@ class UrlProviderService : public ServiceInterface {
   SiteDataManager* data_manager_;
 
  private:
-  // The dir to store all time stamps.
-  static std::string stamp_dir_;
-
   // The limitation on last acess value of url record.
   // Url record which is visited before this value will be discarded.
   time_t last_access_limit_;

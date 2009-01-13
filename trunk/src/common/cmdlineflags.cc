@@ -1,4 +1,4 @@
-// Copyright 2008 Google Inc.
+// Copyright 2009 Google Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,14 +19,29 @@ CmdLineFlags CmdLineFlags::instance_;
 
 CmdLineFlags::CmdLineFlags() {
   check_apache_conf_ = false;
+  check_apache_group_ = false;
   check_remote_admin_ = false;
 
   check_file_ = false;
   check_site_id_ = false;
 }
 
+static bool ParseBool(const char* argv, const char* name, bool* value) {
+  std::string value_str = argv + strlen(name) + 1;
+  if (stricmp("true", value_str.c_str()) == 0) {
+    *value = true;
+  } else if (stricmp("false", value_str.c_str()) == 0) {
+    *value = false;
+  } else {
+    fprintf(stderr, "[%s] should be true or false.", name);
+    return false;
+  }
+  return true;
+}
+
 bool CmdLineFlags::Parse(int argc, const char* argv[]) {
   check_apache_conf_ = false;
+  check_apache_group_ = false;
   check_remote_admin_ = false;
   check_file_ = false;
   check_site_id_ = false;
@@ -37,15 +52,23 @@ bool CmdLineFlags::Parse(int argc, const char* argv[]) {
       apache_conf_ = argv[i] + strlen("apache_conf=");
       check_apache_conf_ = true;
 
+    } else if (strstr(argv[i], "apache_group=") != NULL) {
+      apache_group_ = argv[i] + strlen("apache_group=");
+      check_apache_group_ = true;
+
     } else if (strstr(argv[i], "remote_admin=") != NULL) {
       check_remote_admin_ = true;
-      std::string value = argv[i] + strlen("remote_admin=");
-      if (stricmp("true", value.c_str()) == 0) {
-        remote_admin_ = true;
-      } else if (stricmp("false", value.c_str()) == 0) {
-        remote_admin_ = false;
-      } else {
-        fprintf(stderr, "remote_admin should be true or false.");
+      if (!ParseBool(argv[i], "remote_admin", &remote_admin_)) {
+        return false;
+      }
+    } else if (strstr(argv[i], "overwrite=") != NULL) {
+      check_overwrite_ = true;
+      if (!ParseBool(argv[i], "overwrite", &overwrite_)) {
+        return false;
+      }
+    } else if (strstr(argv[i], "auto_submission=") != NULL) {
+      check_auto_submission_ = true;
+      if (!ParseBool(argv[i], "auto_submission", &auto_submission_)) {
         return false;
       }
     } else if (strstr(argv[i], "site_id=") != NULL) {
@@ -61,3 +84,5 @@ bool CmdLineFlags::Parse(int argc, const char* argv[]) {
 
   return true;
 }
+
+

@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Copyright 2008 Google Inc.
+# Copyright 2009 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -42,16 +42,21 @@ HTTPD_CONF="httpd.conf"
 DEST_DIR="$PREFIX/$PKG_NAME"
 SRC_DIR="./"
 
+APACHE_INFO="apache.info"
 GLOBAL_CONF_DIR="/etc/google-sitemap-generator"
 GLOBAL_CONF_HOME="home"
 
 APACHE_SCRIPT="apache.sh"
 UNINSTALL_SCRIPT="uninstall.sh"
-RESTART_SCRIPT="restart.sh"
 TOS_FILE="tos"
 WARN_FILE="privacy_warning"
-APACHE=""
 REMOTE_ADMIN="false"
+AUTO_SUBMISSION="disable"
+
+arg_apache_binary=""
+arg_apache_group=""
+arg_apache_conf=""
+arg_apache_ctl=""
 
 ###########################################################
 
@@ -67,13 +72,14 @@ GetSrcDir()
 
 InitDestDir()
 {
-  echo "Google Sitemap Generator will be installed into $DEST_DIR"
+  echo "Google Sitemap Generator will be installed into"
+  echo "$DEST_DIR"
+  echo ""
 
   if [ -d "$DEST_DIR" ]; then
     echo "Directory ($DEST_DIR) already exists."
-    echo -n "Do you want to install Google Sitemap Generator into it? [N/y]"
-    echo -n "Do you want to install Google Sitemap Generator into this \
-existing directory, overwriting old files? [N/y]"
+    echo "Do you want to install Google Sitemap Generator into this existing directory,"
+    echo -n "overwriting old files? [N/y]"
     read answer
     if [ "$answer" = "Y" -o "$answer" = "y" ]; then :; else
       echo "The Google Sitemap Generator installation has been aborted."
@@ -93,14 +99,15 @@ CheckOldInstallation()
   fi
 
   local old_home=`ExecCmd 0 grep "$PKG_NAME" "$home_file"`
-  echo "There is already an existing installation of Google Sitemap Generator \
-in ($old_home)."
+  echo "There is already an existing installation of Google Sitemap Generator in"
+  echo "$old_home."
   echo -n "Do you want to uninstall the existing version first? [Y/n]"
   read answer
+  echo ""
   if [ "x$answer" = "xN" -o "x$answer" = "xn" ]; then
     echo "You must uninstall the existing version before proceeding with this \
 installation."
-    echo -n "Do you want to abort this installation? [Y/n]"
+    echo -n "Do you want to cancel this installation? [Y/n]"
     read answer
     if [ "x$answer" = "xN" -o "x$answer" = "xn" ]; then :; else
       echo "The Google Sitemap Generator installation has been aborted."
@@ -109,6 +116,9 @@ installation."
   fi
 
   ExecCmd 0 "$old_home/$UNINSTALL_SCRIPT"
+  echo -n "Press ENTER to continue..."
+  read answer
+  echo ""
 
   return 0
 }
@@ -200,9 +210,11 @@ echo -n "Press ENTER to continue..."
 read answer
 echo ""
 
-echo "The product Terms of Service follows, You'll be asked to agree to the \
-Terms of Service at the end of many paragraphs. After installation is \
-complete, you can read the Terms of Service here:"
+cat <<TOS_MSG
+The product Terms of Service follows. You'll be asked to agree to the Terms of
+Service at the end of many paragraphs. After installation is complete, you can
+read the Terms of Service here:
+TOS_MSG
 echo "$DEST_DIR/$TOS_FILE"
 
 echo -n "Press ENTER to continue..."
@@ -213,6 +225,7 @@ ExecCmd 0 more -d "$SRC_DIR/$TOS_FILE"
 echo ""
 echo -n "Do you agree with the Terms of Service? [N/y]"
 read answer
+echo ""
 if [ "x$answer" != "xy" -a "x$answer" != "xY" ]; then
   echo "The Google Sitemap Generator installation has been aborted."
   exit 1
@@ -224,14 +237,23 @@ return 0
 # Get options from command line.
 CheckApache()
 {
-  if test "x$APACHE" = "x"; then
+  if test "x$arg_apache_ctl" = "x"; then :; else
+    apache_cmd="$arg_apache_ctl"
+  fi
+  if test "x$arg_apache_binary" = "x"; then :; else
+    apache_cmd="$arg_apache_binary"
+  fi
 
-    echo "This installation updates the Apache configuration file and \
-needs the location of the binary file \
-only in order to find the configuration file. \
-The binary file will not be modified."
+  if test "x$apache_cmd" = "x"; then
+    cat <<CHECK_APACHE_MSG
+This installation updates the Apache configuration file. To find that file,
+the installer needs the location of the Apache binary (httpd) or control
+script (apachectl). The binary or control script that you specify must
+support the -V option.
+CHECK_APACHE_MSG
 
-    PickFile APACHE -f 1 "What is the location of the Apache binary?" \
+    PickFile apache_cmd -f 1 \
+    "What is the location of the Apache binary or control script?" \
     /usr/sbin/apache2 /usr/sbin/apache /usr/sbin/httpd \
     /usr/local/httpd/bin/httpd /usr/local/sbin/httpd
   fi
@@ -239,23 +261,29 @@ The binary file will not be modified."
   while :
   do
     local valid_apache="true"
-    if AnalyzeApache "$APACHE"; then
+    SetApacheVar "APACHE_GROUP" "$arg_apache_group"
+    SetApacheVar "APACHE_CONF" "$arg_apache_conf"
+    SetApacheVar "APACHE_CTL" "$arg_apache_ctl"
+    SetApacheVar "APACHE_BIN" "$arg_apache_binary"
+    if AnalyzeApache "$apache_cmd"; then
       cat <<HERE_APACHE_MESSAGE
-*********************************************************************
-The following information about your Apache binary has been detected:
-  * Version $APACHE_VERSION
-  * $APACHE_ARCH bits
-  * Root configuration file: $APACHE_CONF
-  * Pid file: $APACHE_PIDFILE
-*********************************************************************
+***************************************************************************
+The following information about your Apache installation has been detected:
+  * Apache version: $APACHE_VERSION
+  * Apache architecture: $APACHE_ARCH bits
+  * Apache root configuration file: $APACHE_CONF
+  * Apache group: $APACHE_GROUP
+***************************************************************************
 HERE_APACHE_MESSAGE
-      echo -n "Is all of this information correct? [N/y]"
+      echo "Is all of this information correct? If you answer No, installation will"
+      echo "terminate and you'll need to restart the installation, using the necessary"
+      echo -n "command line options. [N/y]"
       read answer
       if [ "x$answer" != "xy" -a "x$answer" != "xY" ]; then
         valid_apache="false"
       fi
     else
-      echo "($APACHE) is not a supported Apache binary."
+      echo "$apache_cmd is not a supported Apache binary or control script."
       valid_apache="false"
     fi
 
@@ -265,7 +293,7 @@ HERE_APACHE_MESSAGE
     fi
 
     # Ask user to input a different location
-    echo -n "Do you want to enter a different location for the Apache binary? [Y/n]"
+    echo -n "Do you want to enter a different location for the Apache binary or control script? [Y/n]"
     read answer
     if [ "x$answer" = "xn" -o "x$answer" = "xN" ]; then
       echo "The Google Sitemap Generator installation has been aborted."
@@ -274,15 +302,50 @@ HERE_APACHE_MESSAGE
       answer=""
       while [ -z "$answer" ]
       do
-        echo -n "New location for the Apache binary:"
+        echo -n "New location for the Apache binary or control script:"
         read answer
       done
-      APACHE="$answer"
+      arg_apache_binary="$answer"
     fi
   done
 
+  if SaveApacheInfo "$DEST_DIR/$APACHE_INFO"; then :; else
+    echo "Failed to save apache.info"
+    exit 1
+  fi
 }
 
+GetInitialSetting()
+{
+  cat <<INITIAL_SETTING
+Google Sitemap Generator will start creating Web Sitemap files as soon as it
+starts up. Do you want Google Sitemap Generator to start submitting these
+files automatically? There are three options:
+1.  First installation. Start with automatic submission disabled.
+2.  First installation. Start with automatic submission enabled.
+3.  Reinstallation. Use the old automatic submission settings.
+
+INITIAL_SETTING
+
+  AUTO_SUBMISSION="1"
+  while true; do
+    echo -n "Specify your choice [$AUTO_SUBMISSION]:"
+    read answer
+    if test "x$answer" = "x"; then
+      AUTO_SUBMISSION="1"
+      break
+    fi
+    if test "x$answer" = "x1" ||
+      test "x$answer" = "x2" ||
+      test "x$answer" = "x3"; then
+      AUTO_SUBMISSION=$answer;
+      break
+    fi
+  done
+
+  echo ""
+  return 0
+}
 
 GetPreferences()
 {
@@ -298,7 +361,7 @@ but it is less secure than local access."
   else
     REMOTE_ADMIN="true"
     echo "Don't forget to configure your firewall after this installation is \
-complete. You'lll need allow remote access on the Google Sitemap Generator \
+complete. You'll need allow remote access on the Google Sitemap Generator \
 administration port."
   fi
 
@@ -359,12 +422,6 @@ ExecCmd 0 chmod 0755 "$DEST_DIR/$CGI_DIR"
 ExecCmd 0 echo $APACHE_CONF > $DEST_DIR/.apachebin
 ExecCmd 0 chmod 644 "$DEST_DIR/.apachebin"
 
-# Generate restart script
-local temp_restart_sh=`mktemp /tmp/gsg_tmp.XXXXXX`
-local escaped_bin=`echo $APACHE_BIN | sed 's/\//\\\\\//g'`
-ExecCmd 0 sed "s/\"_APACHE_BIN_\"/$escaped_bin/" \
-  $SRC_DIR/restart.sh > $temp_restart_sh
-
 # Generate uninstall script
 local temp_uninstall_sh=`mktemp /tmp/gsg_tmp.XXXXXX`
 local escaped_bin=`echo $APACHE_BIN | sed 's/\//\\\\\//g'`
@@ -381,7 +438,6 @@ ExecCmd 0 sed "s/_GSG_ROOT_/$escaped_gsg/" \
 ExecCmd 0 mv -f $temp_uninstall_sh "$DEST_DIR/$UNINSTALL_SCRIPT"
 ExecCmd 0 cp -f "$SRC_DIR/$DAEMON_BIN" "$DEST_DIR/$BIN_DIR"
 ExecCmd 0 cp -f "$SRC_DIR/$ADMIN_BIN" "$DEST_DIR/$CGI_DIR/$CGI_BIN"
-ExecCmd 0 mv -f $temp_restart_sh "$DEST_DIR/$BIN_DIR/$RESTART_SCRIPT"
 ExecCmd 0 cp -rf "$SRC_DIR/$ADM_DIR/*" "$DEST_DIR/$ADM_DIR"
 ExecCmd 0 cp -f "$SRC_DIR/$APACHE_SCRIPT" "$DEST_DIR/$BIN_DIR"
 ExecCmd 0 cp -f "$SRC_DIR/$TOS_FILE" "$DEST_DIR"
@@ -390,7 +446,6 @@ ExecCmd 0 cp -f "$temp_httpd_conf" "$DEST_DIR/$CONF_DIR/$HTTPD_CONF"
 # Remove temp files.
 ExecCmd 1 rm -f $temp_httpd_conf
 ExecCmd 1 rm -f $temp_uninstall_sh
-ExecCmd 1 rm -f $temp_restart_sh
 
 # Copy module file according to whether SELinux is enabled.
 if which selinuxenabled 1>/dev/null 2>/dev/null; then
@@ -410,7 +465,6 @@ ExecCmd 0 find "$DEST_DIR/$ADM_DIR" -type f -exec chmod 644 {} \;
 ExecCmd 0 chmod 0750 "$DEST_DIR/$UNINSTALL_SCRIPT"
 ExecCmd 0 chmod 0750 "$DEST_DIR/$BIN_DIR/$APACHE_SCRIPT"
 ExecCmd 0 chmod 0750 "$DEST_DIR/$BIN_DIR/$DAEMON_BIN"
-ExecCmd 0 chmod 0750 "$DEST_DIR/$BIN_DIR/$RESTART_SCRIPT"
 ExecCmd 0 chmod 0755 "$DEST_DIR/$LIB_DIR/$MODULE_LIB"
 ExecCmd 0 chmod 0755 "$DEST_DIR/$CGI_DIR/$CGI_BIN"
 ExecCmd 0 chmod 0644 "$DEST_DIR/$CONF_DIR/$HTTPD_CONF"
@@ -432,10 +486,20 @@ return 0;
 # update site settings
 UpdateSiteSettings()
 {
-  if "$DEST_DIR/$BIN_DIR/$DAEMON_BIN" -update_setting \
-  "apache_conf=$APACHE_CONF" "remote_admin=$REMOTE_ADMIN" \
+  update_setting_flags=""
+  if test $AUTO_SUBMISSION = "1"; then
+    update_setting_flags="overwrite=true auto_submission=false"
+  elif test $AUTO_SUBMISSION = "2"; then
+    update_setting_flags="overwrite=true auto_submission=true"
+  elif test $AUTO_SUBMISSION = "3"; then
+    update_setting_flags="overwrite=false"
+  fi
+
+  if "$DEST_DIR/$BIN_DIR/$DAEMON_BIN" update_setting \
+  $update_setting_flags \
+  "apache_conf=$APACHE_CONF" "apache_group=$APACHE_GROUP" \
   1>/dev/null; then :; else
-    echo "Failed to update sitesettings."
+    echo "Failed to update site settings."
     exit 1
   fi
 
@@ -545,23 +609,25 @@ ModifyApacheConf()
 
   echo "Apache configuration successfully updated."
   echo "Old configuration is saved at $GLOBAL_CONF_DIR/httpd.install.conf"
+  echo ""
   return 0
 }
 
 SetAdminPassword()
 {
-  echo "Read to set the password for the administration console."
-  if "$DEST_DIR/$BIN_DIR/$DAEMON_BIN" -set_password; then :; else
+  echo "Ready to set the password for the administration console."
+  if "$DEST_DIR/$BIN_DIR/$DAEMON_BIN" reset_password; then :; else
     echo "Failed to set admin password."
     exit 1
   fi
+  echo ""
   return 0
 }
 
 PostInstall()
 {
   # Start service.
-  if "$DAEMON_LINK" -start 1>/dev/null; then
+  if "$DAEMON_LINK" service start 1>/dev/null; then
     echo "Google Sitemap Generator daemon successfully started."
   else
     echo "Google Sitemap Generator daemon can't be started."
@@ -571,31 +637,56 @@ PostInstall()
   # Restart apache.
   echo "To start the Google Sitemap Generator module in Apache, \
 you must restart Apache."
-  echo -n "Do you want to restart Apache now? [N/y]"
-  read answer
-  if [ "x$answer" = "xy" -o "x$answer" = "xY" ]; then
-    RestartApache
+  if [ "x$APACHE_CTL" = "x" ]; then :; else
+
+    echo -n "Do you want to restart Apache now? [N/y]"
+    read answer
+    echo ""
+    if [ "x$answer" = "xy" -o "x$answer" = "xY" ]; then
+      if RestartApache; then
+        echo "Google Sitemap Generator (Beta) was successfully installed."
+        echo "Apache was successfully restarted."
+        echo "You can now go to http://<this-server-address>:8181/ to start configuration."
+        return 0
+      else
+        echo "Failed to restart Apache. You need restart it manually."
+      fi
+    fi
   fi
 
-  echo "Google Sitemap Generator (Beta) is installed successfully."
-  echo "Please visit http://<this-server-address>:8181/ to configure the application."
-#  if [ "x$REMOTE_ADMIN" = "xtrue" ]; then
-#    echo "To enable remote access, you are required to configure firewall setting properly."
-#  fi
-
+  cat <<HERE_COMPLETE_MSG
+After you restart Apache, you can go to http://<this-server-address>:8181/ to
+configure the application.
+Google Sitemap Generator (Beta) was successfully installed.
+HERE_COMPLETE_MSG
   return 0
+}
+
+Help()
+{
+  cat <<HERE_HELP
+Usage: install.sh [-h] [-d directory] [-a file]
+                  [-c file] [-g group] [-t file]
+Options:
+  -h             : list available command line options (this page)
+  -d directory   : specifiy an alternative installation target directory
+  -a file        : specify the Apache binary file path
+  -c file        : specify the Apache root configuration file
+  -g group       : specify the Apache running Group name
+  -t file        : specify the Apache control script
+HERE_HELP
 }
 
 # ---------------------------------------------------------
 # ensure user is root
 if [ `id -u` != "0" ]; then
-  echo "Permission denied: require superuser"
+  echo "Permission denied. Installation script must be run with superuser privileges."
   exit 1
 fi
 
 # Parse args
-if getopt -u ha:p: -- "$@" 1>/dev/null 2>/dev/null ; then
-  args=`getopt -u ha:p: -- "$@"`
+if getopt ha:d:g:c:t: $@ 1>/dev/null 2>/dev/null ; then
+  args=`getopt ha:d:g:c:t: $@`
 else
   echo "Use $0 -h to get more information"
   exit 1
@@ -605,8 +696,11 @@ set -- $args
 while true; do
   case "$1" in
     -h)     Help; exit 0 ;;
-    -p)     PREFIX="$2"; DEST_DIR="$PREFIX/$PKG_NAME" shift 2 ;;
-    -a)     APACHE="$2"; shift 2 ;;
+    -d)     PREFIX="$2"; DEST_DIR="$PREFIX/$PKG_NAME" shift 2 ;;
+    -a)     arg_apache_binary="$2"; shift 2 ;;
+    -g)     arg_apache_group="$2"; shift 2 ;;
+    -c)     arg_apache_conf="$2"; shift 2;;
+    -t)     arg_apache_ctl="$2"; shift 2;;
     --)     shift; break ;;
     *)      echo "Invalid option $1, use $0 -h to get mroe information"
             exit 1;;
@@ -631,6 +725,7 @@ InitDestDir
 CheckApache
 
 # GetPreferences
+GetInitialSetting
 
 ChooseBinaryFiles
 

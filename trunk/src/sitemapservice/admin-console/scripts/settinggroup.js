@@ -1,10 +1,29 @@
-// Copyright 2007 Google Inc.
-// All Rights Reserved.
+// Copyright 2009 Google Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// This is the top level setting class. It contains all the setting values for
+// this application. Besides site specific settings, this class also includes
+// application level configuration, like back-up duration, remote admin port,
+// admin account, and etc. Especially, there is global setting field, which
+// contains default values for site settings. Please see the member fields
+// doc for details.
+// Besides the xml setting load/save/validate functions, it provides functions
+// to load values from file, as well as save value to a file.
+// This class is not thread-safe.
+
 
 /**
  * @fileoverview
- *
- * @author chaiying@google.com
  */
 
 
@@ -269,10 +288,11 @@ AppGroup.inheritsFrom(SettingGroup);
 function SiteSwitcher() {
   // init site switcher
   this.elem_ = _gel('site-s');
+  this.sites_ = [];
 
-  // user switch the site.
+  // add handler for site switch.
   _event(this.elem_, 'change', function(e, t){
-    _getPager().switchSite(t.selectedIndex);
+    _getPager().gotoSite(t.selectedIndex);
     _getPager().checkCustomize();
   });
   Component.regist(this);
@@ -282,19 +302,39 @@ SiteSwitcher.prototype.release = function() {
   this.elem_ = null;
 };
 
-SiteSwitcher.prototype.load = function(names) {
+SiteSwitcher.prototype.setElem_ = function() {
   var options = this.elem_.options;
   options.length = 0;
-  var len = names.length;
-  for (var i = 0; i < len; i++) {
-    options[i] = new Option(names[i], i);
+  
+  var len = this.sites_.length;
+  for (var i = 0, j = 0; i < len; i++) {
+    var site = this.sites_[i];
+    if (site.isEnabled)
+      options[j++] = new Option(site.name, i);
   }
 };
+/**
+ * Loads all the sites, include disabled sites.
+ * @param {Object} sites The site object list. Each site object has the
+ *     following properties:
+ *       name {string}: name of the site.
+ *       isEnabled {boolean}: true if this site is enabled.
+ */
+SiteSwitcher.prototype.load = function(sites) {
+  this.sites_ = sites;
+  this.setElem_();
+};
 SiteSwitcher.prototype.show = function(i) {
-  _show(this.elem_.options[i]);
+  if (!this.sites_[i].isEnabled) {
+    this.sites_[i].isEnabled = true;
+    this.setElem_();
+  }
 };
 SiteSwitcher.prototype.hide = function(i) {
-  _hide(this.elem_.options[i]);
+  if (this.sites_[i].isEnabled) {
+    this.sites_[i].isEnabled = false;
+    this.setElem_();
+  }
 };
 
 /**
@@ -302,7 +342,12 @@ SiteSwitcher.prototype.hide = function(i) {
  * @param {Object} index
  */
 SiteSwitcher.prototype.switchTo = function(index){
-  this.elem_.selectedIndex = index;
+  for (var i = 0, j = 0; i < index; i++) {
+    var site = this.sites_[i];
+    if (site.isEnabled)
+      j++;
+  }
+  this.elem_.selectedIndex = j;
 };
 
 /////////////////////////////////////////////////////////////////////
@@ -430,29 +475,32 @@ SiteManageGroup.prototype.load = function(opt_xmls, opt_globalXml) {
                '<col class=c1 /><col class=c2 />',
                '<tr><th class=input-col></th>',
                '<th class=sitename>Sites name</sth></tr>'];
-  var names = [];
+  var sites = [];
   var me = this;
   for (var i = 0; i < len; i++) {
     var name = opt_xmls[i].getAttribute('name');
-    names.push(name);
     var status;
+    var isEnabled;
     var classname;
     switch (this.getSetting_('site-enable-' + i).getValue()) {
       case true:
       case 'true':
         status = ' checked';
+        isEnabled = true;
         classname = 'sitename-enable';
         this.numEnabled_++;
         break;
       case false:
       case 'false':
         status = '';
+        isEnabled = false;
         classname = 'sitename-disable';
         this.numDisabled_++;
         break;
       default:
         _err('Invalid status.');
     }
+    sites.push({'name': name, 'isEnabled': isEnabled});
 
     tHTML.push('<tr>');
     tHTML.push('<td class=input-col>'
@@ -477,15 +525,15 @@ SiteManageGroup.prototype.load = function(opt_xmls, opt_globalXml) {
 
   // For dashboard table
   var nameHtml = ['<div class=header>',
-                  SettingEditorLanguage.texts.enabledSitesTitle,
+                  ENABLED_SITES,
                   '</div>',
                    '<div id=nosite class=hidden>',
-                  SettingEditorLanguage.texts.noEnableSites,
+                  NO_ENABLED_SITES,
                   '</div>'];
   for (var i = 0; i < len; i++) {
     var visible = this.settings_[i].getValue() ? '' : ' class=hidden';
     nameHtml.push('<div id=line-' + i + visible + '><a siteid=' + i + ' href=#>'
-        + names[i] + '</a></div>');
+        + sites[i].name + '</a></div>');
   }
   _gel('regSites').innerHTML = nameHtml.join('');
 
@@ -506,7 +554,7 @@ SiteManageGroup.prototype.load = function(opt_xmls, opt_globalXml) {
   });
 
   // load site switcher
-  this.siteSwitcher_.load(names);
+  this.siteSwitcher_.load(sites);
 };
 
 /**
@@ -574,27 +622,18 @@ function SiteGroup(xmltag, ownerGroup) {
   s.setValidator(new ValidateManager('queryfieldInput'));
   this.addSetting_(s);
 
-  // add sitemap enable setting
-  var me = this;
-  _arr(_allSitemaps(), function(id) {
-    var htmlId = id + '-enable';
-  // TODO: remove the hack prefix when integrate with new backend
-    var s = new Setting(htmlId, id + '@enabled', Setting.types.BOOL);
-    me.addSetting_(s);
-  });
-
-
   /**
-   * The sub setting nodes, each represent a sitemap.
+   * The sub setting nodes, each represent a sitemap. Use xml tag as property 
+   * name.
    * @type {Array.<SitemapGroup>}
    */
-  this.sitemaps_ = [
-    new WebSitemapGroup('WebSitemapSetting', this),
-    new NewsSitemapGroup('NewsSitemapSetting', this),
-    new MobileSitemapGroup('MobileSitemapSetting', this),
-    new CodeSearchSitemapGroup('CodeSearchSitemapSetting', this),
-    new BlogSearchSitemapGroup('BlogSearchPingSetting', this)
-  ];
+  this.sitemaps_ = {
+    'web': new WebSitemapGroup('WebSitemapSetting', this),
+    'news': new NewsSitemapGroup('NewsSitemapSetting', this),
+    'mobile': new MobileSitemapGroup('MobileSitemapSetting', this),
+    'codesearch': new CodeSearchSitemapGroup('CodeSearchSitemapSetting', this),
+    'blogsearch': new BlogSearchSitemapGroup('BlogSearchPingSetting', this)
+  };
 
   /**
    * Other sub setting nodes except sitemap.
@@ -608,9 +647,14 @@ function SiteGroup(xmltag, ownerGroup) {
    * All sub setting nodes.
    * @type {Array.<ServiceGroup>}
    */
-  this.allservices_ = this.sitemaps_.concat([
-    this.webServerFilter_, this.fileScanner_, this.logParser_
-  ]);
+  this.allservices_ = {
+    'wf': this.webServerFilter_,
+    'lp': this.fileScanner_,
+    'fs': this.logParser_
+  };
+  for (var prop in this.sitemaps_) {
+    this.allservices_[prop] = this.sitemaps_[prop];
+  }
 }
 SiteGroup.inheritsFrom(SettingGroup);
 
@@ -624,19 +668,21 @@ SiteGroup.prototype.isCustomized = function(id) {
   switch (id) {
     case 'site':
       return SiteGroup.prototype.parent.isCustomized.call(this) ||
+             // Hack, revert not only the site level settings but also other
+             // settings on site configuration page.
+             // TODO: create a page group concept.
              this.webServerFilter_.isCustomized() ||
              this.fileScanner_.isCustomized() ||
-             this.logParser_.isCustomized();
+             this.logParser_.isCustomized() || 
+             Util.map.checkIfAny(this.sitemaps_, function(sitemap) {
+               return sitemap.getSetting_('enabled').isCustomized();
+             });
     case 'web':
-      return this.sitemaps_[0].isCustomized();
     case 'news':
-      return this.sitemaps_[1].isCustomized();
     case 'mobile':
-      return this.sitemaps_[2].isCustomized();
     case 'codesearch':
-      return this.sitemaps_[3].isCustomized();
     case 'blogsearch':
-      return this.sitemaps_[4].isCustomized();
+      return this.sitemaps_[id].isCustomized();
   }
 };
 
@@ -650,7 +696,7 @@ SiteGroup.prototype.isEnabled = function(id) {
     case 'mobile':
     case 'codesearch':
     case 'blogsearch':
-      return this.getSetting_(id + '@enabled').getValue();
+      return this.sitemaps_[id].isEnabled();
   }
 };
 SiteGroup.prototype.setEnable = function(id, flag) {
@@ -664,7 +710,7 @@ SiteGroup.prototype.setEnable = function(id, flag) {
     case 'mobile':
     case 'codesearch':
     case 'blogsearch':
-      this.getSetting_(id + '@enabled').setValue(flag);
+      this.sitemaps_[id].setEnable(flag);
       break;
   }
 };
@@ -673,21 +719,22 @@ SiteGroup.prototype.revertToDefault = function(id) {
   switch (id) {
     case 'site':
       SiteGroup.prototype.parent.revertToDefault.call(this);
+      // Hack, revert not only the site level settings but also other settings
+      // on site configuration page.
+      // TODO: create a page group concept.
+      this.webServerFilter_.revertToDefault();
+      this.fileScanner_.revertToDefault();
+      this.logParser_.revertToDefault();
+      _map(this.sitemaps_, function(sitemap) {
+        sitemap.getSetting_('enabled').revertToDefault();
+      });
       break;
     case 'web':
-      this.sitemaps_[0].revertToDefault();
-      break;
     case 'news':
-      this.sitemaps_[1].revertToDefault();
-      break;
     case 'mobile':
-      this.sitemaps_[2].revertToDefault();
-      break;
     case 'codesearch':
-      this.sitemaps_[3].revertToDefault();
-      break;
     case 'blogsearch':
-      this.sitemaps_[4].revertToDefault();
+      this.sitemaps_[id].revertToDefault();
       break;
   }
 };
@@ -698,9 +745,9 @@ SiteGroup.prototype.revertToDefault = function(id) {
  */
 SiteGroup.prototype.validate = function() {
   return SiteGroup.prototype.parent.validate.call(this) &&
-         this.webServerFilter_.validate() &&
-         this.fileScanner_.validate() &&
-         this.logParser_.validate();
+         !Util.map.checkIfAny(this.allservices_, function(service) {
+           return !service.validate();
+         });
 };
 
 /**
@@ -713,7 +760,7 @@ SiteGroup.prototype.load = function(xml) {
 
   // Load for sitemaps and crawlers
   var me = this;
-  _arr(this.allservices_, function(service) {
+  _map(this.allservices_, function(service) {
     service.load(Util.checkUniqueAndReturn(me.xml_, service.xmltag()));
   });
 };
@@ -738,14 +785,14 @@ SiteGroup.prototype.id = function() {
 
 SiteGroup.prototype.dirty = function() {
   return SiteGroup.prototype.parent.dirty.call(this) ||
-         Util.array.checkIfAny(this.allservices_, function(s) {
+         Util.map.checkIfAny(this.allservices_, function(s) {
            return s.dirty();
          });
 };
 
 SiteGroup.prototype.clearDirty = function() {
   SiteGroup.prototype.parent.clearDirty.call(this);
-  _arr(this.allservices_, function(s) {
+  _map(this.allservices_, function(s) {
     s.clearDirty();
   });
 };
@@ -761,7 +808,7 @@ SiteGroup.prototype.setAccess = function(readonly, reason) {
   SiteGroup.prototype.parent.setAccess.call(this, readonly, reason);
 
   // Load for sitemaps and other settings
-  _arr(this.allservices_, function(s) {
+  _map(this.allservices_, function(s) {
     s.setAccess(readonly, reason);
   });
 };
@@ -772,7 +819,7 @@ SiteGroup.prototype.setAccess = function(readonly, reason) {
  * @return {ServiceGroup?} The service setting object
  */
 SiteGroup.prototype.getService = function(type) {
-  return Util.array.find(this.allservices_, function(s) {
+  return Util.map.find(this.allservices_, function(s) {
     return s.type() == type;
   });
 };
@@ -785,7 +832,7 @@ SiteGroup.prototype.save = function() {
   SiteGroup.prototype.parent.save.call(this);
 
   // Apply to sitemaps and other settings
-  _arr(this.allservices_, function(s) {
+  _map(this.allservices_, function(s) {
     s.save();
   });
 };
@@ -800,7 +847,7 @@ SiteGroup.prototype.setGlobal = function(global) {
   SiteGroup.prototype.parent.setGlobal.call(this, global);
 
   // set global for services
-  _arr(this.allservices_, function(s) {
+  _map(this.allservices_, function(s) {
     s.setGlobal(global.getService(s.type()));
   });
 };
@@ -870,18 +917,27 @@ function ServiceGroup(xmltag, type, ownerGroup) {
   ServiceGroup.prototype.parent.constructor.call(this, xmltag, ownerGroup);
   this.type_ = type;
 
-  // Add common components for sitemap setting.
-  // If the sub sitemap has different components, can use
-  // clearComponents_/deleteComponent/addComponent_ to rearrange.
+  // Add common components for sub setting group.
+  var idPrefix = SettingOperator.services.getHtmlId(type);
+  var s = new Setting(idPrefix + '-enable', 'enabled', Setting.types.BOOL);
+  this.addSetting_(s);
 }
 ServiceGroup.inheritsFrom(SettingGroup);
 
 /**
  * Gets the type of the service setting.
- * @return {ServiceGroup.types} The type of the service setting
+ * @return {SettingOperator.services.enums} The type of the service setting
  */
 ServiceGroup.prototype.type = function() {
   return this.type_;
+};
+
+ServiceGroup.prototype.isEnabled = function() {
+  return this.getSetting_('enabled').getValue();
+};
+
+ServiceGroup.prototype.setEnable = function(value) {
+  this.getSetting_('enabled').setValue(value);
 };
 
 ///////////////////////////////////////////////////////////////////////////
@@ -908,13 +964,12 @@ function SitemapGroup(xmltag, serviceType, ownerGroup) {
   // Add common components for sitemap setting.
   // If the sub sitemap has different components, can use
   // clearComponents_/deleteComponent/addComponent_ to rearrange.
-  var idPrefix = SettingOperator.services.getSitemapHtmlId(serviceType);
+  var idPrefix = SettingOperator.services.getHtmlId(serviceType);
 	var s;
   if (serviceType != SettingOperator.services.enums.BLOGSEARCHPING) {
 
     // add simple components
-    s = new Setting(idPrefix + 'Compress', 'compress',
-                    Setting.types.BOOL);
+    s = new Setting(idPrefix + 'Compress', 'compress', Setting.types.BOOL);
     this.addSetting_(s);
 
     // TODO: implement the UI component for time when review is finished
@@ -937,10 +992,10 @@ function SitemapGroup(xmltag, serviceType, ownerGroup) {
     s.setValidator(new ValidateManager('number', '(0,10485760]'));
     this.addSetting_(s);
   }
-
+    
   s = new Setting(idPrefix + 'Duration', 'update_duration_in_seconds',
                   Setting.types.RADIO);
-  s.setValidator(ValidateManager.validators.RADIO);
+  s.setValidator(ValidateManager.validators.DURATION);
   this.addSetting_(s);
 
   // add list components
@@ -957,6 +1012,26 @@ function SitemapGroup(xmltag, serviceType, ownerGroup) {
 }
 SitemapGroup.inheritsFrom(ServiceGroup);
 
+SitemapGroup.prototype.revertToDefault = function() {
+  _arr(this.settings_, function(s) {
+    // Hack code to exclude 'enabled' setting.
+    // TODO: add page group concept.
+    if (s.name() != 'enabled') {
+      s.revertToDefault();
+    }
+  });
+};
+
+SitemapGroup.prototype.isCustomized = function() {
+  return Util.array.checkIfAny(this.settings_, function(s) {
+    // Hack code to exclude 'enabled' setting.
+    // TODO: add page group concept.
+    if (s.name() == 'enabled') {
+      return false;
+    }
+    return s.isCustomized();
+  });
+};
 
 ///////////////////////////////////////////////////////////////////////////
 //////////// Class WebSitemapGroup /////////////////
@@ -1045,16 +1120,8 @@ function WebServerFilterGroup(xmltag, ownerGroup) {
   this.parent.constructor.call(this, xmltag,
                                SettingOperator.services.enums.WEBSERVERFILTER,
                                ownerGroup);
-  // add components
-  this.addSetting_(
-      new Setting('wsf-eanbled', 'enabled', Setting.types.BOOL));
-
 }
 WebServerFilterGroup.inheritsFrom(ServiceGroup);
-
-WebServerFilterGroup.prototype.isEnabled = function() {
-  return this.getSetting_('enabled').getValue();
-};
 
 //////////// Class LogParserGroup /////////////////
 /**
@@ -1067,15 +1134,10 @@ function LogParserGroup(xmltag, ownerGroup) {
                                SettingOperator.services.enums.LOGPARSER,
                                ownerGroup);
   // add components
-  var s1 = new Setting('lp-eanbled', 'enabled', Setting.types.BOOL);
-  this.addSetting_(s1);
-
-  var s2 = new Setting('lp-duration', 'update_duration_in_seconds',
-                       Setting.types.DURATION);
-  s2.setValidator(ValidateManager.validators.DURATION);
-  // TODO: this is hack for set access
-  s2.setLabelManager(new LabelManager(['lp-duration-area']));
-  this.addSetting_(s2);
+  var s = new Setting('lp-duration', 'update_duration_in_seconds',
+                      Setting.types.DURATION);
+  s.setValidator(ValidateManager.validators.DURATION);
+  this.addSetting_(s);
 }
 LogParserGroup.inheritsFrom(ServiceGroup);
 
@@ -1090,15 +1152,9 @@ function FileScannerGroup(xmltag, ownerGroup) {
                                SettingOperator.services.enums.FILESCANNER,
                                ownerGroup);
   // add components
-  var s1 = new Setting('fs-eanbled', 'enabled', Setting.types.BOOL);
-  this.addSetting_(s1);
-
-  var s2 = new Setting('fs-duration', 'update_duration_in_seconds',
-                       Setting.types.DURATION);
-  s2.setValidator(ValidateManager.validators.DURATION);
-  s2.setLabelManager(new LabelManager(['fs-duration-area']));
-  this.addSetting_(s2);
+  var s = new Setting('fs-duration', 'update_duration_in_seconds',
+                      Setting.types.DURATION);
+  s.setValidator(ValidateManager.validators.DURATION);
+  this.addSetting_(s);
 }
 FileScannerGroup.inheritsFrom(ServiceGroup);
-
-

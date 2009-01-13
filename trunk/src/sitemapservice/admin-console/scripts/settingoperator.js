@@ -1,13 +1,33 @@
-// Copyright 2007 Google Inc.
-// All Rights Reserved.
+// Copyright 2009 Google Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// This is the top level setting class. It contains all the setting values for
+// this application. Besides site specific settings, this class also includes
+// application level configuration, like back-up duration, remote admin port,
+// admin account, and etc. Especially, there is global setting field, which
+// contains default values for site settings. Please see the member fields
+// doc for details.
+// Besides the xml setting load/save/validate functions, it provides functions
+// to load values from file, as well as save value to a file.
+// This class is not thread-safe.
+
 
 /**
  * @fileoverview
- *
- * @author chaiying@google.com
  */
 
 /**
+ * This class works as an interface for the data module.
  * @constructor
  */
 function SettingOperator() {
@@ -32,9 +52,9 @@ function SettingOperator() {
 
 SettingOperator.services = {
   enums: {
-    WEBSERVERFILTER: {xmltag: 'webServerFilter'},
-    LOGPARSER: {xmltag: 'logParser'},
-    FILESCANNER: {xmltag: 'fileScanner'},
+    WEBSERVERFILTER: {xmltag: 'webServerFilter', htmlId: 'wf'},
+    LOGPARSER: {xmltag: 'logParser', htmlId: 'lp'},
+    FILESCANNER: {xmltag: 'fileScanner', htmlId: 'fs'},
     WEBSITEMAP: {xmltag: 'webSitemap', htmlId: 'web'},
     NEWSSITEMAP: {xmltag: 'newsSitemap', htmlId: 'news'},
     MOBILESITEMAP: {xmltag: 'mobileSitemap', htmlId: 'mobile'},
@@ -47,26 +67,34 @@ SettingOperator.services = {
             e.BLOGSEARCHPING];
   },
   /**
-   * Gets HTML id's idPrefix of this sitemap's HTML elements
-   * @param {SettingOperator.services.enums} type  The sitemap type
+   * Gets HTML id's idPrefix of this service's HTML elements
+   * @param {SettingOperator.services.enums} type  The service type
    * @return {String?} The html id
    * @private
    */
-  getSitemapHtmlId: function(type) {
+  getHtmlId: function(type) {
     return type.htmlId;
   }
 };
 
 /**
- * Gets the SettingOperator singleton object.
- * @return {SettingOperator} The SettingOperator singleton object
+ * Singleton access function.
  */
-var _getSetting = function() {
+function _getSetting() {
   if (_getSetting.instance_ == null) {
     _getSetting.instance_ = new SettingOperator();
   }
   return _getSetting.instance_;
-};
+}
+
+/**
+ * Gets all sitemaps html id prefixs.
+ */
+function _allSitemaps() {
+  return _arr(SettingOperator.services.getAllSitemaps(), function(s) {
+    return s.htmlId;
+  });
+}
 
 SettingOperator.prototype.dirty = function() {
   return this.siteMng_.dirty() || this.app_.dirty() ||
@@ -245,6 +273,7 @@ SettingOperator.prototype.validate = function() {
   // so we can assume that all the other tabs in the site have been checked,
   // and all tabs in other sites have been checked, too.
   // (we assume the values from server's xml are correct)
+  // currently, SiteManage and Preference page do not need check.
   return this.cursite_().validate();
 };
 

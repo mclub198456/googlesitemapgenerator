@@ -1,10 +1,29 @@
-// Copyright 2007 Google Inc.
-// All Rights Reserved.
+// Copyright 2009 Google Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// This is the top level setting class. It contains all the setting values for
+// this application. Besides site specific settings, this class also includes
+// application level configuration, like back-up duration, remote admin port,
+// admin account, and etc. Especially, there is global setting field, which
+// contains default values for site settings. Please see the member fields
+// doc for details.
+// Besides the xml setting load/save/validate functions, it provides functions
+// to load values from file, as well as save value to a file.
+// This class is not thread-safe.
+
 
 /**
- * @fileoverview
- *
- * @author chaiying@google.com
+ * @fileoverview Defines some utility classes for setting.js and settinggroup.js
  */
 
 var Component = {
@@ -187,44 +206,6 @@ AccessManager.util.setAccessForElem = function(readonly, elem) {
     elem.removeAttribute('disabled');
     Util.CSS.removeClass(elem, READONLY_CSS);
   }
-};
-
-/////////////////////////////////////////////////////////////////////
-/**
- * @constructor
- * @param {Object} htmlIds
- * @param {Object} opt_labelForGlobal
- * @param {Object} opt_labelForSite
- */
-function LabelManager(htmlIds, opt_labelForGlobal, opt_labelForSite) {
-  this.htmlLabels_ = _arr(htmlIds, function(id) {
-    return _gel(id);
-  });
-  this.globalLabelText_ = opt_labelForGlobal != null ?
-      SettingEditorLanguage.texts[opt_labelForGlobal] : null;
-  this.siteLabelText_ = opt_labelForSite != null ?
-      SettingEditorLanguage.texts[opt_labelForSite] : null;
-}
-
-LabelManager.prototype.switchLabel = function(siteIdx) {
-  if (this.globalLabelText_ == null) {
-    return;
-  }
-  if (siteIdx == GLOBAL_SETTING_ID) {
-    this.htmlLabels_[0].innerHTML = this.globalLabelText_;
-  } else {
-    this.htmlLabels_[0].innerHTML = this.siteLabelText_;
-  }
-};
-
-LabelManager.prototype.setAccess = function(access) {
-  _arr(this.htmlLabels_, function(label) {
-    AccessManager.util.setAccessForElem(access, label);
-  });
-};
-
-LabelManager.prototype.release = function() {
-  this.htmlLabels_ = null;
 };
 
 //////////////////////////////////////////////////////////////////////////

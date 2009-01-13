@@ -1,4 +1,4 @@
-// Copyright 2008 Google Inc.
+// Copyright 2009 Google Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@
 
 const std::string NewsDataManager::kDataFile = "new_entries";
 const std::string NewsDataManager::kFprintFile = "old_fprint";
+const int NewsDataManager::kMaxNewsEntry = 64 * 1024;
 
 NewsDataManager::NewsDataManager() {
   // does nothing.
@@ -67,12 +68,13 @@ bool NewsDataManager::UpdateData() {
   std::vector<std::string> current_temps =
     filemanager->GetTempFiles(last_update_, time(NULL));
 
-  std::string new_entries(data_dir_);
-  new_entries.append(kDataFile);
+  std::string old_entries(data_dir_);
+  old_entries.append(kDataFile);
+  std::string new_entries(old_entries);
+  new_entries.append("_new");
 
   std::string old_fprint(data_dir_);
   old_fprint.append(kFprintFile);
-
   std::string new_fprint(old_fprint);
   new_fprint.append("_new");
 
@@ -80,7 +82,6 @@ bool NewsDataManager::UpdateData() {
   do {
     if (current_temps.size() == 0) {
       Logger::Log(EVENT_CRITICAL, "No new record to update news data.");
-      FileUtil::DeleteFile(new_entries.c_str());
       result = true;
       break;
     }
@@ -96,6 +97,25 @@ bool NewsDataManager::UpdateData() {
                 errno);
       break;
     }
+
+    // Get the latest new entries and save them.
+    Heap heap;
+    if (!AddRecordToHeap(old_entries, &heap)) {
+      Logger::Log(EVENT_ERROR, "Failed to add records to heap (%s).",
+                  old_entries.c_str());
+      break;
+    }
+    if (!AddRecordToHeap(new_entries, &heap)) {
+      Logger::Log(EVENT_ERROR, "Failed to add records to heap (%s).",
+                  new_entries.c_str());
+      break;
+    }
+    if (!SaveHeap(&heap, old_entries)) {
+      Logger::Log(EVENT_ERROR, "Failed to save news entries to file (%s).",
+                  old_entries.c_str());
+      break;
+    }
+
     result = true;
   } while (false);
 
@@ -103,6 +123,47 @@ bool NewsDataManager::UpdateData() {
   time(&last_update_);
 
   return result;
+}
+
+bool NewsDataManager::AddRecordToHeap(const std::string& file, Heap* heap) {
+  if (!FileUtil::Exists(file.c_str())) {
+    Logger::Log(EVENT_CRITICAL, "No records file for heap. (%s)",
+                file.c_str());
+    return true;
+  }
+
+  // Open the file to read.
+  RecordFileReader* reader = RecordFileIOFactory::CreateReader(file);
+  if (reader == NULL) {
+    Logger::Log(EVENT_ERROR, "Failed to create reader for %s.", file.c_str());
+    return false;
+  }
+
+  VisitingRecord record;
+  while (reader->Read(&record) == 0) {
+    heap->push(record);
+    if (heap->size() > kMaxNewsEntry) {
+      heap->pop();
+    }
+  }
+  delete reader;
+  return true;
+}
+
+bool NewsDataManager::SaveHeap(Heap* heap, const std::string& file) {
+  // Open the file to write.
+  RecordFileWriter* writer = RecordFileIOFactory::CreateWriter(file);
+  if (writer == NULL) {
+    Logger::Log(EVENT_ERROR, "Failed to create writer for %s.", file.c_str());
+    return false;
+  }
+
+  while (!heap->empty()) {
+    writer->Write(heap->top());
+    heap->pop();
+  }
+  delete writer;
+  return true;
 }
 
 std::string NewsDataManager::GetDataFile() {

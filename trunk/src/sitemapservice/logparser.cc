@@ -1,4 +1,4 @@
-// Copyright 2008 Google Inc.
+// Copyright 2009 Google Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -103,6 +103,7 @@ bool LogParser::InternalRun() {
 
     // Very old log file.
     if (fileattr.last_modified <= last_access_limit()) {
+      Logger::Log(EVENT_NORMAL, "Ignore old log file: [%s].", files[i].c_str());
       continue;
     }
 
@@ -114,6 +115,8 @@ bool LogParser::InternalRun() {
 }
 
 bool LogParser::ParseLogFile(const char* path) {
+  Logger::Log(EVENT_IMPORTANT, "Process log file [%s]...", path);
+
   FILE* file = fopen(path, "r");
   if (file == NULL) {
     Logger::Log(EVENT_ERROR, "Failed to open log file [%s]. (%d)",

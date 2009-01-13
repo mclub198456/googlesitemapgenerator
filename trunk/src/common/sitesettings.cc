@@ -1,4 +1,4 @@
-// Copyright 2008 Google Inc.
+// Copyright 2009 Google Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -49,6 +49,7 @@ void SiteSettings::ResetToDefault() {
 
   logging_level_ = EVENT_IMPORTANT;
   apache_conf_ = "";
+  apache_group_ = "";
 
   global_setting_.ResetToDefault();
   site_settings_.clear();
@@ -111,6 +112,7 @@ bool SiteSettings::LoadSetting(TiXmlElement* element) {
 
   LoadAttribute("logging_level", logging_level_);
   LoadAttribute("apache_conf", apache_conf_);
+  LoadAttribute("apache_group", apache_group_);
 
   if (!global_setting_.LoadFromParent(xml_node_)) {
     Logger::Log(EVENT_ERROR, "Loading global setting failed!");
@@ -145,6 +147,7 @@ TiXmlElement* SiteSettings::SaveSetting() {
 
 #if defined(__linux__) || defined(__unix__)
   SaveAttribute("apache_conf", apache_conf_);
+  SaveAttribute("apache_group", apache_group_);
 #endif
 
   SaveChild(&global_setting_);
@@ -204,7 +207,7 @@ bool SiteSettings::Validate() const {
 
   // this field should be ignored under windows
 #if defined(__linux__) || defined(__unix__)
-  if (apache_conf_.length() == 0) {
+  if (apache_conf_.length() == 0 || apache_group_.length() == 0) {
     return false;
   }
 #endif

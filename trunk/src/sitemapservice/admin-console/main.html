@@ -3,6 +3,13 @@
     <meta http-equiv='content-type' content='text/html; charset=UTF-8'>
     <title></title>
 
+    <!--css file-->
+    <link rel='stylesheet' type='text/css' href='/styles/main.css'>
+
+    <!--language js file-->
+    <script type='text/javascript' src='/cgi-bin/admin-console.cgi?action=language.js'>
+    </script>
+
     <!--general js code that should run first-->
     <script type='text/javascript'>
       // params from server
@@ -11,17 +18,8 @@
       var SESSION_ID = null;
 
       if (DO_LOGIN == null) {
-        alert('lack param from server');
+        alert(INVALID_PAGE);
       }
-    </script>
-
-    <!--css file-->
-    <link rel='stylesheet' type='text/css' href='/styles/main.css'>
-    </link>
-
-
-    <!--language js file-->
-    <script type='text/javascript' src='/cgi-bin/admin-console.cgi?action=language.js'>
     </script>
 
     <!--SCRIPT BEGIN-->
@@ -30,7 +28,6 @@
     <script type='text/javascript' src='/scripts/browser.js'></script>
     <script type='text/javascript' src='/scripts/constval.js'></script>
     <script type='text/javascript' src='/scripts/utility.js'></script>
-    <script type='text/javascript' src='/scripts/md5.js'></script>
     <script type='text/javascript' src='/scripts/tips.js'></script>
     <script type='text/javascript' src='/scripts/transmarkset.js'></script>
 
@@ -51,11 +48,11 @@
     <!--SCRIPT END-->
   </head>
   <body>
-  	<form name=gsg-form>
+  	<form name=gsg-form onsubmit='return false'>
   	<div id=debug-box class=hidden></div>
     <!-- loading page -->
     <div id='loading' class='loading'>
-      <div>Loading...</div>
+      <p tm='t:loading'></p>
       <div class='progressBarOut'>
         <div class='progressBarIn' id='progressBarIn'></div>
       </div>
@@ -65,14 +62,14 @@
       <div class='top'>
         <img src='/images/logo.gif' id='logo' width='263' height='43' />
         <div id='linkbar' class='linkbar'>
-            <a id='prefLink'>Preferences</a>
+            <a id='prefLink' tm='t:pref'></a>
             |
-            <a id='projHomeLink'><span tm='text:projHomeLink'></span></a>
+            <a id='projHomeLink' href='http://code.google.com/p/googlesitemapgenerator/' target='_blank' tm='t:projHomeLink'></a>
             |
-            <a id='logoutLink'><span tm='text:logoutLink'></span></a>
+            <a id='logoutLink' tm='t:logoutLink'></a>
         </div>
         <table id=topline class='noborder hidden'>
-          <tr><td class=tl></td><td class=ct rowspan=2>Welcome to Google Sitemap generator</td><td class=tr></td></tr>
+          <tr><td class=tl></td><td class=ct rowspan=2><span tm='t:welcome'></span></td><td class=tr></td></tr>
           <tr><td class=bl></td><td class=br></td></tr>
         </table>        
         <noscript>Javascript must be enabled to use the Administrator Console!</noscript>
@@ -84,40 +81,33 @@
           <table class='noborder login-area'>
             <col class='c1' /><col class='c2' />
             <tr>
-              <td align=right class=textLabel>Password:
+              <td align=right class=textLabel><span tm='t:pswd'></span>
               </td>
-              <td><input type='password' id='loginPassword' name='loginPassword' tm='tip:loginPassword'>
+              <td><input type='password' id='loginPassword' name='loginPassword'>
               </td>
             </tr>
             <tr>
-              <td />
-              <td><input type='button' id='loginBtn' name='loginBtn' class='login' tm='tip:login;value:login'>
+              <td></td>
+              <td><input type='button' id='loginBtn' name='loginBtn' class='login' tm='v:login'>
               </td>
             </tr>
           </table>
         </div>
         <div class='dashboard TabDiv hidden' id='dashboard'>
           <div class='title-bar'>
-          <h1>Dashboard</h1>
-          </div>
+            <span tm='t:dashboard'></span>
+          </div>    
           <div class='area'>
             <div class='appRuntime section'>              
-              <h2>
-                <span tm='text:applicationInfoTitle'></span>
-              </h2>
+              <h2 tm='t:applicationInfoTitle'></h2>
               <div id='runtimeInfoErrorg' class='error hidden'>
               </div>
               <div class='two-column'>
                 <div class='left50'>
-                  <p class='runtimeLabel runtimeInfoBG0' tm='text:memoryUsage;tip:memoryUsage'></p>
-                  <p class='runtimeLabel runtimeInfoBG1' tm='text:diskUsage;tip:diskUsage'></p>
-                  <p class='runtimeLabel runtimeInfoBG0'>Application start time</p>              
+                  <p class='runtimeLabel runtimeInfoBG0' tm='t:allMem'></p>
+                  <p class='runtimeLabel runtimeInfoBG1' tm='t:allDisk'></p>
+                  <p class='runtimeLabel runtimeInfoBG0' tm='t:appStart'></p>              
                   <div id='moreL'>
-                    <p class='runtimeLabel runtimeInfoBG1'>xxxxxxxx</p>
-                    <p class='runtimeLabel runtimeInfoBG0'>xxxxxxxx</p>
-                    <p class='runtimeLabel runtimeInfoBG1'>xxxxxxxx</p>
-                    <p class='runtimeLabel runtimeInfoBG0'>xxxxxxxx</p>
-                    <p class='runtimeLabel runtimeInfoBG1'>xxxxxxxx</p>
                   </div>
                 </div>
                 <div class='right50'>
@@ -127,23 +117,18 @@
                   <p class='runtimeinfo runtimeInfoBG1'>
                   	<span id=app-diskUsage-cost></span> of <span id=app-diskUsage-ttl></span> (<span id=app-diskUsage-txt></span>)
                   </p>
-                  <p class='runtimeinfo runtimeInfoBG0' id='startTime' tm='tip:startTime'>
+                  <p class='runtimeinfo runtimeInfoBG0' id='startTime'>
                   </p>
                   <div id='moreR'>
-                    <p class='runtimeinfo runtimeInfoBG1'>xxxxxxxx</p>
-                    <p class='runtimeinfo runtimeInfoBG0'>xxxxxxxx</p>
-                    <p class='runtimeinfo runtimeInfoBG1'>xxxxxxxx</p>
-                    <p class='runtimeinfo runtimeInfoBG0'>xxxxxxxx</p>
-                    <p class='runtimeinfo runtimeInfoBG1'>xxxxxxxx</p>
                   </div>
                 </div>
               </div> 
               <a id='appRuntimeMore' class=hidden></a>
             </div>
             <div class='align-right'>
-            	<a id='defSettingsLink' class='addSpace'>Default site settings</a>
-            	<a id='defSitemapsLink' class='addSpace hidden'>Default sitemap settings</a>
-            	<a id='manageLink' class='addSpace'>Manage sites</a>
+            	<a id='defSettingsLink' class='addSpace' tm='t:defaultSetting'></a>
+            	<a id='defSitemapsLink' class='addSpace hidden' tm='t:defaultSitemap'></a>
+            	<a id='manageLink' class='addSpace' tm='t:siteMng'></a>
             </div>  
 						<div class=clear></div>               
             <div id='regSites'>    
@@ -152,19 +137,12 @@
         </div>
         <div class='SiteManage TabDiv hidden' id='SiteManage'>
           <div class='title-bar'>
-            <div class='two-column'>
-              <div class='align-left'>       
-                <h1>Manage Site Activation</h1>
-              </div>
-              <div class='align-right h1align'>
-              	<a id='dl-1'>Dashboard</a>
-              </div>                 
-            </div>    
+          	<a id='dl-1' tm='t:dashboard'></a> > <span tm='t:siteMngSubTitle'></span>
           </div>    
           <div class='area'>            
             <div class='two-column'>
               <div class='align-left'>
-                Select: <a id='sites-all'>All</a>, <a id='sites-none'>None</a>
+                <span tm='t:select'></span><a id='sites-all' tm='t:all'></a>, <a id='sites-none' tm='t:none'></a>
               </div>
               <div class='align-right'>
               </div>                 
@@ -174,21 +152,14 @@
             </table>     
             </div>      
             <div class='cmdbuttons'>
-              <input type='button' class='save' id='save-1' name='save-1' tm='value:submit'>
-              <input type='button' class='cancel' id='cnl-1' name='cnl-1' value='Cancel'>
+              <input type='button' class='save' id='save-1' name='save-1' tm='v:submit'>
+              <input type='button' class='cancel' id='cnl-1' name='cnl-1' tm='v:cancel'>
             </div>
           </div>
         </div>
         <div class='Preference TabDiv hidden' id='Preference'>
           <div class=title-bar>
-            <div class='two-column'>
-              <div class='align-left'>       
-                <h1>Preferences</h1>
-              </div>
-              <div class='align-right h1align'>
-              	<a id='dl-2'>Dashboard</a>
-              </div>                 
-            </div>    
+          	<a id='dl-2' tm='t:dashboard'></a> > <span tm='t:pref'></span>                 
           </div>    
           <div class='area'>  
             <div class='GlobalSettings'>
@@ -196,27 +167,25 @@
               <table class='noborder'>
                 <tr>
                   <td>
-                    <input type='checkbox' naem='addGeneratorInfo' id='addGeneratorInfo' name='addGeneratorInfo'>
+                    <input type='checkbox' id='addGeneratorInfo' name='addGeneratorInfo'>
                     <label for='addGeneratorInfo'>
-                      <span tm='text:addGeneratorInfo'>
+                      <span class=label tm='t:addGeneratorInfo'>
                       </span>
                     </label>
-                    <img class='tipIcon' src='/images/qmicon.gif' tm='tip:addGeneratorInfo'/>
                   </td>
                 </tr>
                 <tr>
                   <td>
                     <input type='checkbox' id='remoteAccess' name='remoteAccess'>
                     <label for='remoteAccess'>
-                      <span tm='text:remoteAccess'>
+                      <span class=label tm='t:remoteAccess'>
                       </span>
                     </label>
-                    <img class='tipIcon' src='/images/qmicon.gif' tm='tip:remoteAccess'/>
                   </td>
                 </tr>
 								<tr>
 									<td><table><tr>
-										<td class=passwd-link><a id=passwd-change>Change password</a></td>
+										<td class=passwd-link><a id=passwd-change tm='t:chpswd'></a></td>
 	                  <td><span id='passwd-err'></span></td>
 									</tr></table></td>
 								</tr>
@@ -225,7 +194,7 @@
                   	<col class='c1'/>
                     <tr>
                       <td class=label>
-                        <span tm='text:inputOldPassword'></span>
+                        <span tm='t:inputOldPassword'></span>
                       </td>
                       <td>
                         <input type='password' id='passwd-old' name='passwd-old'>
@@ -233,7 +202,7 @@
                     </tr>
                     <tr>
                       <td class=label>
-                        <span tm='text:inputNewPassword'></span>
+                        <span tm='t:inputNewPassword'></span>
                       </td>
                       <td>
                         <input type='password' id='passwd-new' name='passwd-new'>
@@ -241,17 +210,17 @@
                     </tr>
                     <tr>
                       <td class=label>
-                        <span tm='text:inputPasswordAgain'></span>
+                        <span tm='t:inputPasswordAgain'></span>
                       </td>
                       <td>
                         <input type='password' id='passwd-new2' name='passwd-new2'>
                       </td>
                     </tr>
 										<tr>
-											<td />
+											<td></td>
 											<td>
-                        <input type='button' id='passwd-save' name='passwd-save' value=Change>
-                        <input type='button' id='passwd-cancel' name='passwd-cancel' value=Close>
+                        <input type='button' id='passwd-save' name='passwd-save' tm='v:change'>
+                        <input type='button' id='passwd-cancel' name='passwd-cancel' tm='v:close'>
 											</td>
 										</tr>
                   </table>
@@ -260,1610 +229,1562 @@
             </div>  
             <!-- buttons -->     
             <div class='cmdbuttons'>
-              <input type='button' class='save' id='save-2' name='save-2' tm='value:submit'>
-              <input type='button' class='cancel' id='cnl-2' name='cnl-2' value='Cancel'>
+              <input type='button' class='save' id='save-2' name='save-2' tm='v:submit'>
+              <input type='button' class='cancel' id='cnl-2' name='cnl-2' tm='v:cancel'>
             </div>
           </div>
         </div>
         <div class='SiteDetail TabDiv hidden' id='SiteDetail'> 
-          <div class='two-column title-bar'>
-            <div class='align-left'>       
-              <h1 id='sitetitle'></h1>
-            </div>
-            <div class='align-right h1align'>
+          <div class=title-bar>
+            <table class=noborder style='width:100%'><tr><td>
+              <a id='dl-3' tm='t:dashboard'></a> > <span id='sitetitle'></span>
+            </td><td style='text-align:right'>
               <span id='site-sc'>
                 Site:
                 <select id='site-s'>
                 </select>
-              </span>
-            	<a id='dl-3'>Dashboard</a>
-            </div>                 
-          </div> 
+              </span>  
+            </td></tr></table>
+          </div>    
           <div class='area-nopad'>   
-            <div class='two-column'>
-              <div class='left'>   
-                <div class='LeftNavBar'>
-                  <table class='noborder inactive' id='Status-s'>
-                    <tr><td class=tabTopL></td><td class=tabTop></td></tr>
-                    <tr><td class=tabTextL></td><td class=tabText><a>Site status</a></td></tr>
-                    <tr><td class=tabBottomL></td><td class=tabBottom></td></tr>
-                  </table>
-                  <table class='noborder inactive' id='Settings-s'>
-                    <tr><td class=tabTopL></td><td class=tabTop></td></tr>
-                    <tr><td class=tabTextL></td><td class=tabText><a>Site configuration</a></td></tr>
-                    <tr><td class=tabBottomL></td><td class=tabBottom></td></tr>
-                  </table>
-                  <table class='noborder inactive' id='Sitemaps-s'>
-                    <tr><td class=tabTopL></td><td class=tabTop></td></tr>
-                    <tr><td class=tabTextL></td><td class=tabText><a>Sitemaps</a></td></tr>
-                    <tr><td class=tabBottomL></td><td class=tabBottom></td></tr>
-                  </table>
-                  <div class='sub hidden' id=sitemaps-sub-bar>
-                  <table class='noborder inactive' id='web-s'>
-                    <tr><td class=tabTopL></td><td class=tabTop></td></tr>
-                    <tr><td class=tabTextL></td><td class=tabText><a>Web</a></td></tr>
-                    <tr><td class=tabBottomL></td><td class=tabBottom></td></tr>
-                  </table>
-                  <table class='noborder inactive' id='news-s'>
-                    <tr><td class=tabTopL></td><td class=tabTop></td></tr>
-                    <tr><td class=tabTextL></td><td class=tabText><a>News</a></td></tr>
-                    <tr><td class=tabBottomL></td><td class=tabBottom></td></tr>
-                  </table>
-                  <table class='noborder inactive' id='mobile-s'>
-                    <tr><td class=tabTopL></td><td class=tabTop></td></tr>
-                    <tr><td class=tabTextL></td><td class=tabText><a>Mobile</a></td></tr>
-                    <tr><td class=tabBottomL></td><td class=tabBottom></td></tr>
-                  </table>
-                  <table class='noborder inactive' id='codesearch-s'>
-                    <tr><td class=tabTopL></td><td class=tabTop></td></tr>
-                    <tr><td class=tabTextL></td><td class=tabText><a>Codesearch</a></td></tr>
-                    <tr><td class=tabBottomL></td><td class=tabBottom></td></tr>
-                   </table>
-                  <table class='noborder inactive' id='blogsearch-s'>
-                    <tr><td class=tabTopL></td><td class=tabTop></td></tr>
-                    <tr><td class=tabTextL></td><td class=tabText><a>Blogsearch</a></td></tr>
-                    <tr><td class=tabBottomL></td><td class=tabBottom></td></tr>
-                  </table>
-                  </div>
-                </div>
+            <div class='LeftNavBar'>
+              <div class=inactive id='Status-s'><a tm='t:siteStat'></a></div>
+              <div class=inactive id='Settings-s'><a tm='t:siteConf'></a></div>
+              <div class=inactive id='Sitemaps-s'><a tm='t:sm'></a></div>
+              <div class='sub hidden' id=sitemaps-sub-bar>
+                <div class=inactive id='web-s'><a tm='t:web'></a></div>
+                <div class=inactive id='mobile-s'><a tm='t:mobile'></a></div>
+                <div class=inactive id='codesearch-s'><a tm='t:csrch'></a></div>
+                <div class=inactive id='blogsearch-s'><a tm='t:bsrch'></a></div>
+                <div class=inactive style='display:none' id='news-s'><a tm='t:news'></a></div>
               </div>
-              <div class='right'>
-                <div class='SiteContent'>
-                  <div class='Status TabDiv hidden' id='Status'>                          
-                    <h2><span tm='text:runtimeInfoTitle'></span></h2>
-                    <div id=rt-err-box class='warningbox hidden'>
-                      <span class='warningicon'>!</span>
-                      <span class='warningtext' id='rt-err-txt'></span>
-										</div>
-										<div id=status-area>
-	                    <div class=clear>
-	                      <table class='noborder c700'>
-	                        <tr tm='tip:memUsageForSite'>
-	                          <td>Memory used
-	                          </td>
-	                          <td><div class='percentage-bar-out'><div class='percentage-bar-in' id='memUsage-graph'></div></div>
-	                          </td>
-	                          <td><span id=memUsage-cost></span> of <span id=memUsage-ttl></span> (<span id=memUsage-txt></span>)
-	                          </td>
-	                        </tr>
-	                        <tr tm='tip:diskUsageForSite'>
-	                          <td>Disk used
-	                          </td>
-	                          <td><div class='percentage-bar-out'><div class='percentage-bar-in' id='diskUsage-graph'></div></div>
-	                          </td>
-	                          <td><span id=diskUsage-cost></span> of <span id=diskUsage-ttl></span> (<span id=diskUsage-txt></span>)
-	                          </td>
-	                        </tr>
-	                        <tr><td colspan=3 class=detail>
-	                        	<table id='rt-site' class='noborder c700'>
-	                          <tr class='runtimeInfoBG0'>
-	                            <td><span tm='text:urlInDatabase;tip:urlInDatabase'></span></td>  
-	                            <td class=r><span id='urlInDatabase' tm='tip:urlInDatabase'></span></td>           
-	                          </tr>
-	                          <tr class='runtimeInfoBG1'>
-	                            <td><span tm='text:urlInTempfile;tip:urlInTempfile'></span></td>
-	                            <td class=r><span id='urlInTempfile' tm='tip:urlInTempfile'></span></td>
-	                          </tr>
-	                          <tr class='runtimeInfoBG0'>
-	                            <td><span tm='text:urlInMemory;tip:urlInMemory'></span></td>  
-	                            <td class=r><span id='urlInMemory' tm='tip:urlInMemory'></span></td>           
-	                          </tr>
-	                          <tr class='runtimeInfoBG1'>
-	                            <td><span tm='text:hostName;tip:hostName'></span></td>  
-	                            <td class=r><span id='hostName' tm='tip:hostName'></span></td>            
-	                          </tr>
-	                          <tr class='runtimeInfoBG0'>
-	                            <td><span tm='tip:memoryUsageForSite'>Memory used</span></td> 
-	                            <td class=r><span id='memoryUsageForSite' tm='tip:memoryUsageForSite'></span></td>
-	                          </tr>
-	                          <tr class='runtimeInfoBG1'>
-	                            <td><span tm='tip:diskUsageForSite'>Disk used</span></td>   
-	                            <td class=r><span id='diskUsageForSite' tm='tip:diskUsageForSite'></span></td>
-	                          </tr>
-	                        </table></td></tr>
-	                      </table>
-	                      <a id='rt-site-s'></a>
-	                    </div>
-	                    <div class='table-container'>
-	                    <table class='status-table c700'>
-	                      <col class='c1' /><col class='c2' /><col class='c3' /><col class='c4' />
-	                      <tr>
-	                        <th class=name>URL collectors
-	                        </th>
-	                        <th>Last running status
-	                        </th><th></th>
-	                        <th><a id='rt-crawlers-s'></a>
-	                        </th>
-	                      </tr>
-	                      <tr>
-	                        <td class=name>Webserver filter
-	                        </td>
-	                        <td id='wf-status'>
-	                        </td><td></td>
-	                        <td><a id='rt-wf-s'></a>
-	                        </td>
-	                      </tr>
-	                      <tr><td colspan=4 class=detail><table id='rt-wf' class='noborder'>
-	                        <tr class='runtimeInfoBG0'>
-	                          <td><span tm='text:ServiceInfoUrlsCount'></span></td>  
-	                          <td class=r><span id='webServerFilterServiceInfoUrlsCount' tm='tip:ServiceInfoUrlsCount'></span></td>           
-	                        </tr>
-	                      </table></td></tr>
-	                      <tr>
-	                        <td class=name>Log parser
-	                        </td>
-	                        <td class='status-success' id=logParserServiceInfoSuccess-s>
-	                        </td><td></td>
-	                        <td><a id='rt-lp-s'></a>
-	                        </td>
-	                      </tr>
-	                      <tr><td colspan=4 class=detail><table id='rt-lp' class='noborder'>
-	                        <tr class='runtimeInfoBG0'>
-	                          <td><span tm='text:ServiceInfoSuccess;tip:ServiceInfoSuccess'></span></td>  
-	                          <td class=r><span id='logParserServiceInfoSuccess' tm='tip:ServiceInfoSuccess'></span></td>           
-	                        </tr>
-	                        <tr class='runtimeInfoBG1'>
-	                          <td><span tm='text:ServiceInfoLastUpdate'></span></td>  
-	                          <td class=r><span id='logParserServiceInfoLastUpdate' tm='tip:ServiceInfoLastUpdate'></span></td>           
-	                        </tr>
-	                        <tr class='runtimeInfoBG0'>
-	                          <td><span tm='text:ServiceInfoUrlsCount'></span></td>  
-	                          <td class=r><span id='logParserServiceInfoUrlsCount' tm='tip:ServiceInfoUrlsCount'></span></td>           
-	                        </tr>
-	                      </table></td></tr>
-	                      <tr>
-	                        <td class=name>File scanner
-	                        </td>
-	                        <td class='status-failed' id='fileScannerServiceInfoSuccess-s'>
-	                        </td><td></td>
-	                        <td><a id=rt-fs-s></a>
-	                        </td>
-	                      </tr>
-	                      <tr><td colspan=4 class=detail><table id='rt-fs' class='noborder'>
-	                        <tr class='runtimeInfoBG0'>
-	                          <td><span tm='text:ServiceInfoSuccess;tip:ServiceInfoSuccess'></span></td>  
-	                          <td class=r><span id='fileScannerServiceInfoSuccess' tm='tip:ServiceInfoSuccess'></span></td>           
-	                        </tr>
-	                        <tr class='runtimeInfoBG1'>
-	                          <td><span tm='text:ServiceInfoLastUpdate'></span></td>  
-	                          <td class=r><span id='fileScannerServiceInfoLastUpdate' tm='tip:ServiceInfoLastUpdate'></span></td>           
-	                        </tr>
-	                        <tr class='runtimeInfoBG0'>
-	                          <td><span tm='text:ServiceInfoUrlsCount'></span></td>  
-	                          <td class=r><span id='fileScannerServiceInfoUrlsCount' tm='tip:ServiceInfoUrlsCount'></span></td>           
-	                        </tr>
-	                      </table></td></tr>
-	                    </table>
-	                    </div>
-	                    <div class='table-container'>
-	                    <table class='status-table c700'>
-	                      <col class='c1' /><col class='c2' /><col class='c3' span=2 /><col class='c4' />
-	                      <tr>
-	                        <th class=name>Sitemap creators
-	                        </th>
-	                        <th>Last running status
-	                        </th>
-	                        <th>URLs in Sitemap
-	                        </th>
-	                        <th>Settings
-	                        </th>
-	                        <th><a id='rt-sitemaps-s'></a>
-	                        </th>
-	                      </tr>
-	                      <tr>
-	                        <td class=name>Web
-	                        </td>
-	                        <td class='status-success' id='webSitemapServiceInfoSuccess-s'>
-	                        </td>
-	                        <td id='webSitemapServiceInfoUrlsCount-s'>
-	                        </td>
-	                        <td><a sitemap='web'>Edit</a>
-	                        </td>
-	                        <td><a id=rt-web-s></a>
-	                        </td>
-	                      </tr>
-	                      <tr><td colspan=5 class=detail><table id='rt-web' class='noborder'>
-	                        <tr class='runtimeInfoBG0' tm='tip:ServiceInfoSuccess'>
-	                          <td><span tm='text:ServiceInfoSuccess'></span></td>  
-	                          <td class=r><span id='webSitemapServiceInfoSuccess'></span></td>           
-	                        </tr>
-	                        <tr class='runtimeInfoBG1' tm='tip:ServiceInfoLastUpdate'>
-	                          <td><span tm='text:ServiceInfoLastUpdate'></span></td>  
-	                          <td class=r><span id='webSitemapServiceInfoLastUpdate'></span></td>           
-	                        </tr>
-	                        <tr class='runtimeInfoBG0' tm='tip:ServiceInfoUrlsCount'>
-	                          <td><span tm='text:ServiceInfoUrlsCount'></span></td>  
-	                          <td class=r><span id='webSitemapServiceInfoUrlsCount'></span></td>           
-	                        </tr>
-	                      </table></td></tr>
-	                      <tr>
-	                        <td class=name>News
-	                        </td>
-	                        <td class='status-success' id=newsSitemapServiceInfoSuccess-s>
-	                        </td>
-	                        <td id=newsSitemapServiceInfoUrlsCount-s>
-	                        </td>
-	                        <td><a sitemap='news'>Edit</a>
-	                        </td>
-	                        <td><a id=rt-news-s></a>
-	                        </td>
-	                      </tr>
-	                      <tr><td colspan=5 class=detail><table id='rt-news' class='noborder'>
-	                        <tr class='runtimeInfoBG0' tm='tip:ServiceInfoSuccess'>
-	                          <td><span tm='text:ServiceInfoSuccess'></span></td>  
-	                          <td class=r><span id='newsSitemapServiceInfoSuccess'></span></td>           
-	                        </tr>
-	                        <tr class='runtimeInfoBG1' tm='tip:ServiceInfoLastUpdate'>
-	                          <td><span tm='text:ServiceInfoLastUpdate'></span></td>  
-	                          <td class=r><span id='newsSitemapServiceInfoLastUpdate'></span></td>           
-	                        </tr>
-	                        <tr class='runtimeInfoBG0' tm='tip:ServiceInfoUrlsCount'>
-	                          <td><span tm='text:ServiceInfoUrlsCount'></span></td>  
-	                          <td class=r><span id='newsSitemapServiceInfoUrlsCount'></span></td>           
-	                        </tr>
-	                      </table></td></tr>
-	                      <tr>
-	                        <td class=name>Mobile
-	                        </td>
-	                        <td class='status-success' id=mobileSitemapServiceInfoSuccess-s>
-	                        </td>
-	                        <td id=mobileSitemapServiceInfoUrlsCount-s>
-	                        </td>
-	                        <td><a sitemap='mobile'>Edit</a>
-	                        </td>
-	                        <td><a id=rt-mobile-s></a>
-	                        </td>
-	                      </tr>
-	                      <tr><td colspan=5 class=detail><table id='rt-mobile' class='noborder'>
-	                        <tr class='runtimeInfoBG0' tm='tip:ServiceInfoSuccess'>
-	                          <td><span tm='text:ServiceInfoSuccess'></span></td>  
-	                          <td class=r><span id='mobileSitemapServiceInfoSuccess'></span></td>           
-	                        </tr>
-	                        <tr class='runtimeInfoBG1' tm='tip:ServiceInfoLastUpdate'>
-	                          <td><span tm='text:ServiceInfoLastUpdate'></span></td>  
-	                          <td class=r><span id='mobileSitemapServiceInfoLastUpdate'></span></td>           
-	                        </tr>
-	                        <tr class='runtimeInfoBG0' tm='tip:ServiceInfoUrlsCount'>
-	                          <td><span tm='text:ServiceInfoUrlsCount'></span></td>  
-	                          <td class=r><span id='mobileSitemapServiceInfoUrlsCount'></span></td>           
-	                        </tr>
-	                      </table></td></tr>
-	                      <tr>
-	                        <td class=name>Codesearch
-	                        </td>
-	                        <td class='status-success' id=codesearchSitemapServiceInfoSuccess-s>
-	                        </td>
-	                        <td id=codesearchSitemapServiceInfoUrlsCount-s>
-	                        </td>
-	                        <td><a sitemap='codesearch'>Edit</a>
-	                        </td>
-	                        <td><a id=rt-codesearch-s></a>
-	                        </td>
-	                      </tr>
-	                      <tr><td colspan=5 class=detail><table id='rt-codesearch' class='noborder'>
-	                        <tr class='runtimeInfoBG0' tm='tip:ServiceInfoSuccess'>
-	                          <td><span tm='text:ServiceInfoSuccess'></span></td>  
-	                          <td class=r><span id='codesearchSitemapServiceInfoSuccess'></span></td>           
-	                        </tr>
-	                        <tr class='runtimeInfoBG1' tm='tip:ServiceInfoLastUpdate'>
-	                          <td><span tm='text:ServiceInfoLastUpdate'></span></td>  
-	                          <td class=r><span id='codesearchSitemapServiceInfoLastUpdate'></span></td>           
-	                        </tr>
-	                        <tr class='runtimeInfoBG0' tm='tip:ServiceInfoUrlsCount'>
-	                          <td><span tm='text:ServiceInfoUrlsCount'></span></td>  
-	                          <td class=r><span id='codesearchSitemapServiceInfoUrlsCount'></span></td>           
-	                        </tr>
-	                      </table></td></tr>
-	                      <tr>
-	                        <td class=name>Blogsearch
-	                        </td>
-	                        <td class='status-success' id=blogsearchSitemapServiceInfoSuccess-s>
-	                        </td>
-	                        <td>--
-	                        </td>
-	                        <td><a sitemap='blogsearch'>Edit</a>
-	                        </td>
-	                        <td><a id=rt-blogsearch-s></a>
-	                        </td>
-	                      </tr>
-	                      <tr><td colspan=5 class=detail><table id='rt-blogsearch' class='noborder'>
-	                        <tr class='runtimeInfoBG0' tm='tip:ServiceInfoSuccess'>
-	                          <td><span tm='text:ServiceInfoSuccess'></span></td>  
-	                          <td class=r><span id='blogsearchSitemapServiceInfoSuccess'></span></td>           
-	                        </tr>
-	                        <tr class='runtimeInfoBG1' tm='tip:ServiceInfoLastUpdate'>
-	                          <td>Last ping time</td>  
-	                          <td class=r><span id='blogsearchSitemapServiceInfoLastPing'></span></td>           
-	                        </tr>
-	                        <tr class='runtimeInfoBG0' tm='tip:ServiceInfoUrlsCount'>
-	                          <td>Last ping url</td>  
-	                          <td class=r><span id='blogsearchSitemapServiceInfoLastUrl'></span></td>           
-	                        </tr>
-	                      </table></td></tr>
-	                    </table>
-	                    </div>
-	              		</div>
-									</div>
-									<div class='Settings TabDiv hidden' id='Settings'>
-                    <div class='warningbox' id='site-custom-warning'>
-                      <span class='warningicon'>!</span>
-                      <span class='warningtext'>This site configuration is customized.</span>
-                    </div>
-                    <!--global general setting-->
-                    <div class='hidden' id='SitesG'>
-                    </div>
-                    <!--site general setting-->
-                    <div class='section c650' id='SitesS'>
-                      <table class='noborder config'>
-                        <col class='c1' /><col class='c2' /><col class='c3' />
-                        <tr>
-                          <td rowspan=2 class=label><p tm='text:host'></p></td>
-                          <td />
-                          <td>http:// <input type='text' id='host' name='host' class='host'></td>
+            </div>
+            <div class='SiteContent'>
+              <div class='Status TabDiv hidden' id='Status'>                          
+                <h2 tm='t:runtimeInfoTitle'></h2>
+                <div id=rt-err-box class='warningbox hidden'>
+                  <span class='warningtext' id='rt-err-txt'></span>
+								</div>
+								<div id=status-area>
+                  <div class=clear>
+                    <table class='noborder c700'>
+                      <tr>
+                        <td><span tm='t:sMem'></span>
+                        </td>
+                        <td><div class='percentage-bar-out'><div class='percentage-bar-in' id='memUsage-graph'></div></div>
+                        </td>
+                        <td><span id=memUsage-cost></span> of <span id=memUsage-ttl></span> (<span id=memUsage-txt></span>)
+                        </td>
+                      </tr>
+                      <tr>
+                        <td><span tm='t:sDisk'></span>
+                        </td>
+                        <td><div class='percentage-bar-out'><div class='percentage-bar-in' id='diskUsage-graph'></div></div>
+                        </td>
+                        <td><span id=diskUsage-cost></span> of <span id=diskUsage-ttl></span> (<span id=diskUsage-txt></span>)
+                        </td>
+                      </tr>
+                      <tr><td colspan=3 class=detail>
+                      	<table id='rt-site' class='noborder c700'>
+                        <tr class='runtimeInfoBG0'>
+                          <td><span tm='t:urlInDatabase'></span></td>  
+                          <td class=r><span id='urlInDatabase'></span></td>           
                         </tr>
-                        <tr class=eg><td /><td>eg. http://www.google.com</td></tr>
-                        <tr>
-                          <td rowspan=2 class=label><p tm='text:logPath'></p></td>
-                          <td />
-                          <td><input type='text' id='logPath' name='logPath' class='path'></td>
-                        </tr>                       
-                        <tr class=eg><td /><td>eg. c:\IIS\log</td></tr>
-                      </table>
-	                    <div class='sep'></div>
-                    </div>
-                            
-                    
-                      <!--common general setting-->
-                      <div class='section c650' id='generalCommonSitemapBody'>
-                        <table class='noborder config'>
-                          <col class='c1' /><col class='c2' /><col class='c3' />
-                          <tr>
-                            <td class='label'>
-                              Resource limits
-                            </td>
-                            <td>
-                            </td>
-                            <td>
-                              <table class='noborder'>
-                                <tr>
-                                  <td colspan=2>
-                                    <span class=label tm='text:maxUrlLife'>
-                                    </span>
-                                    <input type='text' id='maxUrlLifeInDays' name='maxUrlLifeInDays'>
-                                    <span class=label tm='text:dayUnit'>
-                                    </span>
-                                  </td>
-                                </tr>
-                                <tr>
-                                  <td>
-                                    <span class=label>Maximum number of URLs in memory</span>
-																	</td>
-																	<td>
-																		<input type='text' id='maxSiteUrlInMemory' name='maxSiteUrlInMemory'>
-																	</td>
-                                <tr>
-                                	<td />
-                                	<td class=eg>
-                                		Required space estimation:
-                                    <span id='maxSiteUrlInMemoryEqualSize'>
-                                    </span>
-                                  </td>
-                                </tr>
-                                <tr><td><div class=space></div></td></tr>
-                                <tr>
-                                  <td>
-                                    <span class=label>Maximum number of URLs in disk</span>
-																	</td>
-																	<td>
-																		<input type='text' id='maxUrlInDisk' name='maxUrlInDisk'>
-																	</td>
-                                <tr>
-                                	<td />
-                                	<td class=eg>
-                                		Required space estimation:
-                                    <span id='maxUrlInDiskEqualSize'>
-                                    </span>
-                                  </td>
-                                </tr>
-                              </table>
-                            </td>
-                          </tr>
-                          <tr><td colspan=3><div class='sep'></div></td></tr>
-                          <tr>
-                            <td class='label'>
-                              URL collectors
-                            </td>
-                            <td>
-                            </td>
-                            <td>
-                              <table class='noborder url-crawlers'>
-                                <col class='c1' /><col class='c2' /><col class='c3' />
-                                <tr>
-                                  <td>
-                                    <input type='checkbox' id='wsf-eanbled' name='wsf-eanbled'>
-                                    <span class=label tm='text:webserverFilterEnabled'></span>
-                                  </td>
-                                  <td />
-                                  <td />
-                                </tr>
-                                <tr>
-                                  <td><input type='checkbox' id='fs-eanbled' name='fs-eanbled'>
-                                    <span class=label tm='text:fileScannerEnabled'></span>
-                                  </td>
-                                  <td />
-                                  <td id='fs-duration-area'>
-                                    <span class=label tm='text:UpdateDurationForFileScanner'></span>
-                                    <input type='text' id='fs-duration' name='fs-duration' class='time'>
-                                    <span class=label tm='text:minuteUnit'></span>
-                                  </td>
-                                </tr>
-                                <tr>
-                                  <td><input type='checkbox' id='lp-eanbled' name='lp-eanbled'>
-                                    <span class=label tm='text:logParserEnabled'></span>
-                                  </td>
-                                  <td />
-                                  <td id='lp-duration-area'>
-                                    <span class=label tm='text:UpdateDurationForLogParser'></span>
-                                    <input type='text' id='lp-duration' name='lp-duration' class='time'>
-                                    <span class=label tm='text:minuteUnit'></span>
-                                  </td>
-                                </tr>
-                              </table>
-                            </td>
-                          </tr>
-                          <tr><td colspan=3><div class='sep'></div></td></tr>
-                          <tr>
-                            <td class='label'>
-                              URL query field filter
-                            </td>
-                            <td>
-                            </td>
-                            <td>
-                              <table class='noborder' id='queryFieldEditor'>
-                                <tr>
-                                  <td>
-                                    <p tm='text:queryFieldGuide'>
-                                    </p>
-                                    <p class=notes tm='text:privacyNote'>
-                                    </p>
-                                  </td>
-                                </tr>
-                                <tr>
-                                  <td>
-                                    <input type='text' id='queryFieldEditor-input' name='queryFieldEditor-input'>
-                                    <input type='button' value='Add' id='queryFieldEditor-add' name='queryFieldEditor-add'>
-                                  </td>
-                                </tr>
-                                <tr><td><p class=eg>Example: name1, name2, name3</p>
-                                          <a class='extlink hidden' id='queryFieldEditor-s'></a></td></tr>
-                                <tr>
-                                  <td id='queryFieldEditor-area'>
-                                  </td>
-                                </tr>
-                              </table>
-                            </td>
-                          </tr>
-                          <tr><td colspan=3><div class='sep'></div></td></tr>
-                          <tr>
-                            <td class='label'>
-                              Sitemap types
-                            </td>
-                            <td>
-                            </td>
-                            <td>
-                              <table class='sitemaps-table' id='regSitemaps'>
-                                <col class='c1' /><col class='c2' /><col class='c3' /><col class='c4' />
-                                <tr>
-                                  <th class=name>Sitemap type
-                                  </th>
-                                  <th class='sitemap-enable'>Enable it<img class='tipIcon' src='/images/qmicon.gif' tm='tip:sitemapEnabled'/>
-                                  </th>
-                                  <th class='sitemap-customize'>Setting status<img class='tipIcon' src='/images/qmicon.gif' tm='tip:customize'/>
-                                  </th>
-                                  <th>
-                                  </th>
-                                </tr>
-                                <tr>
-                                  <td class=name>Web
-                                  </td>
-                                  <td class='sitemap-enable'>
-                                  	<input type='checkbox' id='web-enable' name='web-enable'>
-                                  </td>
-                                  <td class='sitemap-customize'>
-                                  </td>
-                                  <td><a sitemap='web'>Edit</a>
-                                  </td>
-                                </tr>
-                                <tr>
-                                  <td class=name>News
-                                  </td>
-                                  <td class='sitemap-enable'>
-                                  	<input type='checkbox' id='news-enable' name='news-enable'>
-                                  </td>
-                                  <td class='sitemap-customize'>
-                                  </td>
-                                  <td><a sitemap='news'>Edit</a>
-                                  </td>
-                                </tr>
-                                <tr>
-                                  <td class=name>Mobile
-                                  </td>
-                                  <td class='sitemap-enable'>
-                                  	<input type='checkbox' id='mobile-enable' name='mobile-enable'>
-                                  </td>
-                                  <td class='sitemap-customize'>
-                                  </td>
-                                  <td><a sitemap='mobile'>Edit</a>
-                                  </td>
-                                </tr>
-                                <tr>
-                                  <td class=name>Codesearch
-                                  </td>
-                                  <td class='sitemap-enable'>
-                                  	<input type='checkbox' id='codesearch-enable' name='codesearch-enable'>
-                                  </td>
-                                  <td class='sitemap-customize'>
-                                  </td>
-                                  <td><a sitemap='codesearch'>Edit</a>
-                                  </td>
-                                </tr>
-                                <tr>
-                                  <td class=name>Blogsearch
-                                  </td>
-                                  <td class='sitemap-enable'>
-                                  	<input type='checkbox' id='blogsearch-enable' name='blogsearch-enable'>
-                                  </td>
-                                  <td class='sitemap-customize'>
-                                  </td>
-                                  <td><a sitemap='blogsearch'>Edit</a>
-                                  </td>
-                                </tr>
-                              </table>
-                            </td>
-                          </tr>
-                        </table>
-                      </div>
-                    <!-- buttons -->     
-                    <div class='cmdbuttons'>
-                      <input type='button' class='save' id='save-3' name='save-3' tm='value:submit'>
-                      <input type='button' class='cancel' id='cnl-3' name='cnl-3' value='Cancel'>
-                      <input type='button' class='revert' id='revert-site' name='revert-site' value='Revert to default settings'>
-                    </div>
-                  </div>      
-                  <div class='Sitemaps TabDiv hidden' id='Sitemaps'>
-                    <div class='SitemapContent'>       
-                      <div class='Web TabDiv hidden' id='web'>
-                        <!--web sitemap-->
-                        <div class='sitemapDiv' id='webSitemapBody'>
-                          <div class='warningbox'>
-                          	<div id='web-warning'>
-	                            <span class='warningicon'>!</span>
-	                            <span class='warningtext'>This sitemap is disabled.</span>
-	                            <a>Enable</a>
-	                          </div>
-	                          <div id='web-custom-warning'>
-	                            <span class='warningicon'>!</span>
-	                            <span class='warningtext'>This sitemap is customized.</span>
-	                          </div>
-													</div>
-                          <!--global web setting-->
-                          <div class='hidden' id='webG'>
-                          </div>
-                          <!--site web setting-->
-                          <div class='' id='webS'>
-                          </div>
-                          <!--common web setting-->
-                            <div class='c650 section' id='webCommonSitemapBody'> 
-                              <table class='noborder config'>
-                                <col class='c1' /><col class='c2' /><col class='c3' />
-                                <tr>
-                                  <td class='label'>
-                                    Sitemap update
-                                  </td>
-                                  <td class='vsep'>
-                                  </td>
-                                  <td>
-                                    <table class='noborder'>
-                                      <tr>
-                                        <td class=label>
-                                          Start date and time
-                                        </td>
-                                        <td>
-                                          <table>
-                                            <tr><td><input type='text' class='date' id=webUpdateStartTime-date name=webUpdateStartTime-date></td>
-                                              <td><input type='text' class='date' id=webUpdateStartTime-time name=webUpdateStartTime-time></td>
-                                            </tr>
-                                            <tr class=eg><td>eg. 2008-12-31</td><td>10:23:34</td></tr>
-                                          </table>
-                                        </td>
-                                      </tr>
-                                      <tr>
-                                        <td class=label>
-                                          Interval
-                                        </td>
-                                        <td>
-                                          <table class='noborder' id=webDuration>
-                                            <tr>
-                                              <td><input type='radio' name='web-interval-group' value=10>10 minutes
-                                              </td>
-                                              <td><input type='radio' name='web-interval-group' value=30>30 minutes
-                                              </td>
-                                              <td><input type='radio' name='web-interval-group' value=60>1 hour
-                                              </td>
-                                              <td><input type='radio' name='web-interval-group' value=720>12 hours
-                                              </td>
-                                            </tr>
-                                            <tr>
-                                              <td><input type='radio' name='web-interval-group' value=1440>1 day
-                                              </td>
-                                              <td><input type='radio' name='web-interval-group' value=10080>1 week
-                                              </td>
-                                              <td><input type='radio' name='web-interval-group' value=43200>1 month
-                                              </td>
-                                              <td>
-                                              </td>
-                                            </tr>
-                                            <tr>
-                                              <td colspan=4>
-                                                <input type='radio' name='web-interval-group'>
-                                                <label for=web-interval-group><span class=label>custom: </span></label>
-                                                <input type='text' class='text time'>
-                                                <span class=label tm='text:minuteUnit'></span>
-                                              </td>
-                                            </tr>
-                                          </table>                                          
-                                        </td>
-                                      </tr>
-                                    </table>
-                                  </td>
-                                </tr>
-                                <tr><td colspan=3><div class='sep'></div></td></tr>
-                                <tr>
-                                  <td class='label'>
-                                    Sitemap file settings
-                                  </td>
-                                  <td class='vsep'>
-                                  </td>
-                                  <td>
-                                    <table class='noborder'>
-                                      <tr>
-                                        <td colspan=2>
-                                          <input type='checkbox' id='webCompress' name='webCompress'>
-                                          <label for='webCompress'>Compress Sitemap file</label>
-                                        </td>
-                                      </tr>
-                                      <tr>
-                                        <td colspan=2>
-                                          <span class=label tm='text:filename'></span>
-                                          <input type='text' id='webFileName' name='webFileName' class='filename'>
-                                          <img class='tipIcon' src='/images/qmicon.gif' tm='tip:filename'/>
-                                        </td>
-                                      </tr>
-                                      <tr>
-                                        <td>
-                                          <p class=label tm='text:maxFileUrl'></p>
-                                        </td>
-                                        <td>
-                                          <input type='text' id='webMaxFileUrl' name='webMaxFileUrl' class='text'>
-                                        </td>
-                                      </tr>
-                                      <tr>
-                                        <td>
-                                          <p class=label tm='text:maxFileSize'></p>
-                                        </td>
-                                        <td>
-                                          <input type='text' id='webMaxFileSize' name='webMaxFileSize' class='text'>
-                                          <span class=label tm='text:kiloByteUnit'>
-                                          </span>
-                                        </td>
-                                      </tr>
-                                    </table>
-                                  </td>
-                                </tr>
-                                <tr><td colspan=3><div class='sep'></div></td></tr>
-                                <tr>
-                                  <td class='label'>
-                                    Sitemap file submission
-                                  </td>
-                                  <td class='vsep'>
-                                  </td>
-                                  <td>
-                                    <table class='noborder'>
-                                      <tr>
-                                        <td>
-                                          <input type='checkbox' id='robotsIncluded' name='robotsIncluded'>
-                                          <label for='robotsIncluded'>
-                                            Submit Sitemap file from robots.txt
-                                          </label>
-                                        </td>
-                                      </tr>
-                                      <tr>
-                                        <td>
-                                          <span class=label>Search engine notification URLs</span>
-                                          <img class='tipIcon' src='/images/qmicon.gif' tm='tip:NotifyUrl'/>
-                                          <a class=extlink id='webNotifyUrlEditor-s'></a>
-                                        </td>
-                                      </tr>                                      
-                                      <tr>
-                                        <td>
-                                          <table class='noborder UrlEditor' id='webNotifyUrlEditor'>
-                                            <tr>
-                                              <td><input type='text' id='webNotifyUrlEditor-input' name='webNotifyUrlEditor-input' class='urlpattern'>
-                                              <input type='button' id='webNotifyUrlEditor-add' name='webNotifyUrlEditor-add' value='Add'>
-                                              </td>
-                                            </tr>
-                                            <tr>
-                                              <td class=eg>Example: http://www.google.com/webmasters/sitemaps/ping?sitemap=
-                                              </td>
-                                            </tr>
-                                            <tr><td></td></tr>
-                                            <tr>
-                                              <td id='webNotifyUrlEditor-area'>
-                                              </td>
-                                            </tr>
-                                          </table>
-                                        </td>
-                                      </tr>
-                                    </table>
-                                  </td>
-                                </tr>
-                                <tr><td colspan=3><div class='sep'></div></td></tr>
-                                <tr>
-                                  <td class='label'>
-                                    Sitemap URL filter
-                                  </td>
-                                  <td class='vsep'>
-                                  </td>
-                                  <td>
-                                    <table class='noborder'>
-                                      <tr>
-                                        <td>
-                                          <span class=label>Included URL patterns</span>
-                                          <img class='tipIcon' src='/images/qmicon.gif' tm='tip:InAndExUrlPattern'/>
-                                          <a class=extlink id='webInUrlEditor-s'></a>
-                                        </td>
-                                      </tr>                                      
-                                      <tr>
-                                        <td>
-                                          <table class='noborder UrlEditor' id='webInUrlEditor'>
-                                            <tr>
-                                              <td><input type='text' id='webInUrlEditor-input' name='webInUrlEditor-input' class='urlpattern'>
-                                              <input type='button' id='webInUrlEditor-add' name='webInUrlEditor-add' value='Add'>
-                                              </td>
-                                            </tr>
-                                            <tr><td class=eg>Example: /*.html</td></tr>
-                                            <tr>
-                                              <td id='webInUrlEditor-area'>
-                                              </td>
-                                            </tr>
-                                          </table>
-                                        </td>
-                                      </tr>
-                                      <tr>
-                                        <td>
-                                          <span class=label>Excluded URL patterns</span>
-                                          <img class='tipIcon' src='/images/qmicon.gif' tm='tip:InAndExUrlPattern'/>
-                                          <a class=extlink id='webExUrlEditor-s'></a>
-                                        </td>
-                                      </tr>                                      
-                                      <tr>
-                                        <td>
-                                          <table class='noborder UrlEditor' id='webExUrlEditor'>
-                                            <tr>
-                                              <td><input type='text' id='webExUrlEditor-input' name='webExUrlEditor-input' class='urlpattern'>
-                                              <input type='button' id='webExUrlEditor-add' name='webExUrlEditor-add' value='Add'>
-                                              </td>
-                                            </tr>
-                                            <tr>
-                                              <td class=eg>Example: /robots.txt
-                                              </td>
-                                            </tr>
-                                            <tr>
-                                              <td id='webExUrlEditor-area'>
-                                              </td>
-                                            </tr>
-                                          </table>
-                                        </td>
-                                      </tr>
-                                    </table>
-                                  </td>
-                                </tr>
-                              </table>
-                            </div>
-                          <!-- buttons -->     
-                          <div class='cmdbuttons'>
-                            <input type='button' class='save' id='save-4' name='save-4' tm='value:submit'>
-                            <input type='button' class='cancel' id='cnl-4' name='cnl-4' value='Cancel'>
-                            <input type='button' class='revert' id='revert-web' name='revert-web' value='Revert to default settings'>
-                          </div>
-                        </div> 
-                      </div>
-                      <div class='News TabDiv hidden' id='news'>
-                        <!--news sitemap-->
-                        <div id='newsSitemapBody' class='sitemapDiv'>
-                          <div class='warningbox'>
-                          	<div id='news-warning'>
-	                            <span class='warningicon'>!</span>
-	                            <span class='warningtext'>This sitemap is disabled.</span>
-	                            <a>Enable</a>
-	                          </div>
-	                          <div id='news-custom-warning'>
-	                            <span class='warningicon'>!</span>
-	                            <span class='warningtext'>This sitemap is customized.</span>
-	                          </div>
-                          </div>
-                          <!--global news setting-->
-                          <div class='hidden' id='newsG'>
-                          </div>
-                          <!--site news setting-->
-                          <div class='' id='newsS'>
-                          </div>
-                          <!--common news setting-->
-                            <div class='c650 section' id='newsCommonSitemapBody'> 
-                              <table class='noborder config'>
-                                <col class='c1' /><col class='c2' /><col class='c3' />
-                                <tr>
-                                  <td class='label'>
-                                    Updating
-                                  </td>
-                                  <td class='vsep'>
-                                  </td>
-                                  <td>
-                                    <table class='noborder'>
-                                      <tr>
-                                        <td class=label>
-                                          Start date and time
-                                        </td>
-                                        <td>
-                                          <table>
-                                            <tr><td><input type='text' class='date' id=newsUpdateStartTime-date name=newsUpdateStartTime-date></td>
-                                              <td><input type='text' class='date' id=newsUpdateStartTime-time name=newsUpdateStartTime-time></td>
-                                            </tr>
-                                            <tr class=eg><td>eg. 2008-12-31</td><td>10:23:34</td></tr>
-                                          </table>                                      
-                                        </td>
-                                      </tr>
-                                      <tr>
-                                        <td class=label>
-                                          Interval
-                                        </td>
-                                        <td>
-                                          <table class='noborder' id='newsDuration'>
-                                            <tr>
-                                              <td><input type='radio' name='news-interval-group' value=10>10 minutes
-                                              </td>
-                                              <td><input type='radio' name='news-interval-group' value=30>30 minutes
-                                              </td>
-                                              <td><input type='radio' name='news-interval-group' value=60>1 hour
-                                              </td>
-                                              <td><input type='radio' name='news-interval-group' value=720>12 hours
-                                              </td>
-                                            </tr>
-                                            <tr>
-                                              <td><input type='radio' name='news-interval-group' value=1440>1 day
-                                              </td>
-                                              <td><input type='radio' name='news-interval-group' value=10080>1 week
-                                              </td>
-                                              <td><input type='radio' name='news-interval-group' value=43200>1 month
-                                              </td>
-                                              <td>
-                                              </td>
-                                            </tr>
-                                            <tr>
-                                              <td colspan=4>
-                                                <input type='radio' name='news-interval-group'>
-                                                <span class=label>custom: </span>
-                                                <input type='text' class='text time'>
-                                                <span class=label tm='text:minuteUnit'></span>
-                                              </td>
-                                            </tr>
-                                          </table>                                          
-                                        </td>
-                                      </tr>
-                                    </table>
-                                  </td>
-                                </tr>
-                                <tr><td colspan=3><div class='sep'></div></td></tr>
-                                <tr>
-                                  <td class='label'>
-                                    Sitemap file settings
-                                  </td>
-                                  <td class='vsep'>
-                                  </td>
-                                  <td>
-                                    <table class='noborder'>
-                                      <tr>
-                                        <td colspan=2>
-                                          <input type='checkbox' id='newsCompress' name='newsCompress'>
-                                          <label for='newsCompress'>Compress Sitemap file</label>
-                                        </td>
-                                      </tr>
-                                      <tr>
-                                        <td colspan=2>
-                                          <span class=label tm='text:filename'></span>
-                                          <input type='text' id='newsFileName' name='newsFileName' class='filename'>
-                                          <img class='tipIcon' src='/images/qmicon.gif' tm='tip:filename'/>
-                                        </td>
-                                      </tr>
-                                      <tr>
-                                        <td>
-                                          <p class=label tm='text:maxFileUrl'></p>
-                                        </td>
-                                        <td>
-                                          <input type='text' id='newsMaxFileUrl' name='newsMaxFileUrl' class='text'>
-                                        </td>
-                                      </tr>
-                                      <tr>
-                                        <td>
-                                          <p class=label tm='text:maxFileSize'></p>
-                                        </td>
-                                        <td>
-                                          <input type='text' id='newsMaxFileSize' name='newsMaxFileSize' class='text'>
-                                          <span class=label tm='text:kiloByteUnit'>
-                                          </span>
-                                        </td>
-                                      </tr>
-                                    </table>
-                                  </td>
-                                </tr>
-                                <tr><td colspan=3><div class='sep'></div></td></tr>
-                                <tr>
-                                  <td class='label'>
-                                    Sitemap URL filter
-                                  </td>
-                                  <td class='vsep'>
-                                  </td>
-                                  <td>
-                                    <table class='noborder'>
-                                      <tr>
-                                        <td>
-                                          <span class=label tm='text:newsExpireDuration'></span>
-                                          <input type='text' id='newsExpireDuration' name='newsExpireDuration' class='text time'>
-                                          <span class=label tm='text:minuteUnit'></span>
-                                        </td>
-                                      </tr>
-                                      <tr>
-                                        <td>
-                                          <span class=label>Included URL patterns</span>
-                                          <img class='tipIcon' src='/images/qmicon.gif' tm='tip:InAndExUrlPattern'/>
-                                          <a class=extlink id='newsInUrlEditor-s'></a>
-                                        </td>
-                                      </tr>                                      
-                                      <tr>
-                                        <td>
-                                          <table class='noborder UrlEditor' id='newsInUrlEditor'>
-                                            <tr>
-                                              <td><input type='text' id='newsInUrlEditor-input' name='newsInUrlEditor-input' class='urlpattern'>
-                                              <input type='button' id='newsInUrlEditor-add' name='newsInUrlEditor-add' value='Add'>
-                                              </td>
-                                            </tr>
-                                            <tr>
-                                              <td class=eg>Example: /*.html
-                                              </td>
-                                            </tr>
-                                            <tr>
-                                              <td id='newsInUrlEditor-area'>
-                                              </td>
-                                            </tr>
-                                          </table>
-                                        </td>
-                                      </tr>
-                                      <tr>
-                                        <td>
-                                          <span class=label>Excluded URL patterns</span>
-                                          <img class='tipIcon' src='/images/qmicon.gif' tm='tip:InAndExUrlPattern'/>
-                                          <a class=extlink id='newsExUrlEditor-s'></a>
-                                        </td>
-                                      </tr>                                      
-                                      <tr>
-                                        <td>
-                                          <table class='noborder UrlEditor' id='newsExUrlEditor'>
-                                            <tr>
-                                              <td><input type='text' id='newsExUrlEditor-input' name='newsExUrlEditor-input' class='urlpattern'>
-                                              <input type='button' id='newsExUrlEditor-add' name='newsExUrlEditor-add' value='Add'>
-                                              </td>
-                                            </tr>
-                                            <tr>
-                                              <td class=eg>Example: /robots.txt
-                                              </td>
-                                            </tr>
-                                            <tr>
-                                              <td id='newsExUrlEditor-area'>
-                                              </td>
-                                            </tr>
-                                          </table>
-                                        </td>
-                                      </tr>
-                                    </table>
-                                  </td>
-                                </tr>
-                              </table>
-                            </div>
-                          
-                          <!-- buttons -->     
-                          <div class='cmdbuttons'>
-                            <input type='button' class='save' id='save-5' name='save-5' tm='value:submit'>
-                            <input type='button' class='cancel' id='cnl-5' name='cnl-5' value='Cancel'>
-                            <input type='button' class='revert' id='revert-news' name='revert-news' value='Revert to default settings'>
-                          </div>
-                        </div>
-                      </div> 
-                      <div class='Mobile TabDiv hidden' id='mobile'>
-                        <!--mobile sitemap-->
-                        <div id='mobileSitemapBody' class='sitemapDiv'>
-                          <div class='warningbox'>
-                          	<div id='mobile-warning'>
-	                            <span class='warningicon'>!</span>
-	                            <span class='warningtext'>This sitemap is disabled.</span>
-	                            <a>Enable</a>
-	                          </div>
-	                          <div id='mobile-custom-warning'>
-	                            <span class='warningicon'>!</span>
-	                            <span class='warningtext'>This sitemap is customized.</span>
-	                          </div>
-                          </div>
-                          <!--global mobile setting-->
-                          <div class='hidden' id='mobileG'>
-                          </div>
-                          <!--site mobile setting-->
-                          <div class='' id='mobileS'>
-                          </div>
-                          <!--common mobile setting-->
-                            <div class='c650 section' id='mobileCommonSitemapBody'> 
-                              <table class='noborder config'>
-                                <col class='c1' /><col class='c2' /><col class='c3' />
-                                <tr>
-                                  <td class='label'>
-                                    Updating
-                                  </td>
-                                  <td class='vsep'>
-                                  </td>
-                                  <td>
-                                    <table class='noborder'>
-                                      <tr>
-                                        <td class=label>
-                                          Start date and time
-                                        </td>
-                                        <td>
-                                          <table>
-                                            <tr><td><input type='text' class='date' id=mobileUpdateStartTime-date name=mobileUpdateStartTime-date></td>
-                                              <td><input type='text' class='date' id=mobileUpdateStartTime-time name=mobileUpdateStartTime-time></td>
-                                            </tr>
-                                            <tr class=eg><td>eg. 2008-12-31</td><td>10:23:34</td></tr>
-                                          </table>                                        
-                                        </td>
-                                      </tr>
-                                      <tr>
-                                        <td class=label>
-                                          Interval
-                                        </td>
-                                        <td>
-                                          <table class='noborder' id='mobileDuration'>
-                                            <tr>
-                                              <td><input type='radio' name='mobile-interval-group' value=10>10 minutes
-                                              </td>
-                                              <td><input type='radio' name='mobile-interval-group' value=30>30 minutes
-                                              </td>
-                                              <td><input type='radio' name='mobile-interval-group' value=60>1 hour
-                                              </td>
-                                              <td><input type='radio' name='mobile-interval-group' value=720>12 hours
-                                              </td>
-                                            </tr>
-                                            <tr>
-                                              <td><input type='radio' name='mobile-interval-group' value=1440>1 day
-                                              </td>
-                                              <td><input type='radio' name='mobile-interval-group' value=10080>1 week
-                                              </td>
-                                              <td><input type='radio' name='mobile-interval-group' value=43200>1 month
-                                              </td>
-                                              <td>
-                                              </td>
-                                            </tr>
-                                            <tr>
-                                              <td colspan=4>
-                                                <input type='radio' name='mobile-interval-group'>
-                                                <span class=label>custom: </span>
-                                                <input type='text' class='text time'>
-                                                <span class=label tm='text:minuteUnit'></span>
-                                              </td>
-                                            </tr>
-                                          </table>                                          
-                                        </td>
-                                      </tr>
-                                    </table>
-                                  </td>
-                                </tr>
-                                <tr><td colspan=3><div class='sep'></div></td></tr>
-                                <tr>
-                                  <td class='label'>
-                                    Sitemap file settings
-                                  </td>
-                                  <td class='vsep'>
-                                  </td>
-                                  <td>
-                                    <table class='noborder'>
-                                      <tr>
-                                        <td colspan=2>
-                                          <input type='checkbox' id='mobileCompress' name='mobileCompress'>
-                                          <label for='mobileCompress'>Compress Sitemap file</label>
-                                        </td>
-                                      </tr>
-                                      <tr>
-                                        <td colspan=2>
-                                          <span class=label tm='text:filename'></span>
-                                          <input type='text' id='mobileFileName' name='mobileFileName' class='filename'>
-                                          <img class='tipIcon' src='/images/qmicon.gif' tm='tip:filename'/>
-                                        </td>
-                                      </tr>
-                                      <tr>
-                                        <td>
-                                          <p class=label tm='text:maxFileUrl'></p>
-                                        </td>
-                                        <td>
-                                          <input type='text' id='mobileMaxFileUrl' name='mobileMaxFileUrl' class='text'>
-                                        </td>
-                                      </tr>
-                                      <tr>
-                                        <td>
-                                          <p class=label tm='text:maxFileSize'></p>
-                                        </td>
-                                        <td>
-                                          <input type='text' id='mobileMaxFileSize' name='mobileMaxFileSize' class='text'>
-                                          <span class=label tm='text:kiloByteUnit'>
-                                          </span>
-                                        </td>
-                                      </tr>
-                                    </table>
-                                  </td>
-                                </tr>
-                                <tr><td colspan=3><div class='sep'></div></td></tr>
-                                <tr>
-                                  <td class='label'>
-                                    Sitemap URL filter
-                                  </td>
-                                  <td class='vsep'>
-                                  </td>
-                                  <td>
-                                    <table class='noborder'>
-                                      <tr>
-                                        <td>
-                                          <span class=label>Included URL patterns</span>
-                                          <img class='tipIcon' src='/images/qmicon.gif' tm='tip:InAndExUrlPattern'/>
-                                          <a class=extlink id='mobileInUrlEditor-s'></a>
-                                        </td>
-                                      </tr>                                      
-                                      <tr>
-                                        <td>
-                                          <table class='noborder UrlEditor' id='mobileInUrlEditor'>
-                                            <tr>
-                                              <td><input type='text' id='mobileInUrlEditor-input' name='mobileInUrlEditor-input' class='urlpattern'>
-                                              <input type='button' id='mobileInUrlEditor-add' name='mobileInUrlEditor-add' value='Add'>
-                                              </td>
-                                            </tr>
-                                            <tr>
-                                              <td class=eg>Example: /*.html
-                                              </td>
-                                            </tr>
-                                            <tr>
-                                              <td id='mobileInUrlEditor-area'>
-                                              </td>
-                                            </tr>
-                                          </table>
-                                        </td>
-                                      </tr>
-                                      <tr>
-                                        <td>
-                                          <span class=label>Excluded URL patterns</span>
-                                          <img class='tipIcon' src='/images/qmicon.gif' tm='tip:InAndExUrlPattern'/>
-                                          <a class=extlink id='mobileExUrlEditor-s'></a>
-                                        </td>
-                                      </tr>                                      
-                                      <tr>
-                                        <td>
-                                          <table class='noborder UrlEditor' id='mobileExUrlEditor'>
-                                            <tr>
-                                              <td><input type='text' id='mobileExUrlEditor-input' name='mobileExUrlEditor-input' class='urlpattern'>
-                                              <input type='button' id='mobileExUrlEditor-add' name='mobileExUrlEditor-add' value='Add'>
-                                              </td>
-                                            </tr>
-                                            <tr>
-                                              <td class=eg>Example: /robots.txt
-                                              </td>
-                                            </tr>
-                                            <tr>
-                                              <td id='mobileExUrlEditor-area'>
-                                              </td>
-                                            </tr>
-                                          </table>
-                                        </td>
-                                      </tr>
-                                    </table>
-                                  </td>
-                                </tr>
-                              </table>
-                            </div>
-                          <!-- buttons -->     
-                          <div class='cmdbuttons'>
-                            <input type='button' class='save' id='save-6' name='save-6' tm='value:submit'>
-                            <input type='button' class='cancel' id='cnl-6' name='cnl-6' value='Cancel'>
-                            <input type='button' class='revert' id='revert-mobile' name='revert-mobile' value='Revert to default settings'>
-                          </div>
-                        </div>
-                      </div> 
-                      <div class='Codesearch TabDiv hidden' id='codesearch'>
-                        <!--codesearch sitemap-->
-                        <div id='codesearchSitemapBody' class='sitemapDiv'>
-                          <div class='warningbox'>
-                          	<div id='codesearch-warning'>
-	                            <span class='warningicon'>!</span>
-	                            <span class='warningtext'>This sitemap is disabled.</span>
-	                            <a>Enable</a>
-	                          </div>
-	                          <div id='codesearch-custom-warning'>
-	                            <span class='warningicon'>!</span>
-	                            <span class='warningtext'>This sitemap is customized.</span>
-	                          </div>
-                          </div>
-                          <!--global codesearch setting-->
-                          <div class='hidden' id='codesearchG'>
-                          </div>
-                          <!--site codesearch setting-->
-                          <div class='' id='codesearchS'>
-                          </div>
-                          <!--common codesearch setting-->
-                            <div class='c650 section' id='codesearchCommonSitemapBody'> 
-                              <table class='noborder config'>
-                                <col class='c1' /><col class='c2' /><col class='c3' />
-                                <tr>
-                                  <td class='label'>
-                                    Updating
-                                  </td>
-                                  <td class='vsep'>
-                                  </td>
-                                  <td>
-                                    <table class='noborder'>
-                                      <tr>
-                                        <td class=label>
-                                          Start date and time
-                                        </td>
-                                        <td>
-                                          <table>
-                                            <tr><td><input type='text' class='date' id=codesearchUpdateStartTime-date name=codesearchUpdateStartTime-date></td>
-                                              <td><input type='text' class='date' id=codesearchUpdateStartTime-time name=codesearchUpdateStartTime-time></td>
-                                            </tr>
-                                            <tr class=eg><td>eg. 2008-12-31</td><td>10:23:34</td></tr>
-                                          </table>                                     
-                                        </td>
-                                      </tr>
-                                      <tr>
-                                        <td class=label>
-                                          Interval
-                                        </td>
-                                        <td>
-                                          <table class='noborder' id='codesearchDuration'>
-                                            <tr>
-                                              <td><input type='radio' name='codesearch-interval-group' value=10>10 minutes
-                                              </td>
-                                              <td><input type='radio' name='codesearch-interval-group' value=30>30 minutes
-                                              </td>
-                                              <td><input type='radio' name='codesearch-interval-group' value=60>1 hour
-                                              </td>
-                                              <td><input type='radio' name='codesearch-interval-group' value=720>12 hours
-                                              </td>
-                                            </tr>
-                                            <tr>
-                                              <td><input type='radio' name='codesearch-interval-group' value=1440>1 day
-                                              </td>
-                                              <td><input type='radio' name='codesearch-interval-group' value=10080>1 week
-                                              </td>
-                                              <td><input type='radio' name='codesearch-interval-group' value=43200>1 month
-                                              </td>
-                                              <td>
-                                              </td>
-                                            </tr>
-                                            <tr>
-                                              <td colspan=4>
-                                                <input type='radio' name='codesearch-interval-group'>
-                                                <span class=label>custom: </span>
-                                                <input type='text' class='text time'>
-                                                <span class=label tm='text:minuteUnit'></span>
-                                              </td>
-                                            </tr>
-                                          </table>                                          
-                                        </td>
-                                      </tr>
-                                    </table>
-                                  </td>
-                                </tr>
-                                <tr><td colspan=3><div class='sep'></div></td></tr>
-                                <tr>
-                                  <td class='label'>
-                                    Sitemap file settings
-                                  </td>
-                                  <td class='vsep'>
-                                  </td>
-                                  <td>
-                                    <table class='noborder'>
-                                      <tr>
-                                        <td colspan=2>
-                                          <input type='checkbox' id='codesearchCompress' name='codesearchCompress'>
-                                          <label for='codesearchCompress'>Compress Sitemap file</label>
-                                        </td>
-                                      </tr>
-                                      <tr>
-                                        <td colspan=2>
-                                          <span class=label tm='text:filename'></span>
-                                          <input type='text' id='codesearchFileName' name='codesearchFileName' class='filename'>
-                                          <img class='tipIcon' src='/images/qmicon.gif' tm='tip:filename'/>
-                                        </td>
-                                      </tr>
-                                      <tr>
-                                        <td>
-                                          <p class=label tm='text:maxFileUrl'></p>
-                                        </td>
-                                        <td>
-                                          <input type='text' id='codesearchMaxFileUrl' name='codesearchMaxFileUrl' class='text'>
-                                        </td>
-                                      </tr>
-                                      <tr>
-                                        <td>
-                                          <p class=label tm='text:maxFileSize'></p>
-                                        </td>
-                                        <td>
-                                          <input type='text' id='codesearchMaxFileSize' name='codesearchMaxFileSize' class='text'>
-                                          <span class=label tm='text:kiloByteUnit'>
-                                          </span>
-                                        </td>
-                                      </tr>
-                                    </table>
-                                  </td>
-                                </tr>
-                                <tr><td colspan=3><div class='sep'></div></td></tr>
-                                <tr>
-                                  <td class='label'>
-                                    Sitemap URL filter
-                                  </td>
-                                  <td class='vsep'>
-                                  </td>
-                                  <td>
-                                    <table class='noborder'>
-                                      <tr>
-                                        <td>
-                                          <span class=label>Included URL patterns</span>
-                                          <img class='tipIcon' src='/images/qmicon.gif' tm='tip:InAndExUrlPattern'/>
-                                          <a class=extlink id='codesearchInUrlEditor-s'></a>
-                                        </td>
-                                      </tr>                                      
-                                      <tr>
-                                        <td>
-                                          <table class='noborder UrlEditor' id='codesearchInUrlEditor'>
-                                            <tr>
-                                              <td><input type='text' id='codesearchInUrlEditor-input' name='codesearchInUrlEditor-input' class='urlpattern'>
-                                              <input type='button' id='codesearchInUrlEditor-add' name='codesearchInUrlEditor-add' value='Add'>
-                                              </td>
-                                            </tr>
-                                            <tr>
-                                              <td class=eg>Example: /*.html
-                                              </td>
-                                            </tr>
-                                            <tr>
-                                              <td id='codesearchInUrlEditor-area'>
-                                              </td>
-                                            </tr>
-                                          </table>
-                                        </td>
-                                      </tr>
-                                      <tr>
-                                        <td>
-                                          <span class=label>Excluded URL patterns</span>
-                                          <img class='tipIcon' src='/images/qmicon.gif' tm='tip:InAndExUrlPattern'/>
-                                          <a class=extlink id='codesearchExUrlEditor-s'></a>
-                                        </td>
-                                      </tr>                                      
-                                      <tr>
-                                        <td>
-                                          <table class='noborder UrlEditor' id='codesearchExUrlEditor'>
-                                            <tr>
-                                              <td><input type='text' id='codesearchExUrlEditor-input' name='codesearchExUrlEditor-input' class='urlpattern'>
-                                              <input type='button' id='codesearchExUrlEditor-add' name='codesearchExUrlEditor-add' value='Add'>
-                                              </td>
-                                            </tr>
-                                            <tr>
-                                              <td class=eg>Example: /robots.txt
-                                              </td>
-                                            </tr>
-                                            <tr>
-                                              <td id='codesearchExUrlEditor-area'>
-                                              </td>
-                                            </tr>
-                                          </table>
-                                        </td>
-                                      </tr>
-                                    </table>
-                                  </td>
-                                </tr>
-                              </table>
-                            </div>
-                          <!-- buttons -->     
-                          <div class='cmdbuttons'>
-                            <input type='button' class='save' id='save-7' name='save-7' tm='value:submit'>
-                            <input type='button' class='cancel' id='cnl-7' name='cnl-7' value='Cancel'>
-                            <input type='button' class='revert' id='revert-codesearch' name='revert-codesearch' value='Revert to default settings'>
-                          </div>
-                        </div>
-                      </div> 
-                      <div class='Blogsearch TabDiv hidden' id='blogsearch'>
-                        <!--blog search ping-->
-                        <div id='blogsearchSitemapBody' class='sitemapDiv'>
-                          <div class='warningbox'>
-                          	<div id='blogsearch-warning'>
-	                            <span class='warningicon'>!</span>
-	                            <span class='warningtext'>This sitemap is disabled.</span>
-	                            <a>Enable</a>
-	                          </div>
-	                          <div id='blogsearch-custom-warning'>
-	                            <span class='warningicon'>!</span>
-	                            <span class='warningtext'>This sitemap is customized.</span>
-	                          </div>
-                          </div>
-                          <!--global blog search setting-->
-                          <div class='hidden' id='blogsearchG'>
-                          </div>
-                          <!--site blog search setting-->
-                          <div class='' id='blogsearchS'>
-                          </div>
-                          <!--common blog search setting-->
-                            <div class='c650 section' id='blogsearchCommonSitemapBody'> 
-                              <table class='noborder config'>
-                                <col class='c1' /><col class='c2' /><col class='c3' />
-                                <tr>
-                                  <td class='label'>
-                                    Ping
-                                  </td>
-                                  <td class='vsep'>
-                                  </td>
-                                  <td>
-                                    <div class=label>
-                                      Interval
-                                    </div>
-                                    <table class='noborder' id='blogsearchDuration'>
-                                      <tr>
-                                        <td><input type='radio' name='blogsearch-interval-group' value=10>10 minutes
-                                        </td>
-                                        <td><input type='radio' name='blogsearch-interval-group' value=30>30 minutes
-                                        </td>
-                                        <td><input type='radio' name='blogsearch-interval-group' value=60>1 hour
-                                        </td>
-                                        <td><input type='radio' name='blogsearch-interval-group' value=720>12 hours
-                                        </td>
-                                      </tr>
-                                      <tr>
-                                        <td><input type='radio' name='blogsearch-interval-group' value=1440>1 day
-                                        </td>
-                                        <td><input type='radio' name='blogsearch-interval-group' value=10080>1 week
-                                        </td>
-                                        <td><input type='radio' name='blogsearch-interval-group' value=43200>1 month
-                                        </td>
-                                        <td>
-                                        </td>
-                                      </tr>
-                                      <tr>
-                                        <td colspan=4>
-                                          <input type='radio' name='blogsearch-interval-group'>
-                                          <span class=label>custom: </span>
-                                          <input type='text' class='text time'>
-                                          <span class=label tm='text:minuteUnit'></span>
-                                        </td>
-                                      </tr>
-                                    </table>                                          
-                                  </td>
-                                </tr>
-                                <tr><td colspan=3><div class='sep'></div></td></tr>
-                                <tr>
-                                  <td class='label'>
-                                    Sitemap URL filter
-                                  </td>
-                                  <td class='vsep'>
-                                  </td>
-                                  <td>
-                                    <table class='noborder'>
-                                      <tr>
-                                        <td>
-                                          <span class=label>Included URL patterns</span>
-                                          <img class='tipIcon' src='/images/qmicon.gif' tm='tip:InAndExUrlPattern'/>
-                                          <a class=extlink id='blogsearchInUrlEditor-s'></a>
-                                        </td>
-                                      </tr>                                      
-                                      <tr>
-                                        <td>
-                                          <table class='noborder UrlEditor' id='blogsearchInUrlEditor'>
-                                            <tr>
-                                              <td><input type='text' id='blogsearchInUrlEditor-input' name='blogsearchInUrlEditor-input' class='urlpattern'>
-                                              <input type='button' id='blogsearchInUrlEditor-add' name='blogsearchInUrlEditor-add' value='Add'>
-                                              </td>
-                                            </tr>
-                                            <tr>
-                                              <td class=eg>Example: /*.html
-                                              </td>
-                                            </tr>
-                                            <tr>
-                                              <td id='blogsearchInUrlEditor-area'>
-                                              </td>
-                                            </tr>
-                                          </table>
-                                        </td>
-                                      </tr>
-                                      <tr>
-                                        <td>
-                                          <span class=label>Excluded URL patterns</span>
-                                          <img class='tipIcon' src='/images/qmicon.gif' tm='tip:InAndExUrlPattern'/>
-                                          <a class=extlink id='blogsearchExUrlEditor-s'></a>
-                                        </td>
-                                      </tr>                                      
-                                      <tr>
-                                        <td>
-                                          <table class='noborder UrlEditor' id='blogsearchExUrlEditor'>
-                                            <tr>
-                                              <td><input type='text' id='blogsearchExUrlEditor-input' name='blogsearchExUrlEditor-input' class='urlpattern'>
-                                              <input type='button' id='blogsearchExUrlEditor-add' name='blogsearchExUrlEditor-add' value='Add'>
-                                              </td>
-                                            </tr>
-                                            <tr>
-                                              <td class=eg>Example: /robots.txt
-                                              </td>
-                                            </tr>
-                                            <tr>
-                                              <td id='blogsearchExUrlEditor-area'>
-                                              </td>
-                                            </tr>
-                                          </table>
-                                        </td>
-                                      </tr>
-                                    </table>
-                                  </td>
-                                </tr>
-                              </table>
-                            </div>
-                          <!-- buttons -->     
-                          <div class='cmdbuttons'>
-                            <input type='button' class='save' id='save-8' name='save-8' tm='value:submit'>
-                            <input type='button' class='cancel' id='cnl-8' name='cnl-8' value='Cancel'>
-                            <input type='button' class='revert' id='revert-blogsearch' name='revert-blogsearch' value='Revert to default settings'>
-                          </div>
-                        </div>
-                      </div>                   
-                    </div>
+                        <tr class='runtimeInfoBG1'>
+                          <td><span tm='t:urlInTempfile'></span></td>
+                          <td class=r><span id='urlInTempfile'></span></td>
+                        </tr>
+                        <tr class='runtimeInfoBG0'>
+                          <td><span tm='t:urlInMemory'></span></td>  
+                          <td class=r><span id='urlInMemory'></span></td>           
+                        </tr>
+                        <tr class='runtimeInfoBG1'>
+                          <td><span tm='t:hostName;i:hostName'></span></td>  
+                          <td class=r><span id='hostName' tm='i:hostName'></span></td>            
+                        </tr>
+                        <tr class='runtimeInfoBG0'>
+                          <td><span tm='t:sMem'></span></td> 
+                          <td class=r><span id='memoryUsageForSite'></span></td>
+                        </tr>
+                        <tr class='runtimeInfoBG1'>
+                          <td><span tm='t:sDisk'></span></td>   
+                          <td class=r><span id='diskUsageForSite'></span></td>
+                        </tr>
+                      </table></td></tr>
+                    </table>
+                    <a id='rt-site-s'></a>
                   </div>
+                  <div class='table-container'>
+                  <table class='status-table c700'>
+                    <col class='c1' /><col class='c2' /><col class='c3' /><col class='c4' />
+                    <tr>
+                      <th class=name><span tm='t:collector'></span>
+                      </th>
+                      <th><span tm='t:statTitle'></span>
+                      </th><th></th>
+                      <th><a id='rt-crawlers-s'></a>
+                      </th>
+                    </tr>
+                    <tr>
+                      <td class=name><span tm='t:wf'></span>
+                      </td>
+                      <td id='wf-status'>
+                      </td><td></td>
+                      <td><a id='rt-wf-s'></a>
+                      </td>
+                    </tr>
+                    <tr><td colspan=4 class=detail><table id='rt-wf' class='noborder'>
+                      <tr class='runtimeInfoBG0'>
+                        <td><span tm='t:srcInfoUrls'></span></td>  
+                        <td class=r><span id='webServerFilterInfoUrls'></span></td>           
+                      </tr>
+                    </table></td></tr>
+                    <tr>
+                      <td class=name><span tm='t:lp'></span>
+                      </td>
+                      <td id=logParserInfoStat>
+                      </td><td></td>
+                      <td><a id='rt-lp-s'></a>
+                      </td>
+                    </tr>
+                    <tr><td colspan=4 class=detail><table id='rt-lp' class='noborder'>
+                      <tr class='runtimeInfoBG1'>
+                        <td><span tm='t:lpInfoTime'></span></td>  
+                        <td class=r><span id='logParserInfoTime'></span></td>           
+                      </tr>
+                      <tr class='runtimeInfoBG0'>
+                        <td><span tm='t:srcInfoUrls'></span></td>  
+                        <td class=r><span id='logParserInfoUrls'></span></td>           
+                      </tr>
+                    </table></td></tr>
+                    <tr>
+                      <td class=name><span tm='t:fs'></span>
+                      </td>
+                      <td id='fileScannerInfoStat'>
+                      </td><td></td>
+                      <td><a id=rt-fs-s></a>
+                      </td>
+                    </tr>
+                    <tr><td colspan=4 class=detail><table id='rt-fs' class='noborder'>
+                      <tr class='runtimeInfoBG1'>
+                        <td><span tm='t:fsInfoTime'></span></td>  
+                        <td class=r><span id='fileScannerInfoTime'></span></td>           
+                      </tr>
+                      <tr class='runtimeInfoBG0'>
+                        <td><span tm='t:srcInfoUrls'></span></td>  
+                        <td class=r><span id='fileScannerInfoUrls'></span></td>           
+                      </tr>
+                    </table></td></tr>
+                  </table>
+                  </div>
+                  <div class='table-container'>
+                  <table class='status-table c700'>
+                    <col class='c1' /><col class='c2' /><col class='c3' span=2 /><col class='c4' />
+                    <tr>
+                      <th class=name><span tm='t:sc'></span>
+                      </th>
+                      <th><span tm='t:statTitle'></span>
+                      </th>
+                      <th><span tm='t:urlInSitemap'></span>
+                      </th>
+                      <th><span tm='t:setting'></span>
+                      </th>
+                      <th><a id='rt-sitemaps-s'></a>
+                      </th>
+                    </tr>
+                    <tr>
+                      <td class=name><span tm='t:web'></span>
+                      </td>
+                      <td id='webSitemapInfoStat'>
+                      </td>
+                      <td id='webSitemapInfoUrls-s'>
+                      </td>
+                      <td><a sitemap='web' tm='t:edit'></a>
+                      </td>
+                      <td><a id=rt-web-s></a>
+                      </td>
+                    </tr>
+                    <tr><td colspan=5 class=detail><table id='rt-web' class='noborder'>
+                      <tr class='runtimeInfoBG1'>
+                        <td><span tm='t:smInfoTime'></span></td>  
+                        <td class=r><span id='webSitemapInfoTime'></span></td>           
+                      </tr>
+                      <tr class='runtimeInfoBG0'>
+                        <td><span tm='t:smInfoUrls'></span></td>  
+                        <td class=r><span id='webSitemapInfoUrls'></span></td>           
+                      </tr>
+                    </table></td></tr>
+                    <tr>
+                      <td class=name><span tm='t:mobile'></span>
+                      </td>
+                      <td id=mobileSitemapInfoStat>
+                      </td>
+                      <td id=mobileSitemapInfoUrls-s>
+                      </td>
+                      <td><a sitemap='mobile' tm='t:edit'></a>
+                      </td>
+                      <td><a id=rt-mobile-s></a>
+                      </td>
+                    </tr>
+                    <tr><td colspan=5 class=detail><table id='rt-mobile' class='noborder'>
+                      <tr class='runtimeInfoBG1'>
+                        <td><span tm='t:smInfoTime'></span></td>  
+                        <td class=r><span id='mobileSitemapInfoTime'></span></td>           
+                      </tr>
+                      <tr class='runtimeInfoBG0'>
+                        <td><span tm='t:smInfoUrls'></span></td>  
+                        <td class=r><span id='mobileSitemapInfoUrls'></span></td>           
+                      </tr>
+                    </table></td></tr>
+                    <tr>
+                      <td class=name><span tm='t:csrch'></span>
+                      </td>
+                      <td id=codesearchSitemapInfoStat>
+                      </td>
+                      <td id=codesearchSitemapInfoUrls-s>
+                      </td>
+                      <td><a sitemap='codesearch' tm='t:edit'></a>
+                      </td>
+                      <td><a id=rt-codesearch-s></a>
+                      </td>
+                    </tr>
+                    <tr><td colspan=5 class=detail><table id='rt-codesearch' class='noborder'>
+                      <tr class='runtimeInfoBG1'>
+                        <td><span tm='t:smInfoTime'></span></td>  
+                        <td class=r><span id='codesearchSitemapInfoTime'></span></td>           
+                      </tr>
+                      <tr class='runtimeInfoBG0'>
+                        <td><span tm='t:smInfoUrls'></span></td>  
+                        <td class=r><span id='codesearchSitemapInfoUrls'></span></td>           
+                      </tr>
+                    </table></td></tr>
+                    <tr>
+                      <td class=name><span tm='t:bsrch'></span>
+                      </td>
+                      <td id=blogsearchSitemapInfoStat>
+                      </td>
+                      <td>--
+                      </td>
+                      <td><a sitemap='blogsearch' tm='t:edit'></a>
+                      </td>
+                      <td><a id=rt-blogsearch-s></a>
+                      </td>
+                    </tr>
+                    <tr><td colspan=5 class=detail><table id='rt-blogsearch' class='noborder'>
+                      <tr class='runtimeInfoBG1'>
+                        <td><span tm='t:pingTime'></span></td>  
+                        <td class=r><span id='blogsearchSitemapServiceInfoLastPing'></span></td>           
+                      </tr>
+                      <tr class='runtimeInfoBG0'>
+                        <td><span tm='t:pingUrl'></span></td>  
+                        <td class=r><span id='blogsearchSitemapServiceInfoLastUrl'></span></td>           
+                      </tr>
+                    </table></td></tr>
+                    <tr style='display:none'>
+                      <td class=name><span tm='t:news'></span>
+                      </td>
+                      <td id=newsSitemapInfoStat>
+                      </td>
+                      <td id=newsSitemapInfoUrls-s>
+                      </td>
+                      <td><a sitemap='news' tm='t:edit'></a>
+                      </td>
+                      <td><a id=rt-news-s></a>
+                      </td>
+                    </tr>
+                    <tr style='display:none'><td colspan=5 class=detail><table id='rt-news' class='noborder'>
+                      <tr class='runtimeInfoBG1'>
+                        <td><span tm='t:smInfoTime'></span></td>  
+                        <td class=r><span id='newsSitemapInfoTime'></span></td>           
+                      </tr>
+                      <tr class='runtimeInfoBG0'>
+                        <td><span tm='t:smInfoUrls'></span></td>  
+                        <td class=r><span id='newsSitemapInfoUrls'></span></td>           
+                      </tr>
+                    </table></td></tr>
+                  </table>
+                  </div>
+            		</div>
+							</div>
+							<div class='Settings TabDiv hidden' id='Settings'>
+                <div class='warningbox' id='site-custom-warning'>
+                  <span class='warningtext' tm='t:sCustomWarn'></span>
+                </div>
+                <!--global general setting-->
+                <div class='hidden' id='SitesG'>
+                </div>
+                <!--site general setting-->
+                <div class='section c650' id='SitesS'>
+                  <table class='noborder config'>
+                    <col class='c1' /><col class='c2' /><col class='c3' />
+                    <tr>
+                      <td rowspan=2 class=label><p tm='t:host'></p></td>
+                      <td></td>
+                      <td>http:// <input type='text' id='host' name='host' class='host'><img class='tipIcon' src='/images/qmicon.gif' tm='i:hostName'/></td>
+                    </tr>
+                    <tr class=eg><td></td><td><span tm='t:ex'></span> http://www.google.com</td></tr>
+                    <tr>
+                      <td rowspan=2 class=label><p tm='t:logPath'></p></td>
+                      <td></td>
+                      <td><input type='text' id='logPath' name='logPath' class='path'></td>
+                    </tr>                       
+                    <tr class=eg><td></td><td><span tm='t:ex'></span> c:\IIS\log</td></tr>
+                  </table>
+                  <div class='sep'></div>
+                </div>
+                        
+                
+                  <!--common general setting-->
+                  <div class='section c650' id='generalCommonSitemapBody'>
+                    <table class='noborder config'>
+                      <col class='c1' /><col class='c2' /><col class='c3' />
+                      <tr>
+                        <td class='label'>
+                          <span tm='t:rsLim'></span>
+                        </td>
+                        <td>
+                        </td>
+                        <td>
+                          <table class='noborder'>
+                            <tr>
+                              <td colspan=2>
+                                <span class=label2 tm='t:maxUrlLife'>
+                                </span>
+                                <input type='text' class=inline id='maxUrlLifeInDays' name='maxUrlLifeInDays'>
+                                <span class=label2 tm='t:ddUnit'>
+                                </span>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <span class=label2 tm='t:muMem'></span>
+															</td>
+															<td>
+																<input type='text' class=inline id='maxSiteUrlInMemory' name='maxSiteUrlInMemory'>
+															</td>
+                            </tr>
+                            <tr>
+                            	<td></td>
+                            	<td class=eg>
+                            		<span tm='t:spaceEst'></span>
+                                <span id='maxSiteUrlInMemoryEqualSize'>
+                                </span>
+                              </td>
+                            </tr>
+                            <tr><td><div class=space></div></td></tr>
+                            <tr>
+                              <td>
+                                <span class=label2 tm='t:muDisk'></span>
+															</td>
+															<td>
+																<input type='text' class=inline id='maxUrlInDisk' name='maxUrlInDisk'>
+															</td>
+                            </tr>
+                            <tr>
+                            	<td></td>
+                            	<td class=eg>
+                            		<span tm='t:spaceEst'></span>
+                                <span id='maxUrlInDiskEqualSize'>
+                                </span>
+                              </td>
+                            </tr>
+                          </table>
+                        </td>
+                      </tr>
+                      <tr><td colspan=3><div class='sep'></div></td></tr>
+                      <tr>
+                        <td class='label'>
+                          URL collectors
+                        </td>
+                        <td>
+                        </td>
+                        <td>
+                          <table class='noborder url-crawlers'>
+                            <col class='c1' /><col class='c2' /><col class='c3' />
+                            <tr>
+                              <td>
+                                <input type='checkbox' id='wf-enable' name='wf-enable'>
+                                <span class=label2 tm='t:wf'></span>
+                              </td>
+                              <td></td>
+                              <td></td>
+                            </tr>
+                            <tr>
+                              <td><input type='checkbox' id='fs-enable' name='fs-enable'>
+                                <span class=label2 tm='t:fs'></span>
+                              </td>
+                              <td></td>
+                              <td id='fs-duration-area'>
+                                <span>
+                                <span class=label2 tm='t:duration'></span>
+                                <input type='text' class=inline id='fs-duration' name='fs-duration' class='time'>
+                                <span class=label2 tm='t:mmUnit'></span>
+                                </span>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td><input type='checkbox' id='lp-enable' name='lp-enable'>
+                                <span class=label2 tm='t:lp'></span>
+                              </td>
+                              <td></td>
+                              <td id='lp-duration-area'>
+                                <span>
+                                <span class=label2 tm='t:duration'></span>
+                                <input type='text' class=inline id='lp-duration' name='lp-duration' class='time'>
+                                <span class=label2 tm='t:mmUnit'></span>
+                                </span>
+                              </td>
+                            </tr>
+                          </table>
+                        </td>
+                      </tr>
+                      <tr><td colspan=3><div class='sep'></div></td></tr>
+                      <tr>
+                        <td class='label'>
+                          <span tm='t:qField'></span>
+                        </td>
+                        <td>
+                        </td>
+                        <td>
+                          <table class='noborder' id='queryFieldEditor'>
+                            <tr>
+                              <td>
+                                <p tm='t:qFieldGuide'>
+                                </p>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <input type='text' id='queryFieldEditor-input' name='queryFieldEditor-input'>
+                                <input type='button' tm='v:add' id='queryFieldEditor-add' name='queryFieldEditor-add'>
+                              </td>
+                            </tr>
+                            <tr><td><p class=eg><span tm='t:ex'></span> <span tm='t:exQueryField'></span></p>
+                                      <a class='extlink hidden' id='queryFieldEditor-s'></a></td></tr>
+                            <tr>
+                              <td id='queryFieldEditor-area'>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <p class=notes tm='t:privacyNote'>
+                                </p>
+                              </td>
+                            </tr>
+                          </table>
+                        </td>
+                      </tr>
+                      <tr><td colspan=3><div class='sep'></div></td></tr>
+                      <tr>
+                        <td class='label'>
+                          <span tm='t:smTypes'></span>
+                        </td>
+                        <td>
+                        </td>
+                        <td>
+                          <table class='sitemaps-table' id='regSitemaps'>
+                            <col class='c1' /><col class='c2' /><col class='c3' /><col class='c4' />
+                            <tr>
+                              <th class=name><span tm='t:smType'></span>
+                              </th>
+                              <th class='sitemap-enable'><span tm='t:enable'></span><img class='tipIcon' src='/images/qmicon.gif' tm='i:sitemapEnabled'/>
+                              </th>
+                              <th class='sitemap-customize'><span tm='t:settingStat'></span>
+                              </th>
+                              <th>
+                              </th>
+                            </tr>
+                            <tr>
+                              <td class=name><span tm='t:web'></span>
+                              </td>
+                              <td class='sitemap-enable'>
+                              	<input type='checkbox' id='web-enable' name='web-enable'>
+                              </td>
+                              <td id='web-customize'>
+                              </td>
+                              <td><a sitemap='web' tm='t:edit'></a>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td class=name><span tm='t:mobile'></span>
+                              </td>
+                              <td class='sitemap-enable'>
+                              	<input type='checkbox' id='mobile-enable' name='mobile-enable'>
+                              </td>
+                              <td id='mobile-customize'>
+                              </td>
+                              <td><a sitemap='mobile' tm='t:edit'></a>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td class=name><span tm='t:csrch'></span>
+                              </td>
+                              <td class='sitemap-enable'>
+                              	<input type='checkbox' id='codesearch-enable' name='codesearch-enable'>
+                              </td>
+                              <td id='codesearch-customize'>
+                              </td>
+                              <td><a sitemap='codesearch' tm='t:edit'></a>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td class=name><span tm='t:bsrch'></span>
+                              </td>
+                              <td class='sitemap-enable'>
+                              	<input type='checkbox' id='blogsearch-enable' name='blogsearch-enable'>
+                              </td>
+                              <td id='blogsearch-customize'>
+                              </td>
+                              <td><a sitemap='blogsearch' tm='t:edit'></a>
+                              </td>
+                            </tr>
+                            <tr style='display:none'>
+                              <td class=name><span tm='t:news'></span>
+                              </td>
+                              <td class='sitemap-enable'>
+                              	<input type='checkbox' id='news-enable' name='news-enable'>
+                              </td>
+                              <td id='news-customize'>
+                              </td>
+                              <td><a sitemap='news' tm='t:edit'></a>
+                              </td>
+                            </tr>
+                          </table>
+                        </td>
+                      </tr>
+                    </table>
+                  </div>
+                <!-- buttons -->     
+                <div class='cmdbuttons'>
+                  <input type='button' class='save' id='save-3' name='save-3' tm='v:submit'>
+                  <input type='button' class='cancel' id='cnl-3' name='cnl-3' tm='v:cancel'>
+                  <input type='button' class='revert' id='revert-site' name='revert-site' tm='v:revert'>
+                </div>
+              </div>      
+              <div class='Sitemaps TabDiv hidden' id='Sitemaps'>
+                <div class='SitemapContent'>       
+                  <div class='Web TabDiv hidden' id='web'>
+                    <!--web sitemap-->
+                    <div class='sitemapDiv' id='webSitemapBody'>
+                      <div class='warningbox'>
+                      	<div id='web-warning'>
+                          <span class='warningtext' tm='t:smDisable'></span>
+                          <a tm='t:enable'></a>
+                        </div>
+                        <div id='web-custom-warning'>
+                          <span class='warningtext' tm='t:smCustom'></span>
+                        </div>
+                        <div id='web-nourl-include'>
+                          <span class='warningtext' tm='t:smNoUrl'></span>
+                        </div>
+											</div>
+                      <!--global web setting-->
+                      <div class='hidden' id='webG'>
+                      </div>
+                      <!--site web setting-->
+                      <div class='' id='webS'>
+                      </div>
+                      <!--common web setting-->
+                        <div class='c650 section' id='webCommonSitemapBody'> 
+                          <table class='noborder config'>
+                            <col class='c1' /><col class='c2' /><col class='c3' />
+                            <tr>
+                              <td class='label'>
+                                <span tm='t:update'></span>
+                              </td>
+                              <td class='vsep'>
+                              </td>
+                              <td>
+                                <table class='noborder'>
+                                  <tr>
+                                    <td class=label2>
+                                      <span tm='t:startTime'></span>
+                                    </td>
+                                    <td>
+                                      <table>
+                                        <tr><td><input type='text' class='date' id=webUpdateStartTime-date name=webUpdateStartTime-date></td>
+                                          <td><input type='text' class='date' id=webUpdateStartTime-time name=webUpdateStartTime-time></td>
+                                        </tr>
+                                        <tr><td class=eg><span tm='t:ex'></span> 2008-12-31</td><td class=eg>10:23:34</td></tr>
+                                      </table>
+                                    </td>
+                                  </tr>
+                                  <tr>
+                                    <td class=label2>
+                                      <span tm='t:interval'></span>
+                                    </td>
+                                    <td>
+                                      <table class='noborder' id=webDuration>
+                                        <tr>
+                                          <td><input type='radio' name='web-interval-group' value=10>10 <span tm='t:mmUnit'></span>
+                                          </td>
+                                          <td><input type='radio' name='web-interval-group' value=30>30 <span tm='t:mmUnit'></span>
+                                          </td>
+                                          <td><input type='radio' name='web-interval-group' value=60>1 <span tm='t:hUnit'></span>
+                                          </td>
+                                          <td><input type='radio' name='web-interval-group' value=720>12 <span tm='t:hhUnit'></span>
+                                          </td>
+                                        </tr>
+                                        <tr>
+                                          <td><input type='radio' name='web-interval-group' value=1440>1 <span tm='t:dUnit'></span>
+                                          </td>
+                                          <td><input type='radio' name='web-interval-group' value=10080>1 <span tm='t:wUnit'></span>
+                                          </td>
+                                          <td><input type='radio' name='web-interval-group' value=43200>1 <span tm='t:monUnit'></span>
+                                          </td>
+                                          <td>
+                                          </td>
+                                        </tr>
+                                        <tr>
+                                          <td colspan=4>
+                                            <input type='radio' name='web-interval-group'>
+                                            <label for=web-interval-group><span class=label2 tm='t:custom'></span></label>
+                                            <input type='text' class='text time inline'>
+                                            <span class=label2 tm='t:mmUnit'></span>
+                                          </td>
+                                        </tr>
+                                      </table>                                          
+                                    </td>
+                                  </tr>
+                                </table>
+                              </td>
+                            </tr>
+                            <tr><td colspan=3><div class='sep'></div></td></tr>
+                            <tr>
+                              <td class='label'>
+                                <span tm='t:smFile'></span>
+                              </td>
+                              <td class='vsep'>
+                              </td>
+                              <td>
+                                <table class='noborder'>
+                                  <tr>
+                                    <td colspan=2>
+                                      <input type='checkbox' id='webCompress' name='webCompress'>
+                                      <label for='webCompress'><span tm='t:smFileCompress'></span></label>
+                                    </td>
+                                  </tr>
+                                  <tr>
+                                    <td>
+                                      <span class=label2 tm='t:filename'></span>
+                                    </td>
+                                    <td>
+                                      <input type='text' id='webFileName' name='webFileName' class='filename inline'>
+                                      <img class='tipIcon' src='/images/qmicon.gif' tm='i:filename'/>
+                                    </td>
+                                  </tr>
+                                  <tr>
+                                    <td>
+                                      <p class=label2 tm='t:maxFileUrl'></p>
+                                    </td>
+                                    <td>
+                                      <input type='text' id='webMaxFileUrl' name='webMaxFileUrl' class='text inline'>
+                                    </td>
+                                  </tr>
+                                  <tr>
+                                    <td>
+                                      <p class=label2 tm='t:maxFileSize'></p>
+                                    </td>
+                                    <td>
+                                      <input type='text' id='webMaxFileSize' name='webMaxFileSize' class='text inline'>
+                                      <span class=label2 tm='t:kiloByteUnit'>
+                                      </span>
+                                    </td>
+                                  </tr>
+                                </table>
+                              </td>
+                            </tr>
+                            <tr><td colspan=3><div class='sep'></div></td></tr>
+                            <tr>
+                              <td class='label'>
+                                <span tm='t:smSubmit'></span>
+                              </td>
+                              <td class='vsep'>
+                              </td>
+                              <td>
+                                <table class='noborder'>
+                                  <tr>
+                                    <td>
+                                      <input type='checkbox' id='robotsIncluded' name='robotsIncluded'>
+                                      <label for='robotsIncluded'>
+                                        <span tm='t:robotsIncluded'></span>
+                                      </label>
+                                    </td>
+                                  </tr>
+                                  <tr>
+                                    <td>
+                                      <span class=label2 tm='t:notifyUrl'></span>
+                                      <img class='tipIcon' src='/images/qmicon.gif' tm='i:NotifyUrl'/>
+                                      <a class=extlink id='webNotifyUrlEditor-s'></a>
+                                    </td>
+                                  </tr>                                      
+                                  <tr>
+                                    <td>
+                                      <table class='noborder UrlEditor' id='webNotifyUrlEditor'>
+                                        <tr>
+                                          <td><input type='text' id='webNotifyUrlEditor-input' name='webNotifyUrlEditor-input' class='urlpattern'>
+                                          <input type='button' id='webNotifyUrlEditor-add' name='webNotifyUrlEditor-add' tm='v:add'>
+                                          </td>
+                                        </tr>
+                                        <tr>
+                                          <td class=eg><span tm='t:ex'></span> http://www.google.com/webmasters/sitemaps/ping?sitemap=
+                                          </td>
+                                        </tr>
+                                        <tr><td></td></tr>
+                                        <tr>
+                                          <td id='webNotifyUrlEditor-area'>
+                                          </td>
+                                        </tr>
+                                      </table>
+                                    </td>
+                                  </tr>
+                                </table>
+                              </td>
+                            </tr>
+                            <tr><td colspan=3><div class='sep'></div></td></tr>
+                            <tr>
+                              <td class='label'>
+                                <span tm='t:smUrlFilter'></span>
+                              </td>
+                              <td class='vsep'>
+                              </td>
+                              <td>
+                                <table class='noborder'>
+                                  <tr>
+                                    <td>
+                                      <span class=label2 tm='t:inUrlPattern'></span>
+                                      <img class='tipIcon' src='/images/qmicon.gif' tm='i:InAndExUrlPattern'/>
+                                      <a class=extlink id='webInUrlEditor-s'></a>
+                                    </td>
+                                  </tr>                                      
+                                  <tr>
+                                    <td>
+                                      <table class='noborder UrlEditor' id='webInUrlEditor'>
+                                        <tr>
+                                          <td><input type='text' id='webInUrlEditor-input' name='webInUrlEditor-input' class='urlpattern'>
+                                          <input type='button' id='webInUrlEditor-add' name='webInUrlEditor-add' tm='v:add'>
+                                          </td>
+                                        </tr>
+                                        <tr><td class=eg><span tm='t:ex'></span> /*.html</td></tr>
+                                        <tr>
+                                          <td id='webInUrlEditor-area'>
+                                          </td>
+                                        </tr>
+                                      </table>
+                                    </td>
+                                  </tr>
+                                  <tr>
+                                    <td>
+                                      <span class=label2 tm='t:exUrlPattern'></span>
+                                      <img class='tipIcon' src='/images/qmicon.gif' tm='i:InAndExUrlPattern'/>
+                                      <a class=extlink id='webExUrlEditor-s'></a>
+                                    </td>
+                                  </tr>                                      
+                                  <tr>
+                                    <td>
+                                      <table class='noborder UrlEditor' id='webExUrlEditor'>
+                                        <tr>
+                                          <td><input type='text' id='webExUrlEditor-input' name='webExUrlEditor-input' class='urlpattern'>
+                                          <input type='button' id='webExUrlEditor-add' name='webExUrlEditor-add' tm='v:add'>
+                                          </td>
+                                        </tr>
+                                        <tr>
+                                          <td class=eg><span tm='t:ex'></span> /robots.txt
+                                          </td>
+                                        </tr>
+                                        <tr>
+                                          <td id='webExUrlEditor-area'>
+                                          </td>
+                                        </tr>
+                                      </table>
+                                    </td>
+                                  </tr>
+                                </table>
+                              </td>
+                            </tr>
+                          </table>
+                        </div>
+                      <!-- buttons -->     
+                      <div class='cmdbuttons'>
+                        <input type='button' class='save' id='save-4' name='save-4' tm='v:submit'>
+                        <input type='button' class='cancel' id='cnl-4' name='cnl-4' tm='v:cancel'>
+                        <input type='button' class='revert' id='revert-web' name='revert-web' tm='v:revert'>
+                      </div>
+                    </div> 
+                  </div>
+                  <div class='News TabDiv hidden' id='news'>
+                    <!--news sitemap-->
+                    <div id='newsSitemapBody' class='sitemapDiv'>
+                      <div class='warningbox'>
+                      	<div id='news-warning'>
+                          <span class='warningtext' tm='t:smDisable'></span>
+                          <a tm='t:enable'></a>
+                        </div>
+                        <div id='news-custom-warning'>
+                          <span class='warningtext' tm='t:smCustom'></span>
+                        </div>
+                        <div id='news-nourl-include'>
+                          <span class='warningtext' tm='t:smNoUrl'></span>
+                        </div>
+                      </div>
+                      <!--global news setting-->
+                      <div class='hidden' id='newsG'>
+                      </div>
+                      <!--site news setting-->
+                      <div class='' id='newsS'>
+                      </div>
+                      <!--common news setting-->
+                        <div class='c650 section' id='newsCommonSitemapBody'> 
+                          <table class='noborder config'>
+                            <col class='c1' /><col class='c2' /><col class='c3' />
+                            <tr>
+                              <td class='label'>
+                                <span tm='t:update'></span>
+                              </td>
+                              <td class='vsep'>
+                              </td>
+                              <td>
+                                <table class='noborder'>
+                                  <tr>
+                                    <td class=label2>
+                                      <span tm='t:startTime'></span>
+                                    </td>
+                                    <td>
+                                      <table>
+                                        <tr><td><input type='text' class='date' id=newsUpdateStartTime-date name=newsUpdateStartTime-date></td>
+                                          <td><input type='text' class='date' id=newsUpdateStartTime-time name=newsUpdateStartTime-time></td>
+                                        </tr>
+                                        <tr><td class=eg><span tm='t:ex'></span> 2008-12-31</td><td class=eg>10:23:34</td></tr>
+                                      </table>                                      
+                                    </td>
+                                  </tr>
+                                  <tr>
+                                    <td class=label2>
+                                      <span tm='t:interval'></span>
+                                    </td>
+                                    <td>
+                                      <table class='noborder' id='newsDuration'>
+                                        <tr>
+                                          <td><input type='radio' name='news-interval-group' value=10>10 <span tm='t:mmUnit'></span>
+                                          </td>
+                                          <td><input type='radio' name='news-interval-group' value=30>30 <span tm='t:mmUnit'></span>
+                                          </td>
+                                          <td><input type='radio' name='news-interval-group' value=60>1 <span tm='t:hUnit'></span>
+                                          </td>
+                                          <td><input type='radio' name='news-interval-group' value=720>12 <span tm='t:hhUnit'></span>
+                                          </td>
+                                        </tr>
+                                        <tr>
+                                          <td><input type='radio' name='news-interval-group' value=1440>1 <span tm='t:dUnit'></span>
+                                          </td>
+                                          <td><input type='radio' name='news-interval-group' value=10080>1 <span tm='t:wUnit'></span>
+                                          </td>
+                                          <td><input type='radio' name='news-interval-group' value=43200>1 <span tm='t:monUnit'></span>
+                                          </td>
+                                          <td>
+                                          </td>
+                                        </tr>
+                                        <tr>
+                                          <td colspan=4>
+                                            <input type='radio' name='news-interval-group'>
+                                            <span class=label2 tm='t:custom'></span>
+                                            <input type='text' class='text time inline'>
+                                            <span class=label2 tm='t:mmUnit'></span>
+                                          </td>
+                                        </tr>
+                                      </table>                                          
+                                    </td>
+                                  </tr>
+                                </table>
+                              </td>
+                            </tr>
+                            <tr><td colspan=3><div class='sep'></div></td></tr>
+                            <tr>
+                              <td class='label'>
+                                <span tm='t:smFile'></span>
+                              </td>
+                              <td class='vsep'>
+                              </td>
+                              <td>
+                                <table class='noborder'>
+                                  <tr>
+                                    <td colspan=2>
+                                      <input type='checkbox' id='newsCompress' name='newsCompress'>
+                                      <label for='newsCompress'><span tm='t:smFileCompress'></span></label>
+                                    </td>
+                                  </tr>
+                                  <tr>
+                                    <td>
+                                      <span class=label2 tm='t:filename'></span>
+                                    </td>
+                                    <td>
+                                      <input type='text' id='newsFileName' name='newsFileName' class='filename inline'>
+                                      <img class='tipIcon' src='/images/qmicon.gif' tm='i:filename'/>
+                                    </td>
+                                  </tr>
+                                  <tr>
+                                    <td>
+                                      <p class=label2 tm='t:maxFileUrl'></p>
+                                    </td>
+                                    <td>
+                                      <input type='text' id='newsMaxFileUrl' name='newsMaxFileUrl' class='text inline'>
+                                    </td>
+                                  </tr>
+                                  <tr>
+                                    <td>
+                                      <p class=label2 tm='t:maxFileSize'></p>
+                                    </td>
+                                    <td>
+                                      <input type='text' id='newsMaxFileSize' name='newsMaxFileSize' class='text inline'>
+                                      <span class=label2 tm='t:kiloByteUnit'>
+                                      </span>
+                                    </td>
+                                  </tr>
+                                </table>
+                              </td>
+                            </tr>
+                            <tr><td colspan=3><div class='sep'></div></td></tr>
+                            <tr>
+                              <td class='label'>
+                                <span tm='t:smUrlFilter'></span>
+                              </td>
+                              <td class='vsep'>
+                              </td>
+                              <td>
+                                <table class='noborder'>
+                                  <tr>
+                                    <td>
+                                      <span class=label2 tm='t:newsExpireDuration'></span>
+                                      <input type='text' id='newsExpireDuration' name='newsExpireDuration' class='text time inline'>
+                                      <span class=label2 tm='t:mmUnit'></span>
+                                    </td>
+                                  </tr>
+                                  <tr>
+                                    <td>
+                                      <span class=label2 tm='t:inUrlPattern'></span>
+                                      <img class='tipIcon' src='/images/qmicon.gif' tm='i:InAndExUrlPattern'/>
+                                      <a class=extlink id='newsInUrlEditor-s'></a>
+                                    </td>
+                                  </tr>                                      
+                                  <tr>
+                                    <td>
+                                      <table class='noborder UrlEditor' id='newsInUrlEditor'>
+                                        <tr>
+                                          <td><input type='text' id='newsInUrlEditor-input' name='newsInUrlEditor-input' class='urlpattern'>
+                                          <input type='button' id='newsInUrlEditor-add' name='newsInUrlEditor-add' tm='v:add'>
+                                          </td>
+                                        </tr>
+                                        <tr>
+                                          <td class=eg><span tm='t:ex'></span> /*.html
+                                          </td>
+                                        </tr>
+                                        <tr>
+                                          <td id='newsInUrlEditor-area'>
+                                          </td>
+                                        </tr>
+                                      </table>
+                                    </td>
+                                  </tr>
+                                  <tr>
+                                    <td>
+                                      <span class=label2 tm='t:exUrlPattern'></span>
+                                      <img class='tipIcon' src='/images/qmicon.gif' tm='i:InAndExUrlPattern'/>
+                                      <a class=extlink id='newsExUrlEditor-s'></a>
+                                    </td>
+                                  </tr>                                      
+                                  <tr>
+                                    <td>
+                                      <table class='noborder UrlEditor' id='newsExUrlEditor'>
+                                        <tr>
+                                          <td><input type='text' id='newsExUrlEditor-input' name='newsExUrlEditor-input' class='urlpattern'>
+                                          <input type='button' id='newsExUrlEditor-add' name='newsExUrlEditor-add' tm='v:add'>
+                                          </td>
+                                        </tr>
+                                        <tr>
+                                          <td class=eg><span tm='t:ex'></span> /robots.txt
+                                          </td>
+                                        </tr>
+                                        <tr>
+                                          <td id='newsExUrlEditor-area'>
+                                          </td>
+                                        </tr>
+                                      </table>
+                                    </td>
+                                  </tr>
+                                </table>
+                              </td>
+                            </tr>
+                          </table>
+                        </div>
+                      
+                      <!-- buttons -->     
+                      <div class='cmdbuttons'>
+                        <input type='button' class='save' id='save-5' name='save-5' tm='v:submit'>
+                        <input type='button' class='cancel' id='cnl-5' name='cnl-5' tm='v:cancel'>
+                        <input type='button' class='revert' id='revert-news' name='revert-news' tm='v:revert'>
+                      </div>
+                    </div>
+                  </div> 
+                  <div class='Mobile TabDiv hidden' id='mobile'>
+                    <!--mobile sitemap-->
+                    <div id='mobileSitemapBody' class='sitemapDiv'>
+                      <div class='warningbox'>
+                      	<div id='mobile-warning'>
+                          <span class='warningtext' tm='t:smDisable'></span>
+                          <a tm='t:enable'></a>
+                        </div>
+                        <div id='mobile-custom-warning'>
+                          <span class='warningtext' tm='t:smCustom'></span>
+                        </div>
+                        <div id='mobile-nourl-include'>
+                          <span class='warningtext' tm='t:smNoUrl'></span>
+                        </div>
+                      </div>
+                      <!--global mobile setting-->
+                      <div class='hidden' id='mobileG'>
+                      </div>
+                      <!--site mobile setting-->
+                      <div class='' id='mobileS'>
+                      </div>
+                      <!--common mobile setting-->
+                        <div class='c650 section' id='mobileCommonSitemapBody'> 
+                          <table class='noborder config'>
+                            <col class='c1' /><col class='c2' /><col class='c3' />
+                            <tr>
+                              <td class='label'>
+                                <span tm='t:update'></span>
+                              </td>
+                              <td class='vsep'>
+                              </td>
+                              <td>
+                                <table class='noborder'>
+                                  <tr>
+                                    <td class=label2>
+                                      <span tm='t:startTime'></span>
+                                    </td>
+                                    <td>
+                                      <table>
+                                        <tr><td><input type='text' class='date' id=mobileUpdateStartTime-date name=mobileUpdateStartTime-date></td>
+                                          <td><input type='text' class='date' id=mobileUpdateStartTime-time name=mobileUpdateStartTime-time></td>
+                                        </tr>
+                                        <tr><td class=eg><span tm='t:ex'></span> 2008-12-31</td><td class=eg>10:23:34</td></tr>
+                                      </table>                                        
+                                    </td>
+                                  </tr>
+                                  <tr>
+                                    <td class=label2>
+                                      <span tm='t:interval'></span>
+                                    </td>
+                                    <td>
+                                      <table class='noborder' id='mobileDuration'>
+                                        <tr>
+                                          <td><input type='radio' name='mobile-interval-group' value=10>10 <span tm='t:mmUnit'></span>
+                                          </td>
+                                          <td><input type='radio' name='mobile-interval-group' value=30>30 <span tm='t:mmUnit'></span>
+                                          </td>
+                                          <td><input type='radio' name='mobile-interval-group' value=60>1 <span tm='t:hUnit'></span>
+                                          </td>
+                                          <td><input type='radio' name='mobile-interval-group' value=720>12 <span tm='t:hhUnit'></span>
+                                          </td>
+                                        </tr>
+                                        <tr>
+                                          <td><input type='radio' name='mobile-interval-group' value=1440>1 <span tm='t:dUnit'></span>
+                                          </td>
+                                          <td><input type='radio' name='mobile-interval-group' value=10080>1 <span tm='t:wUnit'></span>
+                                          </td>
+                                          <td><input type='radio' name='mobile-interval-group' value=43200>1 <span tm='t:monUnit'></span>
+                                          </td>
+                                          <td>
+                                          </td>
+                                        </tr>
+                                        <tr>
+                                          <td colspan=4>
+                                            <input type='radio' name='mobile-interval-group'>
+                                            <span class=label2 tm='t:custom'></span>
+                                            <input type='text' class='text time inline'>
+                                            <span class=label2 tm='t:mmUnit'></span>
+                                          </td>
+                                        </tr>
+                                      </table>                                          
+                                    </td>
+                                  </tr>
+                                </table>
+                              </td>
+                            </tr>
+                            <tr><td colspan=3><div class='sep'></div></td></tr>
+                            <tr>
+                              <td class='label'>
+                                <span tm='t:smFile'></span>
+                              </td>
+                              <td class='vsep'>
+                              </td>
+                              <td>
+                                <table class='noborder'>
+                                  <tr>
+                                    <td colspan=2>
+                                      <input type='checkbox' id='mobileCompress' name='mobileCompress'>
+                                      <label for='mobileCompress'><span tm='t:smFileCompress'></span></label>
+                                    </td>
+                                  </tr>
+                                  <tr>
+                                    <td>
+                                      <span class=label2 tm='t:filename'></span>
+                                    </td>
+                                    <td>
+                                      <input type='text' id='mobileFileName' name='mobileFileName' class='filename inline'>
+                                      <img class='tipIcon' src='/images/qmicon.gif' tm='i:filename'/>
+                                    </td>
+                                  </tr>
+                                  <tr>
+                                    <td>
+                                      <p class=label2 tm='t:maxFileUrl'></p>
+                                    </td>
+                                    <td>
+                                      <input type='text' id='mobileMaxFileUrl' name='mobileMaxFileUrl' class='text inline'>
+                                    </td>
+                                  </tr>
+                                  <tr>
+                                    <td>
+                                      <p class=label2 tm='t:maxFileSize'></p>
+                                    </td>
+                                    <td>
+                                      <input type='text' id='mobileMaxFileSize' name='mobileMaxFileSize' class='text inline'>
+                                      <span class=label2 tm='t:kiloByteUnit'>
+                                      </span>
+                                    </td>
+                                  </tr>
+                                </table>
+                              </td>
+                            </tr>
+                            <tr><td colspan=3><div class='sep'></div></td></tr>
+                            <tr>
+                              <td class='label'>
+                                <span tm='t:smUrlFilter'></span>
+                              </td>
+                              <td class='vsep'>
+                              </td>
+                              <td>
+                                <table class='noborder'>
+                                  <tr>
+                                    <td>
+                                      <span class=label2 tm='t:inUrlPattern'></span>
+                                      <img class='tipIcon' src='/images/qmicon.gif' tm='i:InAndExUrlPattern'/>
+                                      <a class=extlink id='mobileInUrlEditor-s'></a>
+                                    </td>
+                                  </tr>                                      
+                                  <tr>
+                                    <td>
+                                      <table class='noborder UrlEditor' id='mobileInUrlEditor'>
+                                        <tr>
+                                          <td><input type='text' id='mobileInUrlEditor-input' name='mobileInUrlEditor-input' class='urlpattern'>
+                                          <input type='button' id='mobileInUrlEditor-add' name='mobileInUrlEditor-add' tm='v:add'>
+                                          </td>
+                                        </tr>
+                                        <tr>
+                                          <td class=eg><span tm='t:ex'></span> /*.html
+                                          </td>
+                                        </tr>
+                                        <tr>
+                                          <td id='mobileInUrlEditor-area'>
+                                          </td>
+                                        </tr>
+                                      </table>
+                                    </td>
+                                  </tr>
+                                  <tr>
+                                    <td>
+                                      <span class=label2 tm='t:exUrlPattern'></span>
+                                      <img class='tipIcon' src='/images/qmicon.gif' tm='i:InAndExUrlPattern'/>
+                                      <a class=extlink id='mobileExUrlEditor-s'></a>
+                                    </td>
+                                  </tr>                                      
+                                  <tr>
+                                    <td>
+                                      <table class='noborder UrlEditor' id='mobileExUrlEditor'>
+                                        <tr>
+                                          <td><input type='text' id='mobileExUrlEditor-input' name='mobileExUrlEditor-input' class='urlpattern'>
+                                          <input type='button' id='mobileExUrlEditor-add' name='mobileExUrlEditor-add' tm='v:add'>
+                                          </td>
+                                        </tr>
+                                        <tr>
+                                          <td class=eg><span tm='t:ex'></span> /robots.txt
+                                          </td>
+                                        </tr>
+                                        <tr>
+                                          <td id='mobileExUrlEditor-area'>
+                                          </td>
+                                        </tr>
+                                      </table>
+                                    </td>
+                                  </tr>
+                                </table>
+                              </td>
+                            </tr>
+                          </table>
+                        </div>
+                      <!-- buttons -->     
+                      <div class='cmdbuttons'>
+                        <input type='button' class='save' id='save-6' name='save-6' tm='v:submit'>
+                        <input type='button' class='cancel' id='cnl-6' name='cnl-6' tm='v:cancel'>
+                        <input type='button' class='revert' id='revert-mobile' name='revert-mobile' tm='v:revert'>
+                      </div>
+                    </div>
+                  </div> 
+                  <div class='Codesearch TabDiv hidden' id='codesearch'>
+                    <!--codesearch sitemap-->
+                    <div id='codesearchSitemapBody' class='sitemapDiv'>
+                      <div class='warningbox'>
+                      	<div id='codesearch-warning'>
+                          <span class='warningtext' tm='t:smDisable'></span>
+                          <a tm='t:enable'></a>
+                        </div>
+                        <div id='codesearch-custom-warning'>
+                          <span class='warningtext' tm='t:smCustom'></span>
+                        </div>
+                        <div id='codesearch-nourl-include'>
+                          <span class='warningtext' tm='t:smNoUrl'></span>
+                        </div>
+                      </div>
+                      <!--global codesearch setting-->
+                      <div class='hidden' id='codesearchG'>
+                      </div>
+                      <!--site codesearch setting-->
+                      <div class='' id='codesearchS'>
+                      </div>
+                      <!--common codesearch setting-->
+                        <div class='c650 section' id='codesearchCommonSitemapBody'> 
+                          <table class='noborder config'>
+                            <col class='c1' /><col class='c2' /><col class='c3' />
+                            <tr>
+                              <td class='label'>
+                                <span tm='t:update'></span>
+                              </td>
+                              <td class='vsep'>
+                              </td>
+                              <td>
+                                <table class='noborder'>
+                                  <tr>
+                                    <td class=label2>
+                                      <span tm='t:startTime'></span>
+                                    </td>
+                                    <td>
+                                      <table>
+                                        <tr><td><input type='text' class='date' id=codesearchUpdateStartTime-date name=codesearchUpdateStartTime-date></td>
+                                          <td><input type='text' class='date' id=codesearchUpdateStartTime-time name=codesearchUpdateStartTime-time></td>
+                                        </tr>
+                                        <tr><td class=eg><span tm='t:ex'></span> 2008-12-31</td><td class=eg>10:23:34</td></tr>
+                                      </table>                                     
+                                    </td>
+                                  </tr>
+                                  <tr>
+                                    <td class=label2>
+                                      <span tm='t:interval'></span>
+                                    </td>
+                                    <td>
+                                      <table class='noborder' id='codesearchDuration'>
+                                        <tr>
+                                          <td><input type='radio' name='codesearch-interval-group' value=10>10 <span tm='t:mmUnit'></span>
+                                          </td>
+                                          <td><input type='radio' name='codesearch-interval-group' value=30>30 <span tm='t:mmUnit'></span>
+                                          </td>
+                                          <td><input type='radio' name='codesearch-interval-group' value=60>1 <span tm='t:hUnit'></span>
+                                          </td>
+                                          <td><input type='radio' name='codesearch-interval-group' value=720>12 <span tm='t:hhUnit'></span>
+                                          </td>
+                                        </tr>
+                                        <tr>
+                                          <td><input type='radio' name='codesearch-interval-group' value=1440>1 <span tm='t:dUnit'></span>
+                                          </td>
+                                          <td><input type='radio' name='codesearch-interval-group' value=10080>1 <span tm='t:wUnit'></span>
+                                          </td>
+                                          <td><input type='radio' name='codesearch-interval-group' value=43200>1 <span tm='t:monUnit'></span>
+                                          </td>
+                                          <td>
+                                          </td>
+                                        </tr>
+                                        <tr>
+                                          <td colspan=4>
+                                            <input type='radio' name='codesearch-interval-group'>
+                                            <span class=label2 tm='t:custom'></span>
+                                            <input type='text' class='text time inline'>
+                                            <span class=label2 tm='t:mmUnit'></span>
+                                          </td>
+                                        </tr>
+                                      </table>                                          
+                                    </td>
+                                  </tr>
+                                </table>
+                              </td>
+                            </tr>
+                            <tr><td colspan=3><div class='sep'></div></td></tr>
+                            <tr>
+                              <td class='label'>
+                                <span tm='t:smFile'></span>
+                              </td>
+                              <td class='vsep'>
+                              </td>
+                              <td>
+                                <table class='noborder'>
+                                  <tr>
+                                    <td colspan=2>
+                                      <input type='checkbox' id='codesearchCompress' name='codesearchCompress'>
+                                      <label for='codesearchCompress'><span tm='t:smFileCompress'></span></label>
+                                    </td>
+                                  </tr>
+                                  <tr>
+                                    <td>
+                                      <span class=label2 tm='t:filename'></span>
+                                    </td>
+                                    <td>
+                                      <input type='text' id='codesearchFileName' name='codesearchFileName' class='filename inline'>
+                                      <img class='tipIcon' src='/images/qmicon.gif' tm='i:filename'/>
+                                    </td>
+                                  </tr>
+                                  <tr>
+                                    <td>
+                                      <p class=label2 tm='t:maxFileUrl'></p>
+                                    </td>
+                                    <td>
+                                      <input type='text' id='codesearchMaxFileUrl' name='codesearchMaxFileUrl' class='text inline'>
+                                    </td>
+                                  </tr>
+                                  <tr>
+                                    <td>
+                                      <p class=label2 tm='t:maxFileSize'></p>
+                                    </td>
+                                    <td>
+                                      <input type='text' id='codesearchMaxFileSize' name='codesearchMaxFileSize' class='text inline'>
+                                      <span class=label2 tm='t:kiloByteUnit'>
+                                      </span>
+                                    </td>
+                                  </tr>
+                                </table>
+                              </td>
+                            </tr>
+                            <tr><td colspan=3><div class='sep'></div></td></tr>
+                            <tr>
+                              <td class='label'>
+                                <span tm='t:smUrlFilter'></span>
+                              </td>
+                              <td class='vsep'>
+                              </td>
+                              <td>
+                                <table class='noborder'>
+                                  <tr>
+                                    <td>
+                                      <span class=label2 tm='t:inUrlPattern'></span>
+                                      <img class='tipIcon' src='/images/qmicon.gif' tm='i:InAndExUrlPattern'/>
+                                      <a class=extlink id='codesearchInUrlEditor-s'></a>
+                                    </td>
+                                  </tr>                                      
+                                  <tr>
+                                    <td>
+                                      <table class='noborder UrlEditor' id='codesearchInUrlEditor'>
+                                        <tr>
+                                          <td><input type='text' id='codesearchInUrlEditor-input' name='codesearchInUrlEditor-input' class='urlpattern'>
+                                          <input type='button' id='codesearchInUrlEditor-add' name='codesearchInUrlEditor-add' tm='v:add'>
+                                          </td>
+                                        </tr>
+                                        <tr>
+                                          <td class=eg><span tm='t:ex'></span> /*.html
+                                          </td>
+                                        </tr>
+                                        <tr>
+                                          <td id='codesearchInUrlEditor-area'>
+                                          </td>
+                                        </tr>
+                                      </table>
+                                    </td>
+                                  </tr>
+                                  <tr>
+                                    <td>
+                                      <span class=label2 tm='t:exUrlPattern'></span>
+                                      <img class='tipIcon' src='/images/qmicon.gif' tm='i:InAndExUrlPattern'/>
+                                      <a class=extlink id='codesearchExUrlEditor-s'></a>
+                                    </td>
+                                  </tr>                                      
+                                  <tr>
+                                    <td>
+                                      <table class='noborder UrlEditor' id='codesearchExUrlEditor'>
+                                        <tr>
+                                          <td><input type='text' id='codesearchExUrlEditor-input' name='codesearchExUrlEditor-input' class='urlpattern'>
+                                          <input type='button' id='codesearchExUrlEditor-add' name='codesearchExUrlEditor-add' tm='v:add'>
+                                          </td>
+                                        </tr>
+                                        <tr>
+                                          <td class=eg><span tm='t:ex'></span> /robots.txt
+                                          </td>
+                                        </tr>
+                                        <tr>
+                                          <td id='codesearchExUrlEditor-area'>
+                                          </td>
+                                        </tr>
+                                      </table>
+                                    </td>
+                                  </tr>
+                                </table>
+                              </td>
+                            </tr>
+                          </table>
+                        </div>
+                      <!-- buttons -->     
+                      <div class='cmdbuttons'>
+                        <input type='button' class='save' id='save-7' name='save-7' tm='v:submit'>
+                        <input type='button' class='cancel' id='cnl-7' name='cnl-7' tm='v:cancel'>
+                        <input type='button' class='revert' id='revert-codesearch' name='revert-codesearch' tm='v:revert'>
+                      </div>
+                    </div>
+                  </div> 
+                  <div class='Blogsearch TabDiv hidden' id='blogsearch'>
+                    <!--blog search ping-->
+                    <div id='blogsearchSitemapBody' class='sitemapDiv'>
+                      <div class='warningbox'>
+                      	<div id='blogsearch-warning'>
+                          <span class='warningtext' tm='t:smDisable'></span>
+                          <a tm='t:enable'></a>
+                        </div>
+                        <div id='blogsearch-custom-warning'>
+                          <span class='warningtext' tm='t:smCustom'></span>
+                        </div>
+                        <div id='blogsearch-nourl-include'>
+                          <span class='warningtext' tm='t:smNoUrl'></span>
+                        </div>
+                      </div>
+                      <!--global blog search setting-->
+                      <div class='hidden' id='blogsearchG'>
+                      </div>
+                      <!--site blog search setting-->
+                      <div class='' id='blogsearchS'>
+                      </div>
+                      <!--common blog search setting-->
+                        <div class='c650 section' id='blogsearchCommonSitemapBody'> 
+                          <table class='noborder config'>
+                            <col class='c1' /><col class='c2' /><col class='c3' />
+                            <tr>
+                              <td class='label'>
+                                <span tm='t:ping'></span>
+                              </td>
+                              <td class='vsep'>
+                              </td>
+                              <td>
+                                <div class=label2>
+                                  <span tm='t:interval'></span>
+                                </div>
+                                <table class='noborder' id='blogsearchDuration'>
+                                  <tr>
+                                    <td><input type='radio' name='blogsearch-interval-group' value=10>10 <span tm='t:mmUnit'></span>
+                                    </td>
+                                    <td><input type='radio' name='blogsearch-interval-group' value=30>30 <span tm='t:mmUnit'></span>
+                                    </td>
+                                    <td><input type='radio' name='blogsearch-interval-group' value=60>1 <span tm='t:hUnit'></span>
+                                    </td>
+                                    <td><input type='radio' name='blogsearch-interval-group' value=720>12 <span tm='t:hhUnit'></span>
+                                    </td>
+                                  </tr>
+                                  <tr>
+                                    <td><input type='radio' name='blogsearch-interval-group' value=1440>1 <span tm='t:dUnit'></span>
+                                    </td>
+                                    <td><input type='radio' name='blogsearch-interval-group' value=10080>1 <span tm='t:wUnit'></span>
+                                    </td>
+                                    <td><input type='radio' name='blogsearch-interval-group' value=43200>1 <span tm='t:monUnit'></span>
+                                    </td>
+                                    <td>
+                                    </td>
+                                  </tr>
+                                  <tr>
+                                    <td colspan=4>
+                                      <input type='radio' name='blogsearch-interval-group'>
+                                      <span class=label2 tm='t:custom'></span>
+                                      <input type='text' class='text time inline'>
+                                      <span class=label2 tm='t:mmUnit'></span>
+                                    </td>
+                                  </tr>
+                                </table>                                          
+                              </td>
+                            </tr>
+                            <tr><td colspan=3><div class='sep'></div></td></tr>
+                            <tr>
+                              <td class='label'>
+                                <span tm='t:smUrlFilter'></span>
+                              </td>
+                              <td class='vsep'>
+                              </td>
+                              <td>
+                                <table class='noborder'>
+                                  <tr>
+                                    <td>
+                                      <span class=label2 tm='t:inUrlPattern'></span>
+                                      <img class='tipIcon' src='/images/qmicon.gif' tm='i:InAndExUrlPattern'/>
+                                      <a class=extlink id='blogsearchInUrlEditor-s'></a>
+                                    </td>
+                                  </tr>                                      
+                                  <tr>
+                                    <td>
+                                      <table class='noborder UrlEditor' id='blogsearchInUrlEditor'>
+                                        <tr>
+                                          <td><input type='text' id='blogsearchInUrlEditor-input' name='blogsearchInUrlEditor-input' class='urlpattern'>
+                                          <input type='button' id='blogsearchInUrlEditor-add' name='blogsearchInUrlEditor-add' tm='v:add'>
+                                          </td>
+                                        </tr>
+                                        <tr>
+                                          <td class=eg><span tm='t:ex'></span> /*.html
+                                          </td>
+                                        </tr>
+                                        <tr>
+                                          <td id='blogsearchInUrlEditor-area'>
+                                          </td>
+                                        </tr>
+                                      </table>
+                                    </td>
+                                  </tr>
+                                  <tr>
+                                    <td>
+                                      <span class=label2 tm='t:exUrlPattern'></span>
+                                      <img class='tipIcon' src='/images/qmicon.gif' tm='i:InAndExUrlPattern'/>
+                                      <a class=extlink id='blogsearchExUrlEditor-s'></a>
+                                    </td>
+                                  </tr>                                      
+                                  <tr>
+                                    <td>
+                                      <table class='noborder UrlEditor' id='blogsearchExUrlEditor'>
+                                        <tr>
+                                          <td><input type='text' id='blogsearchExUrlEditor-input' name='blogsearchExUrlEditor-input' class='urlpattern'>
+                                          <input type='button' id='blogsearchExUrlEditor-add' name='blogsearchExUrlEditor-add' tm='v:add'>
+                                          </td>
+                                        </tr>
+                                        <tr>
+                                          <td class=eg><span tm='t:ex'></span> /robots.txt
+                                          </td>
+                                        </tr>
+                                        <tr>
+                                          <td id='blogsearchExUrlEditor-area'>
+                                          </td>
+                                        </tr>
+                                      </table>
+                                    </td>
+                                  </tr>
+                                </table>
+                              </td>
+                            </tr>
+                          </table>
+                        </div>
+                      <!-- buttons -->     
+                      <div class='cmdbuttons'>
+                        <input type='button' class='save' id='save-8' name='save-8' tm='v:submit'>
+                        <input type='button' class='cancel' id='cnl-8' name='cnl-8' tm='v:cancel'>
+                        <input type='button' class='revert' id='revert-blogsearch' name='revert-blogsearch' tm='v:revert'>
+                      </div>
+                    </div>
+                  </div>                   
                 </div>
               </div>
-            		</div>
-          		</div>
-	      		</div>
-      		</div>
+            </div>
+          </div>
       	</div>
     	</div>
+      <div class=clear></div>
       <div id='copyright'>
-          &copy;2008 Google
+          &copy; 2009 Google Inc.
       </div>
     </div>
     
@@ -1871,8 +1792,8 @@
     <div id='IEMask' class='IETransparent mask hidden'></div>
     <div id='prompt' class='prompt hidden'>
       <div>
-        <span id='promptLabel' tm='text:promptPassword'></span><br>
-        <input type='password' id='promptInput' name='promptInput' tm='tip:promptPassword'>
+        <span id='promptLabel'></span><br>
+        <input type='password' id='promptInput' name='promptInput'>
       </div>
     </div>
 		</form>

@@ -1,4 +1,4 @@
-// Copyright 2008 Google Inc.
+// Copyright 2009 Google Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -40,6 +40,7 @@ void SitemapSetting::ResetToDefault() {
   max_file_size_ = 1024 * 1024 * 5;
 
   included_urls_.ResetToDefault();
+  included_urls_.AddItem(UrlSetting(Url("/*")));
 
   excluded_urls_.ResetToDefault();
   excluded_urls_.AddItem(UrlSetting(Url("/robots.txt")));
@@ -49,7 +50,6 @@ void SitemapSetting::ResetToDefault() {
   excluded_urls_.AddItem(UrlSetting(Url("/*.css")));
   excluded_urls_.AddItem(UrlSetting(Url("/*.js")));
   excluded_urls_.AddItem(UrlSetting(Url("/*.swf")));
-  excluded_urls_.AddItem(UrlSetting(Url("/*?*")));
   excluded_urls_.AddItem(UrlSetting(Url("/*password*")));
 
   // No search engine should be notified by default.

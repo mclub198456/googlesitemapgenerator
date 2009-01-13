@@ -1,10 +1,29 @@
-// Copyright 2007 Google Inc.
-// All Rights Reserved.
+// Copyright 2009 Google Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// This is the top level setting class. It contains all the setting values for
+// this application. Besides site specific settings, this class also includes
+// application level configuration, like back-up duration, remote admin port,
+// admin account, and etc. Especially, there is global setting field, which
+// contains default values for site settings. Please see the member fields
+// doc for details.
+// Besides the xml setting load/save/validate functions, it provides functions
+// to load values from file, as well as save value to a file.
+// This class is not thread-safe.
+
 
 /**
  * @fileoverview Class 'Setting' includes all the logic for a setting field.
- *
- * @author chaiying@google.com
  */
 
 //////////// Class Setting /////////////////
@@ -29,7 +48,6 @@ function Setting(htmlId, xmlAttrName, type) {
   this.isLoading_ = false;
   this.dirty_ = false;
   this.listenerMng_ = null;
-  this.labelMng_ = null;
   this.accessMng_ = null;
   this.validator_ = null;
   this.global_ = null;
@@ -38,8 +56,8 @@ function Setting(htmlId, xmlAttrName, type) {
     this.accessMng_ = new AccessManager();
 
     // responsible for value change by user
-    this.html_.registValueChangeHandler(this, function(listener) {
-      listener.onUserInput();
+    this.html_.addHandler(this, function(listener) {
+      listener.handleUserInput();
     });
   }
 
@@ -51,8 +69,6 @@ function Setting(htmlId, xmlAttrName, type) {
       this.html_.appendRangeToTip(range);
     }
   }
-
-  Component.regist(this);
 }
 
 Setting.types = {BOOL: 0, STRING: 1, DURATION: 2, SPACESIZE: 3, LIST: 4,
@@ -104,17 +120,34 @@ Setting.createXmlAttr = function(tag, type) {
   }
 };
 
+/**
+ * For STRING type setting, we can add a prefix for the value.
+ * For example, you want user input a url with http:// as prefix, so set
+ * the 'value' parameter to 'http://', user will see on the UI:
+ *     http:// [input box]
+ * when user input 'www.xxx.com', we will got the setting value as
+ *     http://www.xxx.com
+ * @param {Object} value
+ */
 Setting.prototype.setHtmlPrefix = function(value) {
   this.html_.setPrefix(value);
 };
 
+/**
+ * Sets the name of this setting object, if this function is not called, we will
+ * use xml attribute name or html id of this setting as the name. Please use a
+ * distinct name for each setting object.
+ * @param {Object} name
+ */
 Setting.prototype.setName = function(name) {
   this.name_ = name;
 };
 
 /**
- * Get value in html format.
- * Get value from html element prior to xml element.
+ * Gets value of the setting. Each setting may have a html format value and a
+ * xml format value, which are from the html element on UI and the xml element
+ * representing the data that exchange to server. Return value from html element 
+ * prior to xml element, and always use html value format.
  */
 Setting.prototype.getValue = function() {
   if (this.html_ && this.html_.isElemOwner())
@@ -124,19 +157,54 @@ Setting.prototype.getValue = function() {
   else
     return null;
 };
+
+/**
+ * Gets html value.
+ */
+Setting.prototype.getHtmlValue = function() {
+  if (this.html_ && this.html_.isElemOwner())
+    return this.html_.getValue();
+  else
+    return null;
+};
+
+/**
+ * Gets xml value.
+ */
 Setting.prototype.getXmlValue = function() {
   if (this.xml_)
     return this.xml_.getValue();
   else
     return null;
 };
+
+/**
+ * responsible for value change by code.
+ * @param {Object} value
+ */
+Setting.prototype.setValue = function(value) {
+  if (this.html_) {
+    this.html_.setValue(value);
+    this.onHtmlValueChange();
+  }
+  else if (this.xml_)
+    this.xml_.setValue(this.convertValueH2X(value));
+  else
+    return;
+  this.onValueChange();
+};
+
+/**
+ * Revert the user change if it is not saved.
+ */
 Setting.prototype.cancelHtmlValueChange = function() {
   this.X2H();
 };
+
 /**
- * for the value change caused by user.
+ * Handler for user change.
  */
-Setting.prototype.onUserInput = function() {
+Setting.prototype.handleUserInput = function() {
   // special handlers for special setting, on user inputs value
   switch (this.htmlId_) {
     case 'robotsIncluded':
@@ -158,6 +226,16 @@ Setting.prototype.onUserInput = function() {
       }
       break;
   }
+  var pos = this.htmlId_.indexOf('InUrlEditor');
+  if (pos != -1) {
+    var el = _gel(this.htmlId_.substr(0, pos) + '-nourl-include');
+    if (!this.html_.hasActiveItems()) {
+      alert(NO_URL_INCLUDE);
+      _show(el);
+    } else {
+      _hide(el);
+    }
+  }
 
   if (this.isInherited_ && !this.html_.compareValue(this.global_.getValue())) {
     this.setInherit(false);
@@ -173,43 +251,21 @@ Setting.prototype.onUserInput = function() {
   // value has changed, inform pager. Call it at last.
   _getPager().onSettingChange();
 };
+
 /**
- * no matter whether the value is changed for xml or html, by user or by code.
- * @param {Object} value
+ * Handler for value change.
  */
 Setting.prototype.onValueChange = function() {
   if (this.listenerMng_ && this.validate()) // after value is changed
     this.listenerMng_.inform();
 };
 
-
+/**
+ * Handler for html value change.
+ */
 Setting.prototype.onHtmlValueChange = function() {
   // dirty means only html is changed, but xml is not updated.
   this.setDirty(); // should set it no matter if it is valid.
-};
-/**
- * responsible for value change by code.
- * @param {Object} value
- */
-Setting.prototype.setValue = function(value) {
-  if (this.html_) {
-    this.html_.setValue(value);
-    this.onHtmlValueChange();
-  }
-  else if (this.xml_)
-    this.xml_.setValue(this.convertValueH2X(value));
-  else
-    return;
-  this.onValueChange();
-};
-
-Setting.prototype.release = function() {
-  if (this.labelMng_) {
-    this.labelMng_.release();
-  }
-  if (this.html_) {
-    this.html_.release();
-  }
 };
 
 /**
@@ -282,9 +338,6 @@ Setting.prototype.setAccess = function(readonly, reason) {
 
   this.accessMng_.set(readonly, reason);
   this.html_.setAccess(this.accessMng_.readonly());
-  if (this.labelMng_) {
-    this.labelMng_.setAccess(this.accessMng_.readonly());
-  }
 };
 
 /**
@@ -293,6 +346,8 @@ Setting.prototype.setAccess = function(readonly, reason) {
  */
 Setting.prototype.validate = function() {
   if (!this.validator_) {
+    if (this.html_ && typeof this.html_.validate == 'function')
+      return this.html_.validate();
     return true;
   }
   if (!this.html_) {
@@ -304,15 +359,15 @@ Setting.prototype.validate = function() {
                  // will not be saved.
   }
   // check the value in XML type
-  var isValid =
-      this.validator_.check(this.convertValueH2X(this.html_.getValue()));
+  var isValid = this.validator_.check(this.html_.getValue());
   this.html_.setValid(isValid);
   return isValid;
 };
 
 Setting.prototype.setValidator = function(v) {
   if (this.type_ == Setting.types.LIST ||
-      this.type_ == Setting.types.QUERYFIELDS) {
+      this.type_ == Setting.types.QUERYFIELDS ||
+      this.type_ == Setting.types.RADIO) {
     this.html_.setValidator(v);
     return;
   }
@@ -341,9 +396,6 @@ Setting.prototype.setDirty = function() {
   this.dirty_ = true;
 };
 
-Setting.prototype.setLabelManager = function(manager) {
-  this.labelMng_ = manager;
-};
 Setting.prototype.setSiteSpecialFlag = function() {
   this.isSiteSpecial_ = true;
 };
@@ -438,8 +490,17 @@ Setting.prototype.load = function(xml) {
   }
   this.isInherited_ = null;
   this.X2H();
-  if (this.labelMng_) {
-    this.labelMng_.switchLabel(_getSetting().getCurSiteIdx());
+  
+  if (this.html_) {  
+    var pos = this.htmlId_.indexOf('InUrlEditor');
+    if (pos != -1) {
+      var el = _gel(this.htmlId_.substr(0, pos) + '-nourl-include');
+      if (!this.html_.hasActiveItems()) {
+        _show(el);
+      } else {
+        _hide(el);
+      }
+    }
   }
 };
 
@@ -449,7 +510,7 @@ Setting.prototype.save = function() {
         (this.getXmlValue() == null || this.getXmlValue().length == 0) &&
         !confirm(PRIVACY_WARNING)) {
       this.cancelHtmlValueChange();
-      alert('The changes in query fields have been reverted.');
+      alert(REVERT_MSG);
       return;
     }
     this.H2X();

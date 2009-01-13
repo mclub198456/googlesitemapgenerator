@@ -1,4 +1,4 @@
-// Copyright 2008 Google Inc.
+// Copyright 2009 Google Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -25,14 +25,22 @@
 #include <string>
 
 // Interface for url filter
-class UrlFilter
-{
-public:
+class UrlFilter {
+ public:
 	// Determine whether to accept a url or not.
 	// "url" the url to be analysed
 	// "urlLen" the length of the url
 	virtual bool Accept(const char* url,int urlLen) = 0; 
 	virtual ~UrlFilter() {}
+};
+
+class DummyFilter : public UrlFilter {
+ public:
+  DummyFilter(bool result) : result_(result) {}
+  virtual ~DummyFilter() {}
+  virtual bool Accept(const char* url, int urllen) { return result_; }
+ private:
+  bool result_;
 };
 
 // A url is accepted only when it's accepted by all the filter.

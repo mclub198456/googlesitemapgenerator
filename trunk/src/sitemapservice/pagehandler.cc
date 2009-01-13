@@ -1,4 +1,4 @@
-// Copyright 2008 Google Inc.
+// Copyright 2009 Google Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -222,7 +222,7 @@ void MessageBundleHandler::Execute(HttpContext* context) {
 
   response->set_status(HttpConst::kStatus200);
   response->set_message_body(content);
-  response->SetHeader(HttpConst::kHeaderContentType, "text/plain; charset=utf-8");
+  response->SetHeader(HttpConst::kHeaderContentType, "text/javascript; charset=utf-8");
   response->SetHeader(HttpConst::kHeaderExpires,
                       FormatHttpDate(time(NULL) + 24 * 60 * 60));
   response->SetHeader(HttpConst::kHeaderLastModified, server_time);

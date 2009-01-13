@@ -1,17 +1,30 @@
-// Copyright 2007 Google Inc.
-// All Rights Reserved.
+// Copyright 2009 Google Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// This is the top level setting class. It contains all the setting values for
+// this application. Besides site specific settings, this class also includes
+// application level configuration, like back-up duration, remote admin port,
+// admin account, and etc. Especially, there is global setting field, which
+// contains default values for site settings. Please see the member fields
+// doc for details.
+// Besides the xml setting load/save/validate functions, it provides functions
+// to load values from file, as well as save value to a file.
+// This class is not thread-safe.
+
 
 /**
  * @fileoverview
- *
- * @author chaiying@google.com
  */
-
-function _allSitemaps() {
-  return _arr(SettingOperator.services.getAllSitemaps(), function(s) {
-    return s.htmlId;
-  });
-}
 
 ///////////////////////////////////////////////////////////////
 /**
@@ -19,7 +32,6 @@ function _allSitemaps() {
  * @constructor
  */
 function Pager() {
-  this.prompt_ = new PromptPage();
   this.pages_ = new TabSet(['dashboard', 'loginPage', 'SiteManage',
                             'Preference', 'SiteDetail'], false);
   var me = this;
@@ -30,138 +42,40 @@ function Pager() {
           alert(CHANGE_UNSAVE_WARNING);
           return;
         }
-        _getPager().showSiteTab(id);
+        _getPager().showSiteTab_(id);
       });
 
   this.sitemapTabs_ = new TabSet(
       _allSitemaps(), true,
       function(id) {
         if (me.isDirty_) {
-          alert('You haven\'t save the change!');
+          alert(CHANGE_UNSAVE_WARNING);
           return;
         }
-        _getPager().showSitemapTab(id);
+        _getPager().showSitemapTab_(id);
       });
   this.isDirty_ = false;
   this.prevPages_ = [];
 }
 
-var _getPager = function() {
+/**
+ * Singleton access function.
+ */
+function _getPager() {
   if (_getPager.instance_ == null) {
     _getPager.instance_ = new Pager();
   }
   return _getPager.instance_;
-};
+}
 
-Pager.prototype.clearActionButtons = function() {
-  var btn = this.curSaveBtn();
-  if (btn) btn.disabled = true;
-  if (!this.prevPages_.length) {
-    btn = this.curCancelBtn();
-    if (btn) btn.disabled = true;
-  }
-};
-
-Pager.prototype.allBtns = function() {
-  var btns = [];
-  for (var i = 1; i <= 8; i++) {
-    btns.push(_gel('save-' + i));
-  }
-  return btns;
-};
-
-Pager.prototype.curSaveBtn = function(opt_page) {
-  var page = opt_page || this.curPage();
-  switch (page) {
-    case 'SiteManage':
-      return _gel('save-1');
-    case 'Preference':
-      return _gel('save-2');
-    case 'site':
-      return _gel('save-3');
-    case 'web':
-      return _gel('save-4');
-    case 'news':
-      return _gel('save-5');
-    case 'mobile':
-      return _gel('save-6');
-    case 'codesearch':
-      return _gel('save-7');
-    case 'blogsearch':
-      return _gel('save-8');
-  }
-  return null;
-};
-Pager.prototype.curCancelBtn = function(opt_page) {
-  var page = opt_page || this.curPage();
-  switch (page) {
-    case 'SiteManage':
-      return _gel('cnl-1');
-    case 'Preference':
-      return _gel('cnl-2');
-    case 'site':
-      return _gel('cnl-3');
-    case 'web':
-      return _gel('cnl-4');
-    case 'news':
-      return _gel('cnl-5');
-    case 'mobile':
-      return _gel('cnl-6');
-    case 'codesearch':
-      return _gel('cnl-7');
-    case 'blogsearch':
-      return _gel('cnl-8');
-  }
-  return null;
-};
-
-Pager.prototype.curRevertBtn = function(opt_page) {
-  var page = opt_page || this.curPage();
-  switch (page) {
-    case 'site':
-      return _gel('revert-site');
-    case 'web':
-    case 'news':
-    case 'mobile':
-    case 'codesearch':
-    case 'blogsearch':
-      return _gel('revert-' + page);
-  }
-  return null;
-};
-
-Pager.prototype.showFirstPage = function() {
-  // show after load
-  var s = _getSession();
-  var c = Session.cookieItems;
-  var page = s.getCookie(c.PAGE) || DEFAULT_PAGE;
-  var site = s.getCookie(c.SITE) || DEFAULT_SITEID;
-  var siteTab = s.getCookie(c.SITETAB) || DEFAULT_SITETAB;
-  var sitemap = s.getCookie(c.SITEMAP) || DEFAULT_SITEMAPTAB;
-
-  this.switchSite(site);
-  this.showPage(page);
-  if (this.isDefault_ && siteTab == 'Status') {
-    // 'Default' has no status page.
-    this.showSiteTab('Settings');
-  } else {
-    this.showSiteTab(siteTab);
-  }
-  this.showSitemapTab(sitemap);
-};
-
-// can use different way to alert user in future.
-Pager.prototype.alert = function(msg) {
-  alert(msg);
-};
-
-Pager.prototype.showPrompt = function(callback) {
-  this.prompt_.show(callback);
-};
-Pager.prototype.hidePrompt = function() {
-  this.prompt_.hide();
-};
-
+///////////////////////// value change functions ///////////////////////
+/**
+ * Check customize state, toggle the warning bar and the 'revert' button on 
+ * current page or opt_page. If opt_customize is defined, use this value instead
+ * of check result.
+ * @param {Object} opt_page
+ * @param {Object} opt_customize
+ */
 Pager.prototype.checkCustomize = function(opt_page, opt_customize) {
   var page = opt_page || this.curPage();
   var w = document.getElementById(page + '-custom-warning');
@@ -170,23 +84,30 @@ Pager.prototype.checkCustomize = function(opt_page, opt_customize) {
                     _getSetting().isCustomized(page)) : opt_customize;
     if (customize) {
       _show(w);
-      this.curRevertBtn(page).removeAttribute('disabled');
+      this.curRevertBtn_(page).removeAttribute('disabled');
     } else {
       _hide(w);
-      this.curRevertBtn(page).disabled = true;
+      this.curRevertBtn_(page).disabled = true;
     }
   }
 };
 
+/**
+ * Handler for user changing. Called once user modify some setting field.
+ */
 Pager.prototype.onSettingChange = function() {
   this.checkCustomize(this.curPage());
 
   // everywhere that can change the setting value should has a save button
-  this.curSaveBtn().removeAttribute('disabled');
-  this.curCancelBtn().removeAttribute('disabled');
+  this.curSaveBtn_().removeAttribute('disabled');
+  this.curCancelBtn_().removeAttribute('disabled');
   this.isDirty_ = true;
 };
 
+//////////////// page related functions /////////////////////
+/**
+ * Gets current page id.
+ */
 Pager.prototype.curPage = function() {
   var id = this.pages_.curId();
   switch (id) {
@@ -206,10 +127,84 @@ Pager.prototype.curPage = function() {
 };
 
 /**
+ * From the inner links, not from navbar.
+ * @param {Object} sitemapName
+ * @param {Object} opt_siteIdx
+ */
+Pager.prototype.gotoSitemap = function(sitemapName, opt_siteIdx) {
+  if (this.isDirty_) {
+    alert(CHANGE_UNSAVE_WARNING);
+    return;
+  }
+  var prev = this.curPage();
+  if (opt_siteIdx)
+    this.switchSite_(opt_siteIdx);
+  this.showPage_('SiteDetail');
+  this.showSiteTab_('Sitemaps');
+  this.showSitemapTab_(sitemapName);
+  this.storePrevPage_(prev, this.curPage());
+};
+
+/**
+ * From the inner links, not from navbar.
+ * @param {Object} index
+ * @param {Object} tabName
+ */
+Pager.prototype.gotoSite = function(index, tabName) {
+  if (this.isDirty_) {
+    alert(CHANGE_UNSAVE_WARNING);
+    return;
+  }
+  var prev = this.curPage();
+  this.switchSite_(index);// should call before the following functions
+  this.showPage_('SiteDetail');
+  this.showSiteTab_(tabName);
+  this.storePrevPage_(prev, this.curPage());
+};
+
+/**
+ *
+ * @param {Object} page
+ */
+Pager.prototype.gotoPage = function(page) {
+  if (this.isDirty_) {
+    alert(CHANGE_UNSAVE_WARNING);
+    return;
+  }
+  var prev = this.curPage();
+  this.showPage_(page);
+  this.storePrevPage_(prev, this.curPage());
+};
+
+/**
+ * Find the first page that user want to see. If cookie doesn't store the last
+ * page user has accessed, show the default page.
+ */
+Pager.prototype.showFirstPage = function() {
+  // show after load
+  var s = _getSession();
+  var c = Session.cookieItems;
+  var page = s.getCookie(c.PAGE) || DEFAULT_PAGE;
+  var site = s.getCookie(c.SITE) || DEFAULT_SITEID;
+  var siteTab = s.getCookie(c.SITETAB) || DEFAULT_SITETAB;
+  var sitemap = s.getCookie(c.SITEMAP) || DEFAULT_SITEMAPTAB;
+
+  this.switchSite_(site);
+  this.showPage_(page);
+  if (this.isDefault_ && siteTab == 'Status') {
+    // 'Default' has no status page.
+    this.showSiteTab_('Settings');
+  } else {
+    this.showSiteTab_(siteTab);
+  }
+  this.showSitemapTab_(sitemap);
+};
+
+/**
  * Mainly for UI change, and some initialization for the shown page.
  * @param {Object} tid
  */
-Pager.prototype.showPage = function(tid){
+Pager.prototype.showPage_ = function(tid){
   var oid = this.pages_.show(tid);
   switch (tid) {
     case 'loginPage':
@@ -224,7 +219,7 @@ Pager.prototype.showPage = function(tid){
       _gel('loginPassword').focus();
       break;
     case 'SiteDetail':
-        this.showSiteTab();
+        this.showSiteTab_();
       break;
   }
   switch (oid) {
@@ -245,7 +240,7 @@ Pager.prototype.showPage = function(tid){
  * Show site detail
  * @param {Object} tid
  */
-Pager.prototype.showSiteTab = function(opt_tid){
+Pager.prototype.showSiteTab_ = function(opt_tid){
   var tid = opt_tid || this.siteTabs_.curId();
   if (!tid) return;
 
@@ -256,7 +251,7 @@ Pager.prototype.showSiteTab = function(opt_tid){
       if (this.isDefault_) {
         Pager.changeTitle('Default Sitemaps');
       }
-      this.showSitemapTab();
+      this.showSitemapTab_();
 
       _show(_gel('sitemaps-sub-bar'));
       break;
@@ -267,7 +262,7 @@ Pager.prototype.showSiteTab = function(opt_tid){
       }
 
       // show sitemap table
-      this.initSitemapTable();
+      this.initSitemapTable_();
 
       // show custom warning info
       this.checkCustomize('site');
@@ -284,8 +279,11 @@ Pager.prototype.showSiteTab = function(opt_tid){
 };
 
 
-// show sitemaps
-Pager.prototype.showSitemapTab = function(opt_tid){
+/**
+ * Show sitemap page.
+ * @param {Object} opt_tid
+ */
+Pager.prototype.showSitemapTab_ = function(opt_tid){
   var tid = opt_tid || this.sitemapTabs_.curId();
   if (!tid) return;
 
@@ -297,89 +295,33 @@ Pager.prototype.showSitemapTab = function(opt_tid){
 };
 
 /**
- *
+ * Initial sitemap table on site configuration page.
  */
-Pager.prototype.initSitemapTable = function() {
+Pager.prototype.initSitemapTable_ = function() {
   var table = _gel('regSitemaps');
   this.isDefault_ ? Util.CSS.addClass(table, 'default') :
                     Util.CSS.removeClass(table, 'default');
   if (!this.isDefault_) {
     // initalize sitemap status
-    // get cells
-    var ps = [];
-    _arr(table.getElementsByTagName('td'), function(td) {
-      if (Util.CSS.isClass(td, 'sitemap-customize')) {
-        ps.push(td);
-      }
-    });
-
-    // it should be arranged at UI layer, not data layer
-    function showSitemapInfo(id, elem) {
+    // It should be arranged at UI layer, not data layer, that's why it is here.
+    function showSitemapInfo(id) {
+      var elem = _gel(id + '-customize');
       if (_getSetting().isCustomized(id)) {
-        elem.innerHTML = 'custom';
+        elem.innerHTML = SITEMAP_CUSTOM;
         Util.CSS.removeClass(elem, 'status-default');
       } else {
-        elem.innerHTML = 'default';
+        elem.innerHTML = SITEMAP_DEFAULT;
         Util.CSS.addClass(elem, 'status-default');
       }
     }
-    Util.array.applyToMultiple(_allSitemaps(), ps, showSitemapInfo);
+    _arr(_allSitemaps(), showSitemapInfo);
   }
 };
 
-/**
- * From the inner links, not from navbar.
- * @param {Object} sitemapName
- * @param {Object} opt_siteIdx
- */
-Pager.prototype.gotoSitemap = function(sitemapName, opt_siteIdx) {
-  if (this.isDirty_) {
-    alert('You haven\'t save the change!');
-    return;
-  }
-  var prev = this.curPage();
-  if (opt_siteIdx)
-    this.switchSite(opt_siteIdx);
-  this.showPage('SiteDetail');
-  this.showSiteTab('Sitemaps');
-  this.showSitemapTab(sitemapName);
-  this.storePrevPage(prev, this.curPage());
-};
-/**
- * From the inner links, not from navbar.
- * @param {Object} index
- * @param {Object} tabName
- */
-Pager.prototype.gotoSite = function(index, tabName) {
-  if (this.isDirty_) {
-    alert('You haven\'t save the change!');
-    return;
-  }
-  var prev = this.curPage();
-  this.switchSite(index);// should call before the following functions
-  this.showPage('SiteDetail');
-  this.showSiteTab(tabName);
-  this.storePrevPage(prev, this.curPage());
-};
-
-/**
- *
- * @param {Object} page
- */
-Pager.prototype.gotoPage = function(page) {
-  if (this.isDirty_) {
-    alert('You haven\'t save the change!');
-    return;
-  }
-  var prev = this.curPage();
-  this.showPage(page);
-  this.storePrevPage(prev, this.curPage());
-};
-
-Pager.prototype.storePrevPage = function(prev, next) {
-  if (this.curCancelBtn(next)) {
+Pager.prototype.storePrevPage_ = function(prev, next) {
+  if (this.curCancelBtn_(next)) {
     this.prevPages_.push(prev);
-    this.curCancelBtn(next).removeAttribute('disabled');
+    this.curCancelBtn_(next).removeAttribute('disabled');
   } else {
     this.prevPages_ = [];
   }
@@ -389,7 +331,7 @@ Pager.prototype.storePrevPage = function(prev, next) {
  *
  * @param {Object} index
  */
-Pager.prototype.switchSite = function(index) {
+Pager.prototype.switchSite_ = function(index) {
   var old = this.isDefault_;
   this.isDefault_ = index == GLOBAL_SETTING_ID;
 
@@ -425,22 +367,112 @@ Pager.prototype.switchSite = function(index) {
   _getSession().saveCookie(Session.cookieItems.SITE, index);
 };
 
-Pager.prototype.reload = function() {
-  Flow.reload();
+///////////////////// action buttons related functions /////////
+/**
+ * Gets 'save' button on current page or opt_page.
+ * @param {Object} opt_page
+ */
+Pager.prototype.curSaveBtn_ = function(opt_page) {
+  var page = opt_page || this.curPage();
+  switch (page) {
+    case 'SiteManage':
+      return _gel('save-1');
+    case 'Preference':
+      return _gel('save-2');
+    case 'site':
+      return _gel('save-3');
+    case 'web':
+      return _gel('save-4');
+    case 'news':
+      return _gel('save-5');
+    case 'mobile':
+      return _gel('save-6');
+    case 'codesearch':
+      return _gel('save-7');
+    case 'blogsearch':
+      return _gel('save-8');
+  }
+  return null;
 };
-Pager.prototype.save = function() {
-  Flow.save();
-  this.curSaveBtn().disabled = true;
+
+/**
+ * Gets 'cancel' button on current page or opt_page.
+ * @param {Object} opt_page
+ */
+Pager.prototype.curCancelBtn_ = function(opt_page) {
+  var page = opt_page || this.curPage();
+  switch (page) {
+    case 'SiteManage':
+      return _gel('cnl-1');
+    case 'Preference':
+      return _gel('cnl-2');
+    case 'site':
+      return _gel('cnl-3');
+    case 'web':
+      return _gel('cnl-4');
+    case 'news':
+      return _gel('cnl-5');
+    case 'mobile':
+      return _gel('cnl-6');
+    case 'codesearch':
+      return _gel('cnl-7');
+    case 'blogsearch':
+      return _gel('cnl-8');
+  }
+  return null;
+};
+
+/**
+ * Gets 'Revert to default' button on current page or opt_page.
+ * @param {Object} opt_page
+ */
+Pager.prototype.curRevertBtn_ = function(opt_page) {
+  var page = opt_page || this.curPage();
+  switch (page) {
+    case 'site':
+      return _gel('revert-site');
+    case 'web':
+    case 'news':
+    case 'mobile':
+    case 'codesearch':
+    case 'blogsearch':
+      return _gel('revert-' + page);
+  }
+  return null;
+};
+
+/**
+ * After 'save' action, clear the state of buttons on current page.
+ */
+Pager.prototype.refreshActionButtons = function() {
+  var btn = this.curSaveBtn_();
+  if (btn) btn.disabled = true;
   if (!this.prevPages_.length) {
-    this.curCancelBtn().disabled = true;
+    btn = this.curCancelBtn_();
+    if (btn) btn.disabled = true;
+  }
+};
+
+/**
+ * 'save' button click handler.
+ */
+Pager.prototype.save = function() {
+  if (!Flow.save()) return;
+  
+  this.curSaveBtn_().disabled = true;
+  if (!this.prevPages_.length) {
+    this.curCancelBtn_().disabled = true;
   }
   this.isDirty_ = false;
 };
 
+/**
+ * 'cancel' button click handler.
+ */
 Pager.prototype.cancel = function() {
   _getSetting().reloadCurPage();
-  this.curSaveBtn().disabled = true;
-  this.curCancelBtn().disabled = true;
+  this.curSaveBtn_().disabled = true;
+  this.curCancelBtn_().disabled = true;
   ValidateManager.clear();
   this.isDirty_ = false;
   this.checkCustomize();
@@ -452,36 +484,37 @@ Pager.prototype.cancel = function() {
       case 'SiteManage':
       case 'Preference':
       case 'loginPage':
-        this.showPage(page);
+        this.showPage_(page);
         break;
       case 'site':
-        this.showPage('SiteDetail');
-        this.showSiteTab('Settings');
+        this.showPage_('SiteDetail');
+        this.showSiteTab_('Settings');
         break;
       case 'Status':
-        this.showPage('SiteDetail');
-        this.showSiteTab('Status');
+        this.showPage_('SiteDetail');
+        this.showSiteTab_('Status');
         break;
       case 'web':
       case 'news':
       case 'mobile':
       case 'codesearch':
       case 'blogsearch':
-        this.showPage('SiteDetail');
-        this.showSiteTab('Sitemaps');
-        this.showSitemapTab(page);
+        this.showPage_('SiteDetail');
+        this.showSiteTab_('Sitemaps');
+        this.showSitemapTab_(page);
         break;
       default:
         _err('invalid page type!');
     }
   }
   if (!this.prevPages_.length) {
-    var btn = this.curCancelBtn();
+    var btn = this.curCancelBtn_();
     if (btn) btn.disabled = true;
   }
 };
 
 /**
+ * 'revert' button click handler.
  * If user change the page from default to customize, then click revert button
  * will 'cancel' user's change, but don't jump back. If user directly click
  * revert button for customized page, then it will trigger 'sync to default'
@@ -494,9 +527,9 @@ Pager.prototype.revert = function(id) {
   if (old_status) { // This page has been customized before.
     Flow.save();
   }
-  this.curSaveBtn().disabled = true;
+  this.curSaveBtn_().disabled = true;
   if (!this.prevPages_.length) {
-    this.curCancelBtn().disabled = true;
+    this.curCancelBtn_().disabled = true;
   }
   this.isDirty_ = false;
   this.checkCustomize(null, false);
@@ -506,7 +539,7 @@ Pager.changeTitle = function(str) {
   _gel('sitetitle').innerHTML = str;
 };
 
-///////////////////////////////////////////////////////////////
+///////////////////////// PromptPage //////////////////////////////
 /**
  * 
  * @constructor
@@ -562,7 +595,7 @@ PromptPage.prototype.hide = function() {
       break;
   }
 };
-///////////////////////////////////////////////////////////////
+///////////////////////// LoadingPage /////////////////////////////
 /**
  * 
  * @constructor
@@ -620,24 +653,35 @@ _event(window, 'unload', function() {
 });
 
 Loader.initLanguage = function() {
-  document.title = SettingEditorLanguage.title;
+  document.title = WINDOW_TITLE;
 
-  // set text to spans and paragraphs
+  // set text to links, headers, spans and paragraphs
+  _arr(_gelt('A'), function(a){
+    TransMarkSet.localizeInnerHTML(a);
+    TransMarkSet.localizeTip(a);
+  });
+  _arr(_gelt('H2'), function(h){
+    TransMarkSet.localizeInnerHTML(h);
+    TransMarkSet.localizeTip(h);
+  });
   _arr(_gelt('SPAN'), function(span){
-    TransMarkSet.transLanguageForSpanElem(span);
+    TransMarkSet.localizeInnerHTML(span);
+    TransMarkSet.localizeTip(span);
   });
   _arr(_gelt('P'), function(p){
-    TransMarkSet.transLanguageForSpanElem(p);
+    TransMarkSet.localizeInnerHTML(p);
+    TransMarkSet.localizeTip(p);
   });
 
   // set values to inputs
   _arr(_gelt('INPUT'), function(input){
-    TransMarkSet.transLanguageForInputElem(input);
+    TransMarkSet.localizeValue(input);
+    TransMarkSet.localizeTip(input);
   });
 
   // set tips to img
   _arr(_gelt('img'), function(img){
-    TransMarkSet.transTip(img, true);
+    TransMarkSet.localizeTip(img, true);
   });
 };
 
@@ -835,17 +879,19 @@ ExpandHtml.prototype.release = function() {
 
  ///////////////////////////////PasswordManager//////////////////////////
 /**
+ * The password-change UI.
  * @constructor
  */
 function PasswordManager() {
   /**
-   *
+   * UI root.
+   * @type {ELement}
    */
   this.page_ = _gel('passwd-container');
 
   /**
    * The 'change' link behind the password readonly setting field
-   * @type {String}
+   * @type {ELement}
    */
   this.change_ = _gel('passwd-change');
 
@@ -868,7 +914,8 @@ function PasswordManager() {
   this.newPassword2_ = _gel('passwd-new2');
 
   /**
-   *
+   * The error message box.
+   * @type {ELement}
    */
   this.error_ = _gel('passwd-err');
 
@@ -895,15 +942,14 @@ function PasswordManager() {
 }
 
 /**
- * Gets the PasswordManager singleton object.
- * @return {PasswordManager}  The PasswordManager singleton object
+ * Singleton access function.
  */
-var _getPasswdManager = function() {
+function _getPasswdManager() {
   if (_getPasswdManager.instance_ == null) {
     _getPasswdManager.instance_ = new PasswordManager();
   }
   return _getPasswdManager.instance_;
-};
+}
 
 /**
  * Opens the change-password box.

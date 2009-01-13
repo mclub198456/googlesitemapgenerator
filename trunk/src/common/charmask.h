@@ -1,4 +1,4 @@
-// Copyright 2008 Google Inc.
+// Copyright 2009 Google Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -45,6 +45,15 @@ class CharMask {
   // Check the mask value for character "c".
   bool contains(unsigned char c) const {
     return (mask_[c >> 5] & (1 << (c & 31))) != 0;
+  }
+
+  // Set the bit mask.
+  void set(unsigned char c, bool flag) {
+    if (flag) {
+      mask_[c >> 5] |= (1 << (c & 31));
+    } else {
+      mask_[c >> 5] &= ~(1 << (c & 31));
+    }
   }
 
  private:

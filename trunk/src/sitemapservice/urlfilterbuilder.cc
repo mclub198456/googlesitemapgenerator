@@ -1,4 +1,4 @@
-// Copyright 2008 Google Inc.
+// Copyright 2009 Google Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -33,5 +33,9 @@ UrlFilter* UrlFilterBuilder::Build(const std::vector<Url>& patterns) {
     }
   }
 
-  return orfilter;
+  if (orfilter != NULL) {
+    return orfilter;
+  } else {
+    return new DummyFilter(false);
+  }
 }

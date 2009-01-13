@@ -1,4 +1,4 @@
-// Copyright 2008 Google Inc.
+// Copyright 2009 Google Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -21,20 +21,8 @@
 #include "common/logger.h"
 #include "common/util.h"
 #include "common/fileutil.h"
+#include "common/timesupport.h"
 #include "sitemapservice/runtimeinfomanager.h"
-
-std::string UrlProviderService::stamp_dir_ = Util::GetApplicationDir();
-
-bool UrlProviderService::ChangeStampDir(const char *dir) {
-  if (!FileUtil::CreateDir(dir)) {
-    Logger::Log(EVENT_ERROR, "Failed to change stamp dir to [%s].",
-              dir);
-    return false;
-  }
-
-  stamp_dir_ = dir;
-  return true;
-}
 
 UrlProviderService::UrlProviderService() {
   runtime_info_ = NULL;
@@ -58,7 +46,15 @@ bool UrlProviderService::Initialize(const std::string suffix,
       timestamp_file_[i] = '_';
     }
   }
-  timestamp_file_ = stamp_dir_ + "/timestamp" + timestamp_file_ + suffix;
+
+  std::string stamp_dir(Util::GetApplicationDir());
+  stamp_dir.push_back(FileUtil::kPathSeparator);
+  stamp_dir.append("run").push_back(FileUtil::kPathSeparator);
+  if (!FileUtil::CreateDir(stamp_dir.c_str())) {
+    Logger::Log(EVENT_ERROR, "Failed to create timestamp dir [%s]. Skip.",
+                stamp_dir.c_str());
+  }
+  timestamp_file_ = stamp_dir + "timestamp_" + timestamp_file_ + suffix;
 
   runtime_info_ = runtime_info;
   running_period_ = running_period;
@@ -80,6 +76,8 @@ void UrlProviderService::SaveLastAccessLimit() {
     Logger::Log(EVENT_ERROR, "Failed to write time stamp file %s. (%d).",
               timestamp_file_.c_str(), errno);
   }
+  Logger::Log(EVENT_IMPORTANT, "Save last access limit [%s].",
+              FormatW3CTime(last_access_limit_).c_str());
   fclose(file);
 }
 
@@ -97,6 +95,8 @@ bool UrlProviderService::RefreshTimeStamp() {
     return false;
   }
 
+  Logger::Log(EVENT_CRITICAL, "Timestamp [%s] loaded from [%s].",
+    FormatW3CTime(last_access_limit_).c_str(), timestamp_file_.c_str());
   fclose(file);
   return true;
 }

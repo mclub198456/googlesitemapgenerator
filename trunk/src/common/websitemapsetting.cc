@@ -1,4 +1,4 @@
-// Copyright 2008 Google Inc.
+// Copyright 2009 Google Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -33,12 +33,11 @@ void WebSitemapSetting::ResetToDefault() {
 
   // Set notify URLs.
   notify_urls_.AddItem(UrlSetting(
-    Url("http://www.google.com/webmasters/sitemaps/ping?sitemap="), true));
+    Url("http://www.google.com/webmasters/sitemaps/ping?sitemap="), false));
   notify_urls_.AddItem(UrlSetting(
-    Url("http://search.yahooapis.com/SiteExplorerService/V1/ping?sitemap="), true));
-  notify_urls_.AddItem(UrlSetting(Url("http://submissions.ask.com/ping?sitemap="), true));
-  notify_urls_.AddItem(UrlSetting(Url("http://api.moreover.com/ping?u="), true));
-  notify_urls_.AddItem(UrlSetting(Url("http://webmaster.live.com/ping.aspx?siteMap="), true));
+    Url("http://search.yahooapis.com/SiteExplorerService/V1/ping?sitemap="), false));
+  notify_urls_.AddItem(UrlSetting(Url("http://submissions.ask.com/ping?sitemap="), false));
+  notify_urls_.AddItem(UrlSetting(Url("http://webmaster.live.com/ping.aspx?siteMap="), false));
 }
 
 bool WebSitemapSetting::LoadSetting(TiXmlElement* element) {

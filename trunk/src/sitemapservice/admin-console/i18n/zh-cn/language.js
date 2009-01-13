@@ -1,4 +1,4 @@
-锘�/ Copyright 2008 Google Inc.
+// Copyright 2009 Google Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -72,17 +72,17 @@ var DISCARD_CHANGE_TO_CURRENT_TAB = '鏌愪簺璁惧畾鏈夎锛岃鍙栨�
 var GLOBAL_SETTING_NAME = '榛樿璁惧畾';
 
 ////////////////////////////////////////////////////////////////////////
-var SettingEditorLanguage = {};
+var GSGLang = {};
 
 /**
  * The title of the browser window.
  */
-SettingEditorLanguage.title = '璋锋瓕Sitemap鐢熸垚鍣ㄨ缃�;
+GSGLang.title = '璋锋瓕Sitemap鐢熸垚鍣ㄨ缃�;
 
 /**
  * The 'value' attributes of the buttons.
  */
-SettingEditorLanguage.values = {
+GSGLang.values = {
   changePassword: '淇敼',
   confirm: '纭畾',
   cancel: '鍙栨秷',
@@ -98,7 +98,7 @@ SettingEditorLanguage.values = {
 /**
  * The tooltips of the settings.
  */
-SettingEditorLanguage.tips = {
+GSGLang.tips = {
   addGeneratorInfo: '灏咷oogle Sitemap鐢熸垚宸ュ叿鐨勭増鏈俊鎭坊鍔犲埌鎵�敓鎴愮殑sitemap涓�,
   logPath: '璇ョ珯鐐圭殑鏃ュ織璺緞',
   host: '璇ョ珯鐐圭殑鍩熷悕',
@@ -113,9 +113,9 @@ SettingEditorLanguage.tips = {
   memoryUsage: 'Google Sitemap Generator鐨勫唴閮ㄦ暟鎹簱鍗犵敤浜嗗灏戝唴瀛樼┖闂�,
   diskUsage: 'Google Sitemap Generator鐨勫唴閮ㄦ暟鎹簱鍗犵敤浜嗗灏戠鐩樼┖闂�,
   startTime: 'Google Sitemap Generator寮�杩愯鏃堕棿',
-  ServiceInfoSuccess: '鏄剧ず涓婁竴娆¤繍琛屾槸鍚︽垚鍔�,
-  ServiceInfoLastUpdate: '涓婃杩愯鐨勬椂闂�,
-  ServiceInfoUrlsCount: '鐢熸垚鐨凷itemap鏂囦欢涓寘鍚殑URL鏁伴噺',
+  infoStat: '鏄剧ず涓婁竴娆¤繍琛屾槸鍚︽垚鍔�,
+  infoTime: '涓婃杩愯鐨勬椂闂�,
+  infoUrls: '鐢熸垚鐨凷itemap鏂囦欢涓寘鍚殑URL鏁伴噺',
   changeLoginPassword: '淇敼鐧诲綍瀵嗙爜',
   changePassword: '鍙湪姝よ缃柊鐨勭櫥褰曞瘑鐮�,
   remoteAccess: '鍏佽杩滅▼璁块棶璁剧疆椤甸潰',
@@ -161,7 +161,7 @@ SettingEditorLanguage.tips = {
 /**
  * The text labels' display contents.
  */
-SettingEditorLanguage.texts = {
+GSGLang.texts = {
   noSitemapEnabled: '娌℃湁sitemap鍙厤缃�,
   fileLimits: 'Sitemap鏂囦欢璁剧疆',
   ServiceInfoUrlPing: '鏈�悗鍙戦�鐨刄RL鍦板潃',
@@ -205,9 +205,9 @@ SettingEditorLanguage.texts = {
   fileScannerServiceInfoTitle: '鏂囦欢鎵弿鏈嶅姟缁勪欢: ',
   blogSearchPingServiceInfoTitle: '鍗氬鎼滅储Ping鏈嶅姟缁勪欢: ',
   webServerFilterServiceInfoTitle: '缃戠珯鎻掍欢鏈嶅姟缁勪欢: ',
-  ServiceInfoSuccess: '鏈�繎涓�杩愯缁撴灉: ',
-  ServiceInfoLastUpdate: '鏈�繎涓�杩愯鏃堕棿: ',
-  ServiceInfoUrlsCount: '鏈�繎涓�鏇存柊鐨勫湴鍧�暟閲� ',
+  infoStat: '鏈�繎涓�杩愯缁撴灉: ',
+  infoTime: '鏈�繎涓�杩愯鏃堕棿: ',
+  infoUrls: '鏈�繎涓�鏇存柊鐨勫湴鍧�暟閲� ',
   urlInDatabase: 'URL鏁伴噺锛堟暟鎹簱锛夛細',
   urlInTempfile: 'URL鏁伴噺锛堜复鏃舵枃浠讹級锛�,
   urlInMemory: 'URL鏁伴噺锛堝唴瀛橈級锛�,

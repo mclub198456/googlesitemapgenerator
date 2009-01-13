@@ -1,4 +1,4 @@
-// Copyright 2008 Google Inc.
+// Copyright 2009 Google Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -79,7 +79,6 @@ bool SecurityManager::Initialize(HttpSettingManager* setting_manager,
 }
 
 bool SecurityManager::CheckRemoteClient(const HttpRequest& request) {
-#ifndef GSG_LOW_SECURITY
   if (local_addrs_.find(request.remote_addr()) == local_addrs_.end()) {
     // Check if it is local.
     // Note, attacker can pass this check if local machine is used as proxy.
@@ -89,13 +88,14 @@ bool SecurityManager::CheckRemoteClient(const HttpRequest& request) {
       return false;
     }
 
+#ifndef GSG_LOW_SECURITY
     // Check if SSL is used.
     if (request.https() != HttpRequest::kHttpsOn) {
       Logger::Log(EVENT_ERROR, "Remote connection is unsecured.");
       return false;
     }
-  }
 #endif // GSG_LOW_SECURITY
+  }
   return true;
 }
 
@@ -115,7 +115,15 @@ bool SecurityManager::Check(HttpContext* context) {
 
   // Exclude remote client if not allowed.
   if (!CheckRemoteClient(*request)) {
-    response->Reset(HttpConst::kStatus401, "Client not allowed.");
+    response->set_status(HttpConst::kStatus200);
+    response->SetHeader(HttpConst::kHeaderContentType, "text/html; charset=utf-8");
+    response->set_message_body(
+      "<html><head>"
+      "<meta http-equiv=\"Refresh\" content=\"0; url=/access_error.html\" />"
+      "</head></body>"
+      "Please follow <a href=\"/access_error.html\">link</a>."
+      "</body></html>"
+      );
     return false;
   }
 

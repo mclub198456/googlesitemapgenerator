@@ -1,4 +1,4 @@
-// Copyright 2008 Google Inc.
+// Copyright 2009 Google Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -88,9 +88,6 @@ int XmlSitemapWriter::WriteSitemapIndex(
   // "\xEF\xBB\xBF" is UTF-8 file prefix
   std::string head("\xEF\xBB\xBF<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
   head.append("<sitemapindex xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\"");
-  if (add_generator_info_) {
-    head.append("\nxmlns:gen=\"http://www.google.com/schemas/sitemap-generator/1.0\"");
-  }
   head.append(">\n");
   fputs(head.c_str(), file);
 
@@ -125,6 +122,7 @@ bool XmlSitemapWriter::WriteUrlElement(const UrlElement &url, FILE *file) {
   sprintf(prioritystr, "%.1lf", url.priority());
   buffer.append("  <priority>").append(prioritystr).append("</priority>\n");
 
+  AddUrlElementExtension(url, &buffer);
   buffer.append("</url>\n");
 
   if (static_cast<int>(buffer.length()) > volumleft()) {
@@ -135,6 +133,12 @@ bool XmlSitemapWriter::WriteUrlElement(const UrlElement &url, FILE *file) {
   decrease_volumleft(static_cast<int>(buffer.length()));
   return true;
 }
+
+void XmlSitemapWriter::AddUrlElementExtension(const UrlElement& url,
+                                                    std::string* buffer) {
+  // does nothing.
+}
+
 
 int XmlSitemapWriter::WriteSitemapElement(const SitemapElement &sitemap, 
                                           FILE *file) {
@@ -154,9 +158,6 @@ int XmlSitemapWriter::WriteSitemapElement(const SitemapElement &sitemap,
 std::vector<std::string> XmlSitemapWriter::GetXmlns() {
   std::vector<std::string> xmlns;
   xmlns.push_back("xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\"");
-  if (add_generator_info_) {
-    xmlns.push_back("xmlns:gen=\"http://www.google.com/schemas/sitemap-generator/1.0\"");
-  }
   return xmlns;
 }
 
@@ -311,5 +312,18 @@ bool XmlCodeSearchSitemapWriter::WriteUrlElement(const UrlElement &url, FILE *fi
 std::vector<std::string> XmlCodeSearchSitemapWriter::GetXmlns() {
   std::vector<std::string> xmlns = XmlSitemapWriter::GetXmlns();
   xmlns.push_back("xmlns:codesearch=\"http://www.google.com/codesearch/schemas/sitemap/1.0\"");
+  return xmlns;
+}
+
+/////////////////////////////////////////////////////////////////////
+// Implementations for XmlMobileSitemapWriter
+void XmlMobileSitemapWriter::AddUrlElementExtension(const UrlElement& url,
+                                                    std::string* buffer) {
+  buffer->append("  <mobile:mobile/>");
+}
+
+std::vector<std::string> XmlMobileSitemapWriter::GetXmlns() {
+  std::vector<std::string> xmlns = XmlSitemapWriter::GetXmlns();
+  xmlns.push_back("xmlns:mobile=\"http://www.google.com/schemas/sitemap-mobile/1.0\"");
   return xmlns;
 }

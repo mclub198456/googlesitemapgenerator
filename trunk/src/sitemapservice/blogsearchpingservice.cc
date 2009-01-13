@@ -1,4 +1,4 @@
-// Copyright 2008 Google Inc.
+// Copyright 2009 Google Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -22,25 +22,26 @@
 #include "sitemapservice/recordfileio.h"
 #include "sitemapservice/runtimeinfomanager.h"
 
+const int BlogSearchPingService::kMaxPingPerMin = 5;
+
 BlogSearchPingService::BlogSearchPingService() {
   time(&last_run_);
 
-  newsdata_manager_ = NULL;
   includefilter_ = NULL;
   excludefilter_ = NULL;
-
   runtime_info_ = NULL;
 }
 
 BlogSearchPingService::~BlogSearchPingService() {
   if (includefilter_ != NULL) delete includefilter_;
   if (excludefilter_ != NULL) delete excludefilter_;
-  if (newsdata_manager_ != NULL) delete newsdata_manager_;
 }
 
 bool BlogSearchPingService::Initialize(SiteDataManager* mgr, const SiteSetting& setting) {
   data_manager_ = mgr;
   ping_setting_ = setting.blogsearch_ping_setting();
+
+  max_ping_per_run_ = ping_setting_.update_duration() / 60 * kMaxPingPerMin + 1;
 
   // Build url filters.
   if (ping_setting_.blog_url().length() == 0) {
@@ -51,12 +52,6 @@ bool BlogSearchPingService::Initialize(SiteDataManager* mgr, const SiteSetting& 
   }
 
   ping_url_ = Url(BlogSearchPingSetting::kPingServiceUrl);
-
-  newsdata_manager_ = new NewsDataManager();
-  if (!newsdata_manager_->Initialize(mgr, "blogsearch_ping")) {
-    Logger::Log(EVENT_ERROR, "Failed to initialize new data manager for blog ping service.");
-    return false;
-  }
 
   // Get the runtime info structure from runtime info tree.
   SiteInfo* site_info = RuntimeInfoManager::application_info()
@@ -84,61 +79,85 @@ int BlogSearchPingService::GetRunningPeriod() {
 
 
 void BlogSearchPingService::Run() {
+  Logger::Log(EVENT_IMPORTANT, "Start to run blog search ping...");
   time_t cut_down = last_run_;
   time(&last_run_);
 
+  // Update the database.
+  if (!data_manager_->UpdateDatabase()) {
+    Logger::Log(EVENT_ERROR, "Failed to update database for blog ping.");
+    return;
+  }
+
+  // Get host name for the site.
   std::string hostname;
   if (!data_manager_->GetHostName(&hostname)) {
-    Logger::Log(EVENT_ERROR, "Failed to get host name for blogsearch ping.");
+    Logger::Log(EVENT_ERROR, "Failed to get host name for blog ping.");
     return;
   }
 
-  if (!newsdata_manager_->UpdateData()) {
-    Logger::Log(EVENT_ERROR, "Failed to update new record for blogsearch ping.");
+  // Lock data base to read.
+  if (!data_manager_->LockDiskData(true)) {
+    Logger::Log(EVENT_ERROR, "Failed to lock site data for blog ping.");
     return;
   }
 
-  std::string datafile = newsdata_manager_->GetDataFile();
-  if (!FileUtil::Exists(datafile.c_str())) {
-    Logger::Log(EVENT_CRITICAL, "No new blog url in this running period.");
-    return;
-  }
-  RecordFileReader* reader = RecordFileIOFactory::CreateReader(datafile);
-  if (reader == NULL) {
-    Logger::Log(EVENT_ERROR, "Failed to get reader for [%s] for blogsearch ping.",
-              datafile.c_str());
-    return;
-  }
-
-  VisitingRecord record;
-  while (reader->Read(&record) == 0) {
-
-    // Next round is coming, exit this round.
-    if (GetWaitTime() <= 0) {
+  bool result = false;
+  RecordFileReader* reader = NULL;
+  do {
+    // Open data base to read.
+    std::string data_base = data_manager_->GetFileManager()->GetBaseFile();
+    reader = RecordFileIOFactory::CreateReader(data_base);
+    if (reader == NULL) {
+      Logger::Log(EVENT_ERROR, "Failed to open data base to read for ping.");
       break;
     }
 
-    if (!Check(record, cut_down)) continue;
+    // Process url one by one.
+    VisitingRecord record;
+    int ping_count = 0;
+    while (reader->Read(&record) == 0) {
+      // Next round is coming, exit this round.
+      if (GetWaitTime() <= 0) {
+        Logger::Log(EVENT_NORMAL, "Next ping round begins. Skip this round.");
+        break;
+      }
 
-    std::string full_url(hostname);
-    full_url.append(record.url());
-    bool success = Ping(full_url.c_str());
+      if (!Check(record, cut_down)) {
+        Logger::Log(EVENT_NORMAL, "Skip to ping [%s].", record.url());
+        continue;
+      }
 
-    // Update runtime info
-    if (runtime_info_ != NULL && RuntimeInfoManager::Lock(true)) {
-      runtime_info_->set_success(success);
-      runtime_info_->set_last_ping(time(NULL));
-      runtime_info_->set_last_url(full_url);
-      RuntimeInfoManager::Unlock();
+      if (++ping_count > max_ping_per_run_) {
+        Logger::Log(EVENT_NORMAL, "Meet ping threshold [%d > %d]",
+                    ping_count, max_ping_per_run_);
+        break;
+      }
+
+      std::string full_url(hostname);
+      full_url.append(record.url());
+      bool success = Ping(full_url.c_str());
+
+      // Update runtime info
+      if (runtime_info_ != NULL && RuntimeInfoManager::Lock(true)) {
+        runtime_info_->set_success(success);
+        runtime_info_->set_last_ping(time(NULL));
+        runtime_info_->set_last_url(full_url);
+        RuntimeInfoManager::Unlock();
+      }
+
+      // This requires exact match, so the left URLs are ignored.
+      if (ping_setting_.blog_url().length() != 0) {
+        break;
+      }
     }
 
-    // This requires exact match, so the left URLs are ignored.
-    if (ping_setting_.blog_url().length() != 0) {
-      break;
-    }
-  }
+    Logger::Log(EVENT_IMPORTANT, "Finish blog ping with %d URLs.", ping_count);
+    result = true;
+  } while (false);
 
-  delete reader;
+  if (reader != NULL) delete reader;
+  data_manager_->UnlockDiskData();
 }
 
 bool BlogSearchPingService::Check(const VisitingRecord& record, time_t cut_down) {
@@ -148,7 +167,7 @@ bool BlogSearchPingService::Check(const VisitingRecord& record, time_t cut_down)
     if (record.url() != temp.path_url()) return false;
   } else {
     int urllen = record.url_length();
-    if (includefilter_ != NULL && !includefilter_->Accept(record.url(), urllen)) {
+    if (includefilter_ == NULL || !includefilter_->Accept(record.url(), urllen)) {
       // not an included url
       return false;
     }

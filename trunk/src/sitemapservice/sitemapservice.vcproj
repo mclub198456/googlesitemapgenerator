@@ -1390,10 +1390,6 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath=".\templates\scripts\md5.js"
-					>
-				</File>
-				<File
 					RelativePath=".\templates\scripts\runtimeinfomanager.js"
 					>
 					<FileConfiguration

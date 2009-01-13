@@ -1,4 +1,4 @@
-// Copyright 2008 Google Inc.
+// Copyright 2009 Google Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -24,44 +24,41 @@
 
 /**
  * @fileoverview This class contains some utility functions.
- * @author chaiying@google.com (Ying Chai)
  */
 
 /**
- * The utility module
+ * The base namespace for this module.
  */
 var Util = {};
 
 /**
- * The console namespace, for msg/log output
+ * The namespace for msg/log output.
  */
 Util.console = {};
 
 /**
- * The object namespace, for Object functions extension
- */
-Util.object = {};
-
-/**
- * The DOM namespace, for DOM functions extension
- */
-Util.DOM = {};
-
-/**
- * The array namespace, for Array functions extension
+ * The namespace for Array functions extension.
  */
 Util.array = {};
 
 /**
- * The CSS namespace, for CSS class utilities.
+ * The namespace for mapping Object functions extension.
+ */
+Util.map = {};
+
+/**
+ * The namespace for CSS class utilities.
  */
 Util.CSS = {};
 
 /**
- * The event namespace, for event management utilities.
+ * The namespace for event management utilities.
  */
 Util.event = {};
 
+/**
+ * The namespace for XML tree utilities.
+ */
 Util.XML = {};
 
 
@@ -69,7 +66,7 @@ Util.XML = {};
 
 
 /**
- * Creates XML element
+ * Creates XML element.
  * @param {String} tag  The element tag
  */
 Util.XML.createElement = function(tag) {
@@ -79,7 +76,7 @@ Util.XML.createElement = function(tag) {
 };
 
 /**
- * Creates text XML element
+ * Creates text XML element.
  * @param {String} text  The element text
  */
 Util.XML.createTextNode = function(text) {
@@ -90,6 +87,7 @@ Util.XML.createTextNode = function(text) {
 /**
  * Creates an empty XML document.
  * @param {String} rootTagName  The tag of the root node of the XML document
+ * @supported IE and Firefox
  */
 Util.XML.createNewXmlDocument = function(rootTagName) {
   if (rootTagName == null)
@@ -139,27 +137,26 @@ Util.XML.createNewXmlDocument = function(rootTagName) {
 
 /////////////////////////// report functions ////////////////////////////
 /**
- * Reports to user.
- * @param {String} msg  The message to user
- */
-Util.console.report = function(msg) {
-  alert(msg);
-};
-
-/**
  * Logs to the debug window.
  * @param {String} msg  The debug message
  */
 Util.console.log = function(msg) {
-  var box = Util.console.log.box;
+  if (console) { // firebug console
+    console.log(msg);
+    return;
+  }
+  
   function writeln(str) {
     box.appendChild(
         document.createTextNode(str));
     box.appendChild(
         document.createElement('br'));
   }
+  
+  var box = Util.console.log.box;
   if (!box) {
-    box = _gel('debug-box');
+    box = document.getElementById('debug-box');
+    if (!box) return;
     Util.console.log.box = box;
     writeln('start debug...');
     _show(box);
@@ -172,212 +169,8 @@ Util.console.log = function(msg) {
  * @param {String} msg  The error message
  */
 Util.console.error = function(msg) {
-  Util.console.report('Error: ' + msg);
-  debugger;
+  alert('Error: ' + msg);debugger;
   throw new Error(msg);
-};
-
-//////////////////////////// object function //////////////////////////
-/**
- * Checks if the object has a property
- * @param {Object} obj  The object being checked
- * @param {String} prop  The property name
- * @return {Boolean} True if the object has the property
- */
-Util.object.hasProperty = function(obj, prop) {
-  if (prop in obj)
-    return true;
-  else
-    return false;
-};
-
-/**
- * Checks if the object is an instance of 'classname' class
- * @param {Object} obj  The object to be checked
- * @param {Function} classname  The class constructor
- */
-Util.object.isType = function(obj, classname) {
-  return obj != null && typeof obj == 'object' && obj instanceof classname;
-};
-
-/**
- * Applies function to associated-array-like object.
- * @param {Object} obj  The associated-array-like object
- * @param {Function} func The function that applies to the items in the object
- */
-Util.applyToEnum = function(obj, func) {
-  var rets = [];
-  for (var prop in obj)
-    rets.push(func(obj[prop]));
-  return rets;
-};
-///////////////////////// DOM function //////////////////////////
-/**
- * Applies function to each node in the DOM tree.
- * @param {Node} root  The root of the DOM tree
- * @param {Function} func  The function that applies to the nodes
- * @param {Array?} opt_params  The params to the function
- */
-Util.DOM.applyToDomTree = function(root, func, opt_params) {
-  if (root.nodeType != Node.ELEMENT_NODE)
-    return;
-  if (opt_params)
-    func(root, opt_params);
-  else
-    func(root);
-
-  if (Util.object.hasProperty(root, 'childNodes')) {
-    for (var i = 0; i < root.childNodes.length; i++) {
-      if (root.nodeType == Node.ELEMENT_NODE)
-        Util.DOM.applyToDomTree(root.childNodes[i], func, opt_params);
-    }
-  }
-};
-/**
- * Checks if the element has the attribute.
- * @param {Element} elem  The element to be checked
- * @param {String} attrname  The attribute name
- * @return {Boolean} If the element has the attribute
- */
-Util.DOM.hasAttribute = function(elem, attrname) {
-  /*
-   * Notes:
-   * For HTML node, 'if (elem.getAttribute)' can be used to judge if the
-   * function exist, but for XML node, IE will throw an except that 'Wrong
-   * number of arguments or invalid  property assignment'. The IE's
-   * Element.getAttribute is also not a function, but an unknown object.
-   */
-  if (elem.hasAttribute) {
-    return elem.hasAttribute(attrname);
-  } else { // for IE
-    return elem.getAttribute(attrname) != null;
-  }
-};
-/**
- * Checks if the node is a text node.
- * @param {Node} node  The node to be checked
- * @return {Boolean} If the node is a text node
- */
-Util.DOM.isTextNode = function(node) {
-  return node && node.nodeType == Node.TEXT_NODE;
-};
-
-/**
- * Finds sub node(s) in the HTML container according to the params.
- * @param {HTMLElement} container  The root node of the searched tree
- * @param {String} tagName  The tag name of the nodes to be found
- * @param {String} type  The 'type' attribute value, for 'INPUT' element
- * @param {Boolean} onlyFirst  Find the first node or all nodes
- * @param {Boolean} deepSearch  If true, search all the sub elements under the
- * container, else, search only the direct sub elements.
- * @return {Array.<Element>|Element|null} The found node(s)
- * @private
- */
-Util.DOM.getSubNodes_ = function(container, tagName, type, onlyFirst,
-                                 deepSearch){
-  var uncheckElems; // elements that match tagname but not check type
-  if (deepSearch) {
-    uncheckElems = container.getElementsByTagName(tagName);
-  } else {
-    uncheckElems = Util.array.filter_(container.childNodes, function(node) {
-      return Node.ELEMENT_NODE == node.nodeType && node.tagName == tagName;
-    });
-  }
-
-  var elements;
-  if (type == '') {
-    elements = uncheckElems;
-  } else {
-    elements = Util.array.filter_(uncheckElems, function(elem) {
-      return elem.type == type;
-    });
-  }
-
-  return onlyFirst ? (elements.length == 0 ? null : elements[0]) : elements;
-};
-
-/**
- * Gets the first child in the container that have the tagname and the type
- * attribute value.
- * @param {Element} container  The parent container
- * @param {String} tagName  The tag name of the child to be found
- * @param {String} type  The type value of the child to be found
- * @return {Array.<Element>?} The found child node
- */
-Util.DOM.getFirstChildrenByTagNameAndType = function(container, tagName, type) {
-  return Util.DOM.getSubNodes_(container, tagName, type, true, false);
-};
-
-/**
- * Gets all the children in the container that have the tagname.
- * @param {Element} container  The parent container
- * @param {String} tagName  The tag name of the children to be found
- * @return {Array.<Element>?} The found children node(s)
- */
-Util.DOM.getAllChildrenByTagName = function(container, tagName){
-  return Util.DOM.getSubNodes_(container, tagName, '', false, false);
-};
-
-/**
- * Gets the first child in the container that have the tagname.
- * @param {Element} container  The parent container
- * @param {String} tagName  The tag name of the child to be found
- * @return {Array.<Element>?} The found child node
- */
-Util.DOM.getFirstChildrenByTagName = function(container, tagName){
-  return Util.DOM.getSubNodes_(container, tagName, '', true, false);
-};
-
-////////////
-
-/**
- * Gets all the descentdant in the container that have the tagname and the type
- * attribute value.
- * @param {Element} container  The ancestor container
- * @param {String} tagName  The tag name of the descentdant to be found
- * @param {String} type  The type value of the descentdant to be found
- * @return {Array.<Element>?} The found descentdant node(s)
- */
-Util.DOM.getAllDescentdantByTagNameAndType = function(container, tagName, type){
-  return Util.DOM.getSubNodes_(container, tagName, type, false, true);
-};
-
-/**
- * Gets the first descentdant in the container that have the tagname and the
- * type attribute value.
- * @param {Element} container  The ancestor container
- * @param {String} tagName  The tag name of the descentdant to be found
- * @param {String} type  The type value of the descentdant to be found
- * @return {Array.<Element>?} The found descentdant node
- */
-Util.DOM.getFirstDescentdantdantByTagNameAndType = function(container, tagName,
-                                                            type) {
-  return Util.DOM.getSubNodes_(container, tagName, type, true, true);
-};
-
-/**
- * Gets all the descentdant in the container that have the tagname.
- * @param {Element} container  The ancestor container
- * @param {String} tagName  The tag name of the descentdant to be found
- * @return {Array.<Element>?} The found descentdant node(s)
- */
-Util.DOM.getAllDescentdantByTagName = function(container, tagName){
-  return Util.DOM.getSubNodes_(container, tagName, '', false, true);
-};
-
-////////////
-
-
-/**
- * Remove all the DOM component in the 'container' node.
- * @param {Node} container  The container node
- */
-Util.DOM.removeAllChildren = function(container) {
-  if (Util.object.hasProperty(container, 'childNodes')) {
-    for (var i = 0; i < container.childNodes.length;) {
-      container.removeChild(container.childNodes[i]);
-    }
-  }
 };
 
 /////////////////////// assert function ///////////////////////////
@@ -395,6 +188,33 @@ Util.assert = function(val, opt_msg) {
   }
 };
 
+//////////////////////////////////////////
+
+Util.spaceUnits = [
+  GSGLang.texts.byteUnit,
+  GSGLang.texts.kiloByteUnit,
+  GSGLang.texts.megaByteUnit,
+  GSGLang.texts.gigaByteUnit,
+  GSGLang.texts.teraByteUnit
+];
+
+/**
+ * Return well formatted string according to the value.
+ * @param {number|string} value
+ */
+Util.getSpaceString = function(value) {
+  if (typeof value == 'string') value = parseInt(value);
+  var level = 0;
+  while (value > KILO_UNIT_NUM) {
+    value /= KILO_UNIT_NUM;
+    level++;
+  }
+  if (level > 0) {
+    value = value.toFixed(2);
+  }
+  return value + ' ' + Util.spaceUnits[level];
+};
+
 /////////////////////// check function ///////////////////////////
 
 /**
@@ -405,8 +225,7 @@ Util.assert = function(val, opt_msg) {
  */
 Util.checkElemExistAndReturn = function(id) {
   var elem = document.getElementById(id);
-  if (elem == null) {
-    debugger;
+  if (elem == null || id == 'save-web') {
     Util.assert(false, 'lack html element with id: ' + id);
   }
   return elem;
@@ -450,7 +269,7 @@ Util.checkUniqueOrNullAndReturn = function(node, tagName) {
   return elements[0];
 };
 
-///////////////////////// array function ////////////////
+///////////////////////// array/map functions ////////////////
 
 Util.array.equals = function(arr1, arr2) {
   if (typeof arr1 != typeof arr2) {
@@ -518,6 +337,13 @@ Util.array.apply = function(array, func) {
   return rets;
 };
 
+Util.map.apply = function(mapObj, func) {
+  var rets = [];
+  for (var prop in mapObj)
+    rets.push(func(mapObj[prop]));
+  return rets;
+};
+
 /**
  * Applies the function to array members, will stop applying to the remaining
  * members if the function return false to current member.
@@ -539,11 +365,25 @@ Util.array.checkIfAny = function(array, func) {
   return false;
 };
 
+Util.map.checkIfAny = function(mapObj, func) {
+  for (var prop in mapObj)
+    if (func(mapObj[prop]))
+      return true;
+  return false;
+};
+
 Util.array.find = function(array, func) {
   var l = array.length;
   for (var i = 0; i < l; i++)
     if (func(array[i]))
       return array[i];
+  return null;
+};
+
+Util.map.find = function(mapObj, func) {
+  for (var prop in mapObj)
+    if (func(mapObj[prop]))
+      return mapObj[prop];
   return null;
 };
 
@@ -600,7 +440,7 @@ Util.array.filter_ = function(a, predicate) {
   return results;
 };
 
-//////////////////////// className manipulator //////////////////
+//////////////////////// CSS class functions //////////////////
 /**
  * Adds a CSS class to the element
  * @param {Element} elem  The HTML element
@@ -676,7 +516,10 @@ Util.CSS.showElement = function(elem) {
 };
 
 
-////////////////
+///////////////////////////// Event functions //////////////////////////////////
+/**
+ * Records the handlers that bind to an event.
+ */
 Util.event.handlers_ = [];
 
 /**
@@ -798,27 +641,7 @@ Util.event.clearEnterKey = function(target) {
   Util.event.clear(target, 'keydown');
 };
 
-//////////////////////////////////////////
-Util.spaceUnits = [
-  SettingEditorLanguage.texts.byteUnit,
-  SettingEditorLanguage.texts.kiloByteUnit,
-  SettingEditorLanguage.texts.megaByteUnit,
-  SettingEditorLanguage.texts.gigaByteUnit,
-  SettingEditorLanguage.texts.teraByteUnit
-];
-Util.getSpaceString = function(value) {
-  if (typeof value == 'string') value = parseInt(value);
-  var level = 0;
-  while (value > KILO_UNIT_NUM) {
-    value /= KILO_UNIT_NUM;
-    level++;
-  }
-  if (level > 0) {
-    value = value.toFixed(2);
-  }
-  return value + ' ' + Util.spaceUnits[level];
-};
-//////////////////////////////////////////
+//////////////////////// Performance functions //////////////////
 /**
  * The performance monitor class.
  * @constructor
@@ -942,6 +765,173 @@ Perf.report = function(perf) {
   });
   alert(res.join('\n'));
 };
+
+///////////// Cookie ////////////////////
+/**
+ * This is the Cookie( ) constructor function.
+ *
+ * This constructor looks for a cookie with the specified name for the
+ * current document. If one exists, it parses its value into a set of
+ * name/value pairs and stores those values as properties of the newly created
+ * object.
+ *
+ * To store new data in the cookie, simply set properties of the Cookie
+ * object. Avoid properties named "store" and "remove", since these are
+ * reserved as method names.
+ *
+ * To save cookie data in the web browser's local store, call store( ).
+ * To remove cookie data from the browser's store, call remove( ).
+ *
+ * The static method Cookie.enabled( ) returns true if cookies are
+ * enabled and returns false otherwise.
+ * @param {String} name  The cookie name
+ * @constructor
+ */
+function Cookie(name) {
+  this.$name = name;  // Remember the name of this cookie
+
+  // First, get a list of all cookies that pertain to this document.
+  // We do this by reading the magic Document.cookie property.
+  // If there are no cookies, we don't have anything to do.
+  var allcookies = document.cookie;
+  if (allcookies == '') return;
+
+  // Break the string of all cookies into individual cookie strings
+  // Then loop through the cookie strings, looking for our name
+  var cookies = allcookies.split(';');
+  var cookie = null;
+  for (var i = 0; i < cookies.length; i++) {
+    // Does this cookie string begin with the name we want?
+    if (cookies[i].substring(0, name.length + 1) == (name + '=')) {
+      cookie = cookies[i];
+      break;
+    }
+  }
+
+  // If we didn't find a matching cookie, quit now
+  if (cookie == null) return;
+
+  // The cookie value is the part after the equals sign
+  var cookieval = cookie.substring(name.length + 1);
+
+  // Now that we've extracted the value of the named cookie, we
+  // must break that value down into individual state variable
+  // names and values. The name/value pairs are separated from each
+  // other by ampersands, and the individual names and values are
+  // separated from each other by colons. We use the split( ) method
+  // to parse everything.
+  var a = cookieval.split('&'); // Break it into an array of name/value pairs
+  for (var i = 0; i < a.length; i++)  // Break each pair into an array
+    a[i] = a[i].split(':');
+
+  // Now that we've parsed the cookie value, set all the names and values
+  // as properties of this Cookie object. Note that we decode
+  // the property value because the store( ) method encodes it.
+  for (var i = 0; i < a.length; i++) {
+    this[a[i][0]] = decodeURIComponent(a[i][1]);
+  }
+}
+
+/**
+ * This function is the store( ) method of the Cookie object. *
+ * @param {Number} daysToLive  The lifetime of the cookie, in days. If you set
+ *     this to zero, the cookie will be deleted. If you set it to null, or
+ *     omit this argument, the cookie will be a session cookie and will
+ *     not be retained when the browser exits. This argument is used to
+ *     set the max-age attribute of the cookie.
+ * @param {String} path  The value of the path attribute of the cookie
+ * @param {String} domain  The value of the domain attribute of the cookie
+ * @param {Boolean} secure  If true, the secure attribute of the cookie will be
+ *     set
+ */
+Cookie.prototype.store = function(daysToLive, path, domain, secure) {
+  // First, loop through the properties of the Cookie object and
+  // put together the value of the cookie. Since cookies use the
+  // equals sign and semicolons as separators, we'll use colons
+  // and ampersands for the individual state variables we store
+  // within a single cookie value. Note that we encode the value
+  // of each property in case it contains punctuation or other
+  // illegal characters.
+  var cookieval = '';
+  for (var prop in this) {
+    // Ignore properties with names that begin with '$' and also methods
+    if ((prop.charAt(0) == '$') || ((typeof this[prop]) == 'function'))
+      continue;
+    if (cookieval != '') cookieval += '&';
+    cookieval += prop + ':' + encodeURIComponent(this[prop]);
+  }
+
+  // Now that we have the value of the cookie, put together the
+  // complete cookie string, which includes the name and the various
+  // attributes specified when the Cookie object was created
+  var cookie = this.$name + '=' + cookieval;
+  if (daysToLive || daysToLive == 0) {
+    cookie += '; max-age=' + (daysToLive * 24 * 60 * 60);
+  }
+
+  if (path) cookie += '; path=' + path;
+  if (domain) cookie += '; domain=' + domain;
+  if (secure) cookie += '; secure';
+
+  // Now store the cookie by setting the magic Document.cookie property
+  document.cookie = cookie;
+};
+
+/**
+ * This function is the remove( ) method of the Cookie object; it deletes the
+ * properties of the object and removes the cookie from the browser's
+ * local store.
+ *
+ * The arguments to this function are all optional, but to remove a cookie
+ * you must pass the same values you passed to store( ).
+ * @param {String} path  The value of the path attribute of the cookie
+ * @param {String} domain  The value of the domain attribute of the cookie
+ * @param {Boolean} secure  If true, the secure attribute of the cookie will be
+ *     set
+ */
+Cookie.prototype.remove = function(path, domain, secure) {
+  // Delete the properties of the cookie
+  for (var prop in this) {
+    if (prop.charAt(0) != '$' && typeof this[prop] != 'function')
+      delete this[prop];
+  }
+
+  // Then, store the cookie with a lifetime of 0
+  this.store(0, path, domain, secure);
+};
+
+/**
+ * This static method attempts to determine whether cookies are enabled.
+ * @return {Boolean} True if they appear to be enabled and false otherwise.
+ *   A return value of true does not guarantee that cookies actually persist.
+ *   Nonpersistent session cookies may still work even if this method
+ *   returns false.
+ */
+Cookie.enabled = function() {
+  // Use navigator.cookieEnabled if this browser defines it
+  if (navigator.cookieEnabled != undefined) return navigator.cookieEnabled;
+
+  // If we've already cached a value, use that value
+  if (Cookie.enabled.cache != undefined) return Cookie.enabled.cache;
+
+  // Otherwise, create a test cookie with a lifetime
+  document.cookie = 'testcookie=test; max-age=10000';  // Set cookie
+
+  // Now see if that cookie was saved
+  var cookies = document.cookie;
+  if (cookies.indexOf('testcookie=test') == -1) {
+    // The cookie was not saved
+    Cookie.enabled.cache = false;
+    return false;
+  }
+  else {
+    // Cookie was saved, so we've got to delete it before returning
+    document.cookie = 'testcookie=test; max-age=0';  // Delete cookie
+    Cookie.enabled.cache = true;
+    return true;
+  }
+};
+
 ///////////////// Build-in object extension ///////////////////
 /**
  * Extends the Function object for object inheritance.
@@ -965,180 +955,16 @@ Function.prototype.borrowFrom = function(target) {
   }
 };
 
-///////////// Cookie ////////////////////
-/**
- * Copy from JavaScript - The Definitive Guide, 5th Edition
- * This is the Cookie( ) constructor function.
- *
- * This constructor looks for a cookie with the specified name for the
- * current document. If one exists, it parses its value into a set of
- * name/value pairs and stores those values as properties of the newly created
- * object.
- *
- * To store new data in the cookie, simply set properties of the Cookie
- * object. Avoid properties named "store" and "remove", since these are
- * reserved as method names.
- *
- * To save cookie data in the web browser's local store, call store( ).
- * To remove cookie data from the browser's store, call remove( ).
- *
- * The static method Cookie.enabled( ) returns true if cookies are
- * enabled and returns false otherwise.
- * @param {String} name  The cookie name
- * @constructor
- */
-function Cookie(name) {
-    this.$name = name;  // Remember the name of this cookie
-
-    // First, get a list of all cookies that pertain to this document.
-    // We do this by reading the magic Document.cookie property.
-    // If there are no cookies, we don't have anything to do.
-    var allcookies = document.cookie;
-    if (allcookies == '') return;
-
-    // Break the string of all cookies into individual cookie strings
-    // Then loop through the cookie strings, looking for our name
-    var cookies = allcookies.split(';');
-    var cookie = null;
-    for (var i = 0; i < cookies.length; i++) {
-        // Does this cookie string begin with the name we want?
-        if (cookies[i].substring(0, name.length + 1) == (name + '=')) {
-            cookie = cookies[i];
-            break;
-        }
-    }
-
-    // If we didn't find a matching cookie, quit now
-    if (cookie == null) return;
-
-    // The cookie value is the part after the equals sign
-    var cookieval = cookie.substring(name.length + 1);
-
-    // Now that we've extracted the value of the named cookie, we
-    // must break that value down into individual state variable
-    // names and values. The name/value pairs are separated from each
-    // other by ampersands, and the individual names and values are
-    // separated from each other by colons. We use the split( ) method
-    // to parse everything.
-    var a = cookieval.split('&'); // Break it into an array of name/value pairs
-    for (var i = 0; i < a.length; i++)  // Break each pair into an array
-        a[i] = a[i].split(':');
-
-    // Now that we've parsed the cookie value, set all the names and values
-    // as properties of this Cookie object. Note that we decode
-    // the property value because the store( ) method encodes it.
-    for (var i = 0; i < a.length; i++) {
-        this[a[i][0]] = decodeURIComponent(a[i][1]);
-    }
-}
-
-/**
- * This function is the store( ) method of the Cookie object. *
- * @param {Number} daysToLive  The lifetime of the cookie, in days. If you set
- *     this to zero, the cookie will be deleted. If you set it to null, or
- *     omit this argument, the cookie will be a session cookie and will
- *     not be retained when the browser exits. This argument is used to
- *     set the max-age attribute of the cookie.
- * @param {String} path  The value of the path attribute of the cookie
- * @param {String} domain  The value of the domain attribute of the cookie
- * @param {Boolean} secure  If true, the secure attribute of the cookie will be
- *     set
- */
-Cookie.prototype.store = function(daysToLive, path, domain, secure) {
-    // First, loop through the properties of the Cookie object and
-    // put together the value of the cookie. Since cookies use the
-    // equals sign and semicolons as separators, we'll use colons
-    // and ampersands for the individual state variables we store
-    // within a single cookie value. Note that we encode the value
-    // of each property in case it contains punctuation or other
-    // illegal characters.
-    var cookieval = '';
-    for (var prop in this) {
-        // Ignore properties with names that begin with '$' and also methods
-        if ((prop.charAt(0) == '$') || ((typeof this[prop]) == 'function'))
-            continue;
-        if (cookieval != '') cookieval += '&';
-        cookieval += prop + ':' + encodeURIComponent(this[prop]);
-    }
-
-    // Now that we have the value of the cookie, put together the
-    // complete cookie string, which includes the name and the various
-    // attributes specified when the Cookie object was created
-    var cookie = this.$name + '=' + cookieval;
-    if (daysToLive || daysToLive == 0) {
-      cookie += '; max-age=' + (daysToLive * 24 * 60 * 60);
-    }
-
-    if (path) cookie += '; path=' + path;
-    if (domain) cookie += '; domain=' + domain;
-    if (secure) cookie += '; secure';
-
-    // Now store the cookie by setting the magic Document.cookie property
-    document.cookie = cookie;
-};
-
-/**
- * This function is the remove( ) method of the Cookie object; it deletes the
- * properties of the object and removes the cookie from the browser's
- * local store.
- *
- * The arguments to this function are all optional, but to remove a cookie
- * you must pass the same values you passed to store( ).
- * @param {String} path  The value of the path attribute of the cookie
- * @param {String} domain  The value of the domain attribute of the cookie
- * @param {Boolean} secure  If true, the secure attribute of the cookie will be
- *     set
- */
-Cookie.prototype.remove = function(path, domain, secure) {
-    // Delete the properties of the cookie
-    for (var prop in this) {
-        if (prop.charAt(0) != '$' && typeof this[prop] != 'function')
-            delete this[prop];
-    }
-
-    // Then, store the cookie with a lifetime of 0
-    this.store(0, path, domain, secure);
-};
-
-/**
- * This static method attempts to determine whether cookies are enabled.
- * @return {Boolean} True if they appear to be enabled and false otherwise.
- *   A return value of true does not guarantee that cookies actually persist.
- *   Nonpersistent session cookies may still work even if this method
- *   returns false.
- */
-Cookie.enabled = function() {
-    // Use navigator.cookieEnabled if this browser defines it
-    if (navigator.cookieEnabled != undefined) return navigator.cookieEnabled;
-
-    // If we've already cached a value, use that value
-    if (Cookie.enabled.cache != undefined) return Cookie.enabled.cache;
-
-    // Otherwise, create a test cookie with a lifetime
-    document.cookie = 'testcookie=test; max-age=10000';  // Set cookie
-
-    // Now see if that cookie was saved
-    var cookies = document.cookie;
-    if (cookies.indexOf('testcookie=test') == -1) {
-        // The cookie was not saved
-        Cookie.enabled.cache = false;
-        return false;
-    }
-    else {
-        // Cookie was saved, so we've got to delete it before returning
-        document.cookie = 'testcookie=test; max-age=0';  // Delete cookie
-        Cookie.enabled.cache = true;
-        return true;
-    }
-};
-
 //////////////////////////////////////////////////////
-
+/**
+ * Some short alias and wrap functions.
+ */
 function _gelt(tag) {
   return document.getElementsByTagName(tag);
 }
 
 var _arr = Util.array.apply;
+var _map = Util.map.apply;
 var _event = Util.event.add;
 var _show = Util.CSS.showElement;
 var _hide = Util.CSS.hideElement;

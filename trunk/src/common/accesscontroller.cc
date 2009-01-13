@@ -1,4 +1,4 @@
-// Copyright 2008 Google Inc.
+// Copyright 2009 Google Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -273,6 +273,7 @@ bool AccessController::CreateSecurityDescriptor(SECURITY_ATTRIBUTES* sa,
 
 #else
 gid_t AccessController::apache_gid_ = -1U;
+std::string AccessController::apache_group_ = "";
 
 bool AccessController::AllowApacheAccessFile(const std::string& file,
                                              mode_t mode) {
@@ -300,9 +301,17 @@ bool AccessController::RunWithApacheGroup() {
   // We will only allow access with owner or group.
   umask(S_IROTH | S_IWOTH | S_IXOTH);
 
-  SettingManager* setting_manager = SettingManager::default_instance();
-  setting_manager->ReloadWebserverConfig();
-  std::string group_name = setting_manager->webserver_config().group_name();
+  if (apache_group_.length() == 0) {
+    SettingManager* setting_manager = SettingManager::default_instance();
+    SiteSettings settings;
+    if (!setting_manager->LoadApplicationSetting(&settings)) {
+      Logger::Log(EVENT_ERROR, "Failed to load setting.");
+      return false;
+    }
+    apache_group_ = settings.apache_group();
+  }
+
+  std::string group_name = apache_group_;
   if (group_name.length() == 0) {
     Logger::Log(EVENT_ERROR, "Failed to retrieve apache group name.");
     return false;

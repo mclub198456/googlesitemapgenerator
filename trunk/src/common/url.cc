@@ -1,4 +1,4 @@
-// Copyright 2008 Google Inc.
+// Copyright 2009 Google Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -240,18 +240,45 @@ void Url::EscapeUrlComponent(const char* comp, int len, std::string* dest) {
   }
 }
 
-
+// Possible valid URL chars according to RFC.
+// It doesn't differentiate different parts of a URL.
+// Even URL containing all these chars are not assured to be valid.
 static const CharMask kValidUrlCharMask(
   0x0L, 0xaffffffaL, 0x87ffffffL, 0x07fffffeL,
   0x0L, 0x0L, 0x0L, 0x0L
 );
 
+// Safe chars for url path part.
+// Besides excluded chars in kValidUrlCharMask,
+// '&', ':', ';', '@', '=' are also excluded.
+// WARNING: Other chars are not always safe.
+static const CharMask kSafePathCharMask(
+  0x0L, 0x83ffffbaL, 0x87fffffeL, 0x07fffffeL,
+  0x0L, 0x0L, 0x0L, 0x0L
+);
+
 bool Url::ValidateUrlChars(const char* src) {
+  bool path = true;  // Whether in path part or query string part.
   int srcn = static_cast<int>(strlen(src));
   for (int i = 0; i < srcn; ++i) {
+#ifndef GSG_LOW_PRIVACY
+    if (src[i] == '?') {
+      path = false;
+    }
+    if (path) {
+      if (!kSafePathCharMask.contains(src[i])) {
+        return false;
+      }
+    } else {
+      if (!kValidUrlCharMask.contains(src[i])) {
+        return false;
+      }
+    }
+#else
     if (!kValidUrlCharMask.contains(src[i])) {
       return false;
     }
+#endif
   }
 
   return true;
@@ -278,10 +305,3 @@ bool Url::UnescapeUrlComponent(const char* comp, int len, std::string* dest) {
 
   return true;
 }
-
-
-
-
-
-
-

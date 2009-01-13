@@ -1,4 +1,4 @@
-// Copyright 2008 Google Inc.
+// Copyright 2009 Google Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -61,6 +61,13 @@ public:
   // The passwd should be in encrypted form.
   bool SetPassword(const char* passwd, const char* salt);
 
+  // Set application level attribute in setting file.
+  bool SetApplicationAttribute(const std::string& name,
+                               const std::string& value);
+
+  // Set notify status in global setting.
+  bool SetGlobalNotifyStatus(bool enabled);
+
   // Back up default setting file.
   // The setting file will be copied into "back_up" directory, which is in the
   // same directory as the default setting file. The name of the setting file
@@ -81,7 +88,7 @@ public:
   // The given element may only contain some settings values. In this case,
   // default value from GlobalSetting will be used for missing values.
   bool SaveSiteSetting(TiXmlElement* element);
-  
+
   // Get/set webserver configuration.
   const LocalWebServerConfig& webserver_config() const {
     return webserver_config_;
@@ -100,7 +107,7 @@ public:
   static SettingManager* default_instance() {
     return &default_instance_;
   }
-  
+
   // Get default setting file path.
   // Please use this method if it is used by main service.
   static std::string GetDefaultFilePath();
@@ -111,7 +118,7 @@ private:
 
   // Default global instance.
   static SettingManager default_instance_;
-  
+
   // Cached webserver configurations.
   LocalWebServerConfig webserver_config_;
 
