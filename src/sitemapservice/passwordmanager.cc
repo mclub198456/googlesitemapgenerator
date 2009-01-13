@@ -1,4 +1,4 @@
-// Copyright 2008 Google Inc.
+// Copyright 2009 Google Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -141,13 +141,13 @@ bool PasswordManager::GetNewPassword(std::string* passwd) {
   while (true) {
     std::string new_pwd, repeat_pwd;
 
-    printf("Enter new password (5 or more characters):");
+    printf("Password (5 or more characters):");
     if (!GetInput(&new_pwd)) {
       return false;
     }
     printf("\n");
 
-    printf("Confirm new password:");
+    printf("Confirm password:");
     if (!GetInput(&repeat_pwd)) {
       return false;
     }

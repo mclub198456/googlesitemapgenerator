@@ -1,4 +1,4 @@
-// Copyright 2008 Google Inc.
+// Copyright 2009 Google Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -34,13 +34,15 @@ BlogSearchPingSetting::~BlogSearchPingSetting() {
 
 void BlogSearchPingSetting::ResetToDefault() {
   enabled_ = false;
-  update_duration_ = 30 * 60;  // half hour.
+  update_duration_ = 24 * 60 * 60;  // half hour.
   
   blog_name_ = "";
   blog_url_ = "";
   blog_changes_url_ = "";
 
   included_urls_.ResetToDefault();
+  included_urls_.AddItem(UrlSetting(Url("/*.htm")));
+  included_urls_.AddItem(UrlSetting(Url("/*.html")));
   excluded_urls_.ResetToDefault();
 }
 

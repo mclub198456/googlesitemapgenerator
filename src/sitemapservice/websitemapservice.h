@@ -1,4 +1,4 @@
-// Copyright 2008 Google Inc.
+// Copyright 2009 Google Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@
 #ifndef SITEMAPSERVICE_WEBSITEMAPSERVICE_H__
 #define SITEMAPSERVICE_WEBSITEMAPSERVICE_H__
 
-
+#include "common/sitesettings.h"
 #include "common/websitemapsetting.h"
 #include "sitemapservice/plainsitemapservice.h"
 
@@ -36,7 +36,14 @@ class WebSitemapService : public PlainSitemapService {
   virtual bool Initialize(SiteDataManager* datamanager,
                           const SiteSetting & setting);
 
+  virtual bool End();
+
+  static bool CleanRobotsTxt();
+
  private:
+  // Update robots.txt if necessary.
+  bool UpdateRobotsTxt(const std::string& robotstxt_path);
+
   WebSitemapSetting    web_sitemap_setting_;
 };
 

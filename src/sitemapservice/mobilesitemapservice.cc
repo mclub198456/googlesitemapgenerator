@@ -1,4 +1,4 @@
-// Copyright 2008 Google Inc.
+// Copyright 2009 Google Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@
 #include "sitemapservice/runtimeinfomanager.h"
 
 MobileSitemapService::MobileSitemapService(): 
-    PlainSitemapService("Mobile Sitemap", new XmlSitemapWriter()) {
+    PlainSitemapService("Mobile Sitemap", new XmlMobileSitemapWriter()) {
   // does nothing.
 }
 

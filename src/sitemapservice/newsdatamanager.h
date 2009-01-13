@@ -1,4 +1,4 @@
-// Copyright 2008 Google Inc.
+// Copyright 2009 Google Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -23,7 +23,9 @@
 #ifndef SITEMAPSERVICE_NEWSDATAMANAGER_H__
 #define SITEMAPSERVICE_NEWSDATAMANAGER_H__
 
+#include <algorithm>
 #include <string>
+#include <queue>
 #include "sitemapservice/sitedatamanager.h"
 
 class NewsDataManager {
@@ -49,6 +51,26 @@ private:
   // Constants for file name.
   static const std::string kFprintFile;
   static const std::string kDataFile;
+  static const int kMaxNewsEntry;
+
+  // Comparer used to sort news records.
+  class RecordComparer {
+  public:
+    bool operator()(const VisitingRecord& a, const VisitingRecord& b) const {
+      return std::min<time_t>(a.first_appear, a.last_change) >
+        std::min<time_t>(b.first_appear, b.last_change);
+    }
+  };
+
+  typedef std::priority_queue<VisitingRecord, std::vector<VisitingRecord>,
+                              RecordComparer> Heap;
+
+  // Add url records in file to heap.
+  bool AddRecordToHeap(const std::string& file, Heap* heap);
+
+  // Write url records in heap to file.
+  // The heap should be cleared after saving.
+  bool SaveHeap(Heap* heap, const std::string& file);
 
   // Merge Url fingerprint.
   // "newentry" will contain detailed new url information.

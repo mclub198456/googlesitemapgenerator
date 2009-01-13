@@ -1,4 +1,4 @@
-// Copyright 2008 Google Inc.
+// Copyright 2009 Google Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -34,6 +34,7 @@
 #include <stdio.h>
 #include <errno.h>
 #include <string>
+#include <fstream>
 
 bool FileUtil::ParentDir(std::string* path) {
   // Ignore the last path separator.
@@ -189,6 +190,39 @@ bool FileUtil::WriteFile(const char* filename, const std::string& content) {
 
   fclose(file);
   return true;
+}
+
+
+bool FileUtil::LoadLines(const char* filename,
+                         std::vector<std::string>* lines) {
+  std::ifstream fin(filename);
+  std::string line;
+  while (getline(fin, line) != NULL) {
+    lines->push_back(line);
+  }
+
+  if (fin.eof()) {
+    fin.close();
+    return true;
+  } else {
+    Logger::Log(EVENT_ERROR, "Failed to read lines from %s.", filename);
+    return false;
+  }
+}
+
+bool FileUtil::SaveLines(const char* filename,
+                         const std::vector<std::string>& lines) {
+  std::ofstream fout(filename);
+  for (int i = 0; fout.good() && i < (int) lines.size(); ++i) {
+    fout << lines[i] << std::endl;
+  }
+  if (fout.good()) {
+    fout.close();
+    return true;
+  } else {
+    Logger::Log(EVENT_ERROR, "Failed to write lines to %s.", filename);
+    return false;
+  }
 }
 
 #ifdef WIN32

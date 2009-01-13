@@ -1,4 +1,4 @@
-// Copyright 2008 Google Inc.
+// Copyright 2009 Google Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -81,6 +81,10 @@ class XmlSitemapWriter : public SitemapWriter {
   // Write a single Url element to the file.
   virtual bool WriteUrlElement(const UrlElement& url, FILE* file);
 
+  // Add <url> element extension. It is used by sitemap extension.
+  virtual void AddUrlElementExtension(const UrlElement& url,
+                                      std::string* buffer);
+ 
   // Write a sitemap element to the file, which should be an index file.
   virtual int WriteSitemapElement(const SitemapElement& sitemap, FILE* file);
 
@@ -110,7 +114,7 @@ class XmlNewsSitemapWriter : public XmlSitemapWriter {
  protected:
   virtual bool WriteUrlElement(const UrlElement& url, FILE* file);
 
-  // It returns a single string:
+  // Besides common namespace, it adds:
   // xmlns:news="http://www.google.com/schemas/sitemap-news/0.9"
   virtual std::vector<std::string> GetXmlns();
 };
@@ -120,7 +124,7 @@ class XmlVideoSitemapWriter : public XmlSitemapWriter {
  protected:
   virtual bool WriteUrlElement(const UrlElement& url, FILE* file);
 
-  // It returns a single string:
+  // Besides common namespace, it adds:
   // xmlns:video="http://www.google.com/schemas/sitemap-video/1.0"
   virtual std::vector<std::string> GetXmlns();
 };
@@ -130,10 +134,22 @@ class XmlCodeSearchSitemapWriter : public XmlSitemapWriter {
  protected:
   virtual bool WriteUrlElement(const UrlElement& url, FILE* file);
 
-  // It returns a single string:
+  // Besides common namespace, it adds:
   // xmlns:codesearch="http://www.google.com/codesearch/schemas/sitemap/1.0"
   virtual std::vector<std::string> GetXmlns();
 };
+
+// This class extends XmlSitemapWriter to support Google mobile extension.
+class XmlMobileSitemapWriter : public XmlSitemapWriter {
+ protected:
+  virtual void AddUrlElementExtension(const UrlElement& url,
+                                      std::string* buffer);
+
+  // Besides common namespace, it adds:
+  // xmlns:mobile="http://www.google.com/schemas/sitemap-mobile/1.0"
+  virtual std::vector<std::string> GetXmlns();
+};
+
 
 #endif // SITEMAP_SITEMAPSERVICE_SITEMAPWRITER_H__
 

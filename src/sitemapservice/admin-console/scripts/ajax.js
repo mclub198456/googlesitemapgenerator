@@ -1,4 +1,4 @@
-// Copyright 2008 Google Inc.
+// Copyright 2009 Google Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -24,7 +24,6 @@
 
 /**
  * @fileoverview file for Ajax utility functions.
- * @author chaiying@google.com (Ying Chai)
  */
 
 /////////////////////////////AjaxUtil_requester///////////////////////////
@@ -111,19 +110,13 @@ function AjaxUtil_responser(requester) {
 /////////////////////////////AjaxUtil///////////////////////////
 
 /**
- * This class is for the functionality of http communication.
- *
- * Since using the same XmlHttpRequest object among asyncronized server
- * communications is dangerous, we will create a new XmlHttpRequest object each
- * time a communication function is called.
- * @constructor
+ * Namespace for ajax functions.
  */
-function AjaxUtil() {
-}
+var AjaxUtil = {};
 
 /**
- * Gets Ajax object.
- * @return {XMLHttpRequest?} The Ajax object
+ * Gets XMLHttpRequest object.
+ * @return {XMLHttpRequest?} The XMLHttpRequest object.
  * @supported IE and Firefox
  */
 AjaxUtil.getRequestObject = function() {
@@ -318,8 +311,6 @@ AjaxUtil.send = function(xhr, post) {
  * Encodes the property name/value pairs of an object as if they were from
  * an HTML form, using application/x-www-form-urlencoded format
  *
- * Copy from JavaScript - The Definitive Guide, 5th Edition
- *
  * @param {Object} data  The data object
  * @return {string}
  */
@@ -333,7 +324,7 @@ AjaxUtil.encodeFormData = function(data){
     // but it encodes spaces as %20 instead of as '+'. We have to
     // fix that with String.replace()
     var pair = encodeURIComponent(name).replace(regexp, '+') + '=' +
-    encodeURIComponent(value).replace(regexp, '+');
+        encodeURIComponent(value).replace(regexp, '+');
     pairs.push(pair);
   }
 

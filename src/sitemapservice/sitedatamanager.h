@@ -1,4 +1,4 @@
-// Copyright 2008 Google Inc.
+// Copyright 2009 Google Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -29,6 +29,10 @@
 #include "common/sitesetting.h"
 #include "common/criticalsection.h"
 #include "common/urlrecord.h"
+#include "common/urlreplacer.h"
+
+#include "sitemapservice/robotstxtfilter.h"
+#include "sitemapservice/querystringfilter.h"
 #include "sitemapservice/recordtable.h"
 #include "sitemapservice/hosttable.h"
 #include "sitemapservice/recordfilemanager.h"
@@ -36,6 +40,7 @@
 #include "sitemapservice/recordfileio.h"
 #include "sitemapservice/siteinfo.h"
 
+class NewsDataManager;
 
 class SiteDataManager {
  public:
@@ -71,10 +76,13 @@ class SiteDataManager {
   // Get the file manager instance used by this data manager.
   virtual RecordfileManager* GetFileManager() = 0;
 
+  virtual NewsDataManager* GetNewsDataManager() = 0;
+
   // Process a new record.
   // This record will be added into in memory table or on disk database.
   virtual int ProcessRecord(UrlRecord& record) = 0;
 };
+
 
 class SiteDataManagerImpl : public SiteDataManager {
  public:
@@ -98,6 +106,8 @@ class SiteDataManagerImpl : public SiteDataManager {
   virtual bool GetHostName(std::string* host);
 
   virtual RecordfileManager* GetFileManager();
+  
+  virtual NewsDataManager* GetNewsDataManager();
 
   virtual int ProcessRecord(UrlRecord& record);
 
@@ -154,8 +164,21 @@ class SiteDataManagerImpl : public SiteDataManager {
   // 2. We assume that when iterate through std::set, element value is in
   //    increasing order. (This is true under both VC8 and GCC).
   std::set<UrlFprint> obsoleted_;
+
+  // The filter constructed from robots.txt.
+  // All coming URLs will be filtered by it before sent to data manager.
+  RobotsTxtFilter robotstxt_filter_;
+
+  // Used to filter querystring in url.
+  // All coming URLs will be filtered before sent to data manager.
+  QueryStringFilter querystring_filter_;
+
+  // Replacer to act on the coming URLs.
+  std::vector<UrlReplacer*> replacers_;
+
+  // Data manager for news data.
+  NewsDataManager* news_data_manager_;
 };
 
 
 #endif // SITEMAPSERVICE_SITEDATAMANAGER_H__
-

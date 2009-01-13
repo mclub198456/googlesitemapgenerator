@@ -1,4 +1,4 @@
-// Copyright 2008 Google Inc.
+// Copyright 2009 Google Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -34,18 +34,17 @@
  * The elements in the HTML that need to be deal with will have an attribute
  * named 'transmark', which value will be 'text:mark1;tip:mark2', etc. Here
  * 'mark1' or 'mark2' is the name of the mark, it will be used to get mark value
- * from SettingEditorLanguage in languages.js. The mark value is the language-
+ * from GSGLang in languages.js. The mark value is the language-
  * specific string which will appears on the UI.
- *
- * @author chaiying@google.com (Ying Chai)
  */
 
 var TransMarkSet = {};
+TransMarkSet.marks_ = {texts: {}, tips: {}, values: {}};
 
 /**
  * Transmark types.
  */
-TransMarkSet.types = {TEXT: 'text', TIP: 'tip', VALUE: 'value'};
+TransMarkSet.types = {TEXT: 't', TIP: 'i', VALUE: 'v'};
 
 /**
  * Extracts certain type of mark from this markset.
@@ -120,7 +119,8 @@ TransMarkSet.modifyMark = function(markset, modifier) {
  */
 TransMarkSet.getText_ = function(markset) {
   var mark = TransMarkSet.getMark_(markset, TransMarkSet.types.TEXT);
-  return SettingEditorLanguage.texts[mark];
+  if (IS_DEBUG) TransMarkSet.marks_.texts[mark] = true;
+  return GSGLang.texts[mark];
 };
 
 /**
@@ -131,7 +131,8 @@ TransMarkSet.getText_ = function(markset) {
  */
 TransMarkSet.getTip_ = function(markset) {
   var mark = TransMarkSet.getMark_(markset, TransMarkSet.types.TIP);
-  return SettingEditorLanguage.tips[mark];
+  if (IS_DEBUG) TransMarkSet.marks_.tips[mark] = true;
+  return GSGLang.tips[mark];
 };
 
 /**
@@ -142,7 +143,8 @@ TransMarkSet.getTip_ = function(markset) {
  */
 TransMarkSet.getValue_ = function(markset) {
   var mark = TransMarkSet.getMark_(markset, TransMarkSet.types.VALUE);
-  return SettingEditorLanguage.values[mark];
+  if (IS_DEBUG) TransMarkSet.marks_.values[mark] = true;
+  return GSGLang.values[mark];
 };
 
 /////////////////////
@@ -199,7 +201,11 @@ TransMarkSet.getElementText_ = function(elem) {
 };
 
 /////////////////////
-TransMarkSet.transTip = function(elem, opt_bIcon) {
+/**
+ * Does localization for element's popup tips.
+ * @param {Element} elem
+ */
+TransMarkSet.localizeTip = function(elem, opt_bIcon) {
   var tip = TransMarkSet.getElementTip_(elem);
   if (tip) {
     elem.tip = tip;
@@ -212,38 +218,35 @@ TransMarkSet.transTip = function(elem, opt_bIcon) {
 };
 
 /**
- * Does localization for 'SPAN' element.
- * @param {Element} elem  The 'SPAN' element
+ * Does localization for element's 'innerHTML' attribute.
+ * @param {Element} elem
  */
-TransMarkSet.transLanguageForSpanElem = function(elem) {
+TransMarkSet.localizeInnerHTML = function(elem) {
   var text = TransMarkSet.getElementText_(elem);
   if (text) {
     elem.innerHTML = text;
   }
-  TransMarkSet.transTip(elem);
 };
 
 
 /**
- * Does localization for 'INPUT' element.
- * @param {Element} elem  The 'INPUT' element
+ * Does localization for element's 'value' attribute.
+ * @param {Element} elem
  */
-TransMarkSet.transLanguageForInputElem = function(elem) {
+TransMarkSet.localizeValue = function(elem) {
   var value = TransMarkSet.getElementValue_(elem);
   if (value) {
     elem.value = value;
   }
-
-  TransMarkSet.transTip(elem);
 };
 
 /**
  * Does localization for 'SELECT' element.
  * @param {Element} elem  The 'SELECT' element
  */
-TransMarkSet.transLanguageForSelectElem = function(elem) {
+TransMarkSet.localizeSelectElement = function(elem) {
   // select has tip
-  TransMarkSet.transTip(elem);
+  TransMarkSet.localizeTip(elem);
 
   // option has text
   _arr(elem.options, function(option) {
@@ -252,4 +255,15 @@ TransMarkSet.transLanguageForSelectElem = function(elem) {
       option.innerHTML = text;
     }
   });
+};
+
+TransMarkSet.getUnusedTransMarks = function() {
+  var unused = [];
+  if (!IS_DEBUG) return unused;
+  _arr(['texts', 'tips', 'values'], function(type) {
+    for (var mark in GSGLang[type])
+      if (!(mark in TransMarkSet.marks_[type]))
+        unused.push(type + '.' + mark);
+  });
+  return unused;
 };

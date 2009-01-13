@@ -1,13 +1,4 @@
-// Copyright 2007 Google Inc.
-// All Rights Reserved.
-
-/**
- * @fileoverview
- *
- * @author chaiying@google.com
- */
-
-// Copyright 2008 Google Inc.
+// Copyright 2009 Google Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -34,12 +25,11 @@
 /**
  * @fileoverview This file includes Controller class, which deal with the
  * transaction from user command.
- *
- * @author chaiying@google.com (Ying Chai)
  */
 
 var Flow = {};
 
+////////////// Utility functions to communicate to server //////////////////////
 /**
  * Gets the XML data from server and updates it to UI.
  */
@@ -52,7 +42,7 @@ Flow.fetchSetting = function() {
     if (ServerManager.statusCode == 401) {
       Flow.gotoLogin();
     }
-    _getPager().alert('Error: cannot get the setting data from server!');
+    alert(SETTING_FETCH_ERROR);
     return;
   }
 
@@ -72,7 +62,7 @@ Flow.fetchRuntime = function() {
     if (ServerManager.statusCode == 401) {
       Flow.gotoLogin();
     }
-    _getPager().alert('Warning: cannot get the runtime info from server!');
+    alert(RUNTIME_FETCH_ERROR);
     return;
   }
 
@@ -94,7 +84,7 @@ Flow.submitSetting = function(xmlStr, timestamp, opt_force) {
       if (ServerManager.statusCode == 401) {
         Flow.gotoLogin();
       } else {
-        ServerManager.informUserServerReturnFail(SAVE_FAIL_MSG);
+        alert(SAVE_FAIL_MSG);
       }
       break;
     case ServerManager.requestSave.rets.OUTOFDATE:
@@ -108,20 +98,21 @@ Flow.submitSetting = function(xmlStr, timestamp, opt_force) {
           Flow.fetchRuntime();
           alert(REFRESH_DONE_MSG);
           _getSetting().clearDirty();
-          _getPager().clearActionButtons();
+          _getPager().refreshActionButtons();
         }
       }
       break;
     case ServerManager.requestSave.rets.SUCCESS:
       _getSetting().SetTimestamp(tsObj.value);
       _getSetting().clearDirty();
-      _getPager().clearActionButtons();
+      _getPager().refreshActionButtons();
       break;
   }
 };
 
+/////////////////////////// Handlers //////////////////////////////////
 /**
- * Handler for 'save' button click.
+ * Handler for save.
  */
 Flow.save = function() {
   // check if current sitemap or site setting is valid
@@ -132,28 +123,21 @@ Flow.save = function() {
 
     // save to server
     Flow.submitSetting(data.getXmlString(), data.timestamp(), false);
+    return true;
   } else {
     alert(VALIDATING_ONSAVE_FAIL_MSG);
+    return false;
   }
 };
 
 /**
- * Let server reload the new settings.
+ * Handler for page load complete event.
  */
-Flow.reload = function() {
-  if (_getSetting().dirty()) {
-    if (!confirm(DIRTY_WARNING_MSG))
-      return;
-  }
-  // send reload command syncronized
-  ServerManager.requestReload();
-};
-
 Flow.onLoad = function() {
   if (DO_LOGIN) {
     // clear the cookie for remembering the site and tab when user login.
     _getSession().clearCookie();
-    _getPager().showPage('loginPage');
+    _getPager().gotoPage('loginPage');
   } else {
     Flow.gotoConsole();
   }
@@ -166,48 +150,30 @@ Flow.onLoad = function() {
 };
 
 /**
- * Login to server.
+ * Handler for login.
  * It will send to server the login info, and get result from server.
  * If login succeeds, it will redirect to the main page of setting.
  */
 Flow.login = function() {
-  _getSession().login(_gel('loginPassword').value, function callback(success) {
+  _getSession().login(_gel('loginPassword').value, function (success) {
     if (success) {
       Flow.gotoConsole();
+    } else {
+      // refresh the page to get new session id.
+      window.location.reload();
     }
   });
 };
 
-Flow.MAX_RELOGIN_TIMES = 3;
-Flow.reLogin = function(callback) {
-  var i = 0;
-	function callback2(passwd) {
-    _getSession().login(passwd, function(success) {
-      if (success) { // try success, call the callback with true.
-        callback(true);
-				return;
-      }
-			if (i++ < Flow.MAX_RELOGIN_TIMES) {
-        // try again.
-        _getPager().showPrompt(callback2);
-				return;
-      }
-      // all the relogins are failed, call the callback with false.
-      callback(false);
-    });
-	}
-  // ask user input password and try again
-  _getPager().showPrompt(callback2);
-};
-
 /**
- * Logout from the setting main page.
+ * Handler for logout.
  */
 Flow.logout = function() {
   ServerManager.requestLogout();
   Flow.gotoLogin();
 };
 
+///////////////////////// Page redirection ///////////////////////////////
 /**
  * Goes to login page, use redirection to clear page status (not clear cookie).
  * @private
@@ -226,10 +192,10 @@ Flow.gotoConsole = function() {
   // Notes: don't change the sequence
   // Gets XML from server
   Flow.fetchSetting();
-
+  
   // update setting page with the data from server
   Flow.fetchRuntime();
-
+  
   // hide login page and show setting page
   _getPager().showFirstPage();
 };
@@ -272,14 +238,14 @@ function Session() {
 }
 
 /**
- *
+ * Singleton access function.
  */
-var _getSession = function() {
+function _getSession() {
   if (_getSession.instance_ == null) {
     _getSession.instance_ = new Session();
   }
   return _getSession.instance_;
-};
+}
 
 /**
  *
@@ -340,6 +306,7 @@ Session.prototype.id = function() {
   }
   return this.id_;
 };
+
 Session.prototype.setId = function(id) {
   this.id_ = id;
   this.saveCookie(Session.cookieItems.ID, id);

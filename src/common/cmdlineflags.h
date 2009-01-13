@@ -1,4 +1,4 @@
-// Copyright 2008 Google Inc.
+// Copyright 2009 Google Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -41,6 +41,15 @@ class CmdLineFlags {
     return apache_conf_;
   }
 
+  // Check whether "apache_group" flag exists.
+  const bool check_apache_group() const {
+    return check_apache_group_;
+  }
+  // Get "apache_group" flag.
+  const std::string& apache_group() const {
+    return apache_group_;
+  }
+
   // Check whether "remote_admin" flag exists.
   const bool check_remote_admin() const {
     return check_remote_admin_;
@@ -68,6 +77,24 @@ class CmdLineFlags {
     return file_;
   }
 
+  // Check whether "overwrite" flag exists.
+  const bool check_overwrite() const {
+    return check_overwrite_;
+  }
+  // Get "overwrite" flag value.
+  const bool overwrite() const {
+    return overwrite_;
+  }
+
+  // Check whether "auto_submission" flag exists.
+  const bool check_auto_submission() const {
+    return check_auto_submission_;
+  }
+  // Get "auto_submission" flag value.
+  const bool auto_submission() const {
+    return auto_submission_;
+  }
+
   // Get global instance of CmdLineFlags.
   // The flags are parsed in the program entry point.
   // No other instance should be instantiated in binary code.
@@ -85,12 +112,20 @@ class CmdLineFlags {
   bool check_apache_conf_;
   std::string apache_conf_;
 
+  bool check_apache_group_;
+  std::string apache_group_;
+
   bool check_site_id_;
   std::string site_id_;
 
   bool check_file_;
   std::string file_;
 
+  bool check_overwrite_;
+  bool overwrite_;
+
+  bool check_auto_submission_;
+  bool auto_submission_;
 };
 
 #endif  // COMMON_CMDLINEFLAGS_H__

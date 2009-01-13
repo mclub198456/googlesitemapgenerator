@@ -1,4 +1,4 @@
-// Copyright 2008 Google Inc.
+// Copyright 2009 Google Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -51,10 +51,81 @@ bool SettingManager::SetPassword(const char* passwd, const char* salt) {
   root->SetAttribute("password_salt", salt);
   if (!xmldoc.SaveFile(setting_file_.c_str())) {
     Logger::Log(EVENT_ERROR, "Failed to save file (%s) to set password.",
-              setting_file_.c_str());
+                setting_file_.c_str());
     return false;
   }
-  
+
+  return true;
+}
+
+bool SettingManager::SetApplicationAttribute(const std::string& name,
+                                             const std::string& value) {
+  TiXmlDocument xmldoc;
+  if (!xmldoc.LoadFile(setting_file_.c_str())) {
+    Logger::Log(EVENT_ERROR, "Failed to load (%s) to set app attribute.",
+                setting_file_.c_str());
+    return false;
+  }
+
+  TiXmlElement* root = xmldoc.RootElement();
+  if (root == NULL) {
+    Logger::Log(EVENT_ERROR, "Setting file is malformed.");
+    return false;
+  }
+
+  root->SetAttribute(name.c_str(), value.c_str());
+  if (!xmldoc.SaveFile(setting_file_.c_str())) {
+    Logger::Log(EVENT_ERROR, "Failed to save (%s) to set (%s) as (%s).",
+      setting_file_.c_str(), name.c_str(), value.c_str());
+    return false;
+  }
+
+  return true;
+}
+
+
+bool SettingManager::SetGlobalNotifyStatus(bool enabled) {
+  TiXmlDocument xmldoc;
+  if (!xmldoc.LoadFile(setting_file_.c_str())) {
+    Logger::Log(EVENT_ERROR, "Failed to load (%s) to set ping status.",
+                setting_file_.c_str());
+    return false;
+  }
+
+  TiXmlElement* root = xmldoc.RootElement();
+  if (root == NULL) {
+    Logger::Log(EVENT_ERROR, "Setting file is malformed.");
+    return false;
+  }
+
+  // Find the NotifyUrls element.
+  TiXmlElement* globalElement = root->FirstChildElement("GlobalSetting");
+  TiXmlElement* websitemapElement = NULL;
+  if (globalElement != NULL) {
+    websitemapElement = globalElement->FirstChildElement("WebSitemapSetting");
+  }
+  TiXmlElement* notifyUrlsElement = NULL;
+  if (websitemapElement != NULL) {
+    notifyUrlsElement = websitemapElement->FirstChildElement("NotifyUrls");
+  }
+  if (notifyUrlsElement == NULL) {
+    Logger::Log(EVENT_CRITICAL,
+                "Failed to find NotifyUrls when changing notify stauts.");
+    return true;
+  }
+
+  // Change status of Url.
+  for (TiXmlElement* urlElement = notifyUrlsElement->FirstChildElement("Url");
+    urlElement != NULL; urlElement = urlElement->NextSiblingElement("Url")) {
+    urlElement->SetAttribute("enabled", enabled ? "true" : "false");
+  }
+
+  if (!xmldoc.SaveFile(setting_file_.c_str())) {
+    Logger::Log(EVENT_ERROR, "Failed to save (%s) to change notify status.",
+      setting_file_.c_str());
+    return false;
+  }
+
   return true;
 }
 
@@ -74,6 +145,7 @@ bool SettingManager::UpdateSettingFile() {
     Logger::Log(EVENT_ERROR, "Failed to backup when updating setting.");
     return false;
   }
+  CmdLineFlags* flags = CmdLineFlags::GetInstance();
 
   // Load settings.
   SiteSettings settings;
@@ -81,17 +153,32 @@ bool SettingManager::UpdateSettingFile() {
     Logger::Log(EVENT_ERROR, "Failed to load webserver config.");
     return false;
   }
-  if (!settings.LoadFromFile(setting_file_.c_str()) ) {
-    Logger::Log(EVENT_ERROR, "Failed to load file config from %s.",
-              setting_file_.c_str());
-    return false;
+  
+  if (flags->check_overwrite() && flags->overwrite()) {
+    if (flags->check_auto_submission() && flags->auto_submission()) {
+      WebSitemapSetting* websitemap_setting =
+        settings.mutable_global_setting()->mutable_web_sitemap_setting();
+      websitemap_setting->set_included_in_robots_txt(true);
+      NotifyUrls* notify_urls = websitemap_setting->mutable_notify_urls();
+      for (int i = 0; i < notify_urls->size(); ++i) {
+        notify_urls->mutable_item(i)->set_enabled(true);
+      }
+    }
+  } else {
+    if (!settings.LoadFromFile(setting_file_.c_str()) ) {
+      Logger::Log(EVENT_ERROR, "Failed to load file config from %s.",
+                setting_file_.c_str());
+      return false;
+    }
   }
   settings.MergeSetting(&webserver_config_);
 
   // Update values from command line flags.
-  CmdLineFlags* flags = CmdLineFlags::GetInstance();
   if (flags->check_apache_conf()) {
     settings.set_apache_conf(flags->apache_conf());
+  }
+  if (flags->check_apache_group()) {
+    settings.set_apache_group(flags->apache_group());
   }
   if (flags->check_remote_admin()) {
     settings.set_remote_admin(flags->remote_admin());
@@ -171,8 +258,8 @@ bool SettingManager::ReloadWebserverConfig() {
     for (int i = 0; i < static_cast<int>(values.size()); ++i) {
       std::string result;
       if (!Util::ReplaceEnvironmentVariable(values[i], &result)) {
-        Logger::Log(EVENT_ERROR, "Failed to replace EnvVar in site path.");
-        return false;
+        Logger::Log(EVENT_ERROR, "Unable to replace EnvVar in site path.");
+        result = values[i];
       }
       values[i] = result;
     }
@@ -182,8 +269,8 @@ bool SettingManager::ReloadWebserverConfig() {
     for (int i = 0; i < static_cast<int>(values.size()); ++i) {
       std::string result;
       if (!Util::ReplaceEnvironmentVariable(values[i], &result)) {
-        Logger::Log(EVENT_ERROR, "Failed to replace EnvVar in log path.");
-        return false;
+        Logger::Log(EVENT_CRITICAL, "Unable to replace EnvVar in log path.");
+        result = values[i];
       }
       values[i] = result;
     }
@@ -314,7 +401,7 @@ bool SettingManager::SaveSiteSetting(TiXmlElement *element) {
     Logger::Log(EVENT_ERROR, "Failed to get lock when saving site setting.");
     return false;
   }
-  
+
   TiXmlDocument xmldoc;
   if (!xmldoc.LoadFile(setting_file_.c_str())) {
     Logger::Log(EVENT_ERROR, "Failed to load file (%s) to save site setting.",
@@ -381,5 +468,3 @@ bool SettingManager::SaveSiteSetting(TiXmlElement *element) {
   lock.Unlock();
   return true;
 }
-
-

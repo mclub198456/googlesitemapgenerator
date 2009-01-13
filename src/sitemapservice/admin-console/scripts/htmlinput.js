@@ -1,69 +1,93 @@
-// Copyright 2007 Google Inc.
-// All Rights Reserved.
+// Copyright 2009 Google Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// This is the top level setting class. It contains all the setting values for
+// this application. Besides site specific settings, this class also includes
+// application level configuration, like back-up duration, remote admin port,
+// admin account, and etc. Especially, there is global setting field, which
+// contains default values for site settings. Please see the member fields
+// doc for details.
+// Besides the xml setting load/save/validate functions, it provides functions
+// to load values from file, as well as save value to a file.
+// This class is not thread-safe.
+
 
 /**
  * @fileoverview
- *
- * @author chaiying@google.com
  */
 
 /**
+ * This class manages for the value-change-by-user event.
  * Usage:
  * After class constructor, call
- *   ClassName.inheritsFrom(ValueChangeManage);
+ *   ClassName.inheritsFrom(ChangeEventExtension);
  * @constructor
  */
-function ValueChangeManage() {
-  this.valuechangehandlers_ = [];
+function ChangeEventExtension() {
+  this.handlers_ = [];
 }
 /**
  * Call it on each time the value is changed by user.
  */
-ValueChangeManage.prototype.onValueChange_ = function() {
-  _arr(this.valuechangehandlers_, function(o) {
+ChangeEventExtension.prototype.dispatch = function() {
+  _arr(this.handlers_, function(o) {
     o.func(o.listener);
   });
 };
 
 /**
- * Allow other code being notified when value is changed by user.
- * All the handlers will be called in onValueChange_
+ * Add the handler. When the value of 'this' is changed by 
+ * user, the handler will be called.
  * @param {Object} f
  */
-ValueChangeManage.prototype.registValueChangeHandler = function(listener, f) {
-  this.valuechangehandlers_.push({listener: listener, func: f});
+ChangeEventExtension.prototype.addHandler = function(listener, f) {
+  this.handlers_.push({listener: listener, func: f});
 };
 
-ValueChangeManage.prototype.clearValueChangeHandlers = function() {
-  this.valuechangehandlers_ = [];
+ChangeEventExtension.prototype.clearHandlers = function() {
+  this.handlers_ = [];
 };
 
-ValueChangeManage.util = {};
-ValueChangeManage.util.propagateChangeEvent = function(from, to) {
-  from.registValueChangeHandler(null, function(){
-    to.onValueChange_();
+ChangeEventExtension.prototype.attachObject = function(obj) {
+  obj.addHandler(this, function(listener){
+    listener.dispatch();
   });
 };
-ValueChangeManage.util.regHandlerToElem = function(elem, event, owner) {
+ChangeEventExtension.prototype.attachElement = function(elem, event) {
+  var owner = this;
   _event(elem, event, function() {
     if (owner.isElemOwner())
-      owner.onValueChange_();
+      owner.dispatch();
   });
 };
 ///////////////////////////////
 // For default display functions
 /**
+ * Notify user which setting field is customized on current page by applying 
+ * different CSS class.
+ * 
+ * Usage:
+ * Suppose ClassA is the class that represent a type of setting field.
+ * Call ClassA.borrowFrom(CustomNotify) after ClassA's constructor definition.
+ * Implement addDefaultCSS_ and removeDefaultCSS_ functions for ClassA.
  * 
  * @constructor
  */
 function CustomNotify() {
-
 }
-// logic layer, no variety
+
 /**
- * Usage:
- * call ClassA.borrowFrom(CustomNotify) after ClassA's constructor definition.
- * Implement addDefaultCSS_ and removeDefaultCSS_ functions.
+ * Toggle setting field status.
  * @param {Object} isDefault
  */
 CustomNotify.prototype.setDefault = function(isDefault) {
@@ -90,12 +114,17 @@ CustomNotify.prototype.addDefaultCSS_ = function() {
 };
 
 /**
- * handle variety for removing 'default' CSS to html UI.
+ * handle variety for removing 'default' CSS from html UI.
  */
 CustomNotify.prototype.removeDefaultCSS_ = function() {
   _err('Not implemented');
 };
 
+/**
+ * Help function for subclass to implement addDefaultCSS_/removeDefaultCSS_.
+ * @param {Object} elem
+ * @param {Object} isDefault
+ */
 CustomNotify.setDefaultCSS = function(elem, isDefault) {
   isDefault ? Util.CSS.changeClass(elem, 'custom-val', 'default-val') :
               Util.CSS.changeClass(elem, 'default-val', 'custom-val');
@@ -103,12 +132,11 @@ CustomNotify.setDefaultCSS = function(elem, isDefault) {
 
 //////////////////////////////////////////
 /**
- * 
+ * Interface for validation notification.
  * @constructor
  */
 function ValidNotify() {
 }
-// TODO: overwrite the function for all htmlinput classes.
 ValidNotify.prototype.setValid = function(isValid) {
   _err('Not implemented');
 };
@@ -134,7 +162,7 @@ function HtmlInput(id) {
   }
   Component.regist(this);
 }
-HtmlInput.inheritsFrom(ValueChangeManage);
+HtmlInput.inheritsFrom(ChangeEventExtension);
 HtmlInput.borrowFrom(CustomNotify);
 HtmlInput.borrowFrom(ValidNotify);
 
@@ -267,26 +295,27 @@ FakeHtmlInput.prototype.setValid = function(isValid) {
  */
 function BoolHtmlInput(id){
   this.parent.constructor.call(this, id);
-  ValueChangeManage.util.regHandlerToElem(this.element_, 'click', this);
-  var me = this;
-  this.registValueChangeHandler(this, function() {
-    me.onValueChange();
+  this.attachElement(this.element_, 'click');
+  this.addHandler(this, function(listener) {
+    listener.onValueChange();
   });
 
   // hack code for sitemap disable warning box.
   var pos = id.search('-enable');
   if (pos != -1) {
     this.sitemapId_ = id.substr(0, pos);
-    this.warning_ = _gel(this.sitemapId_ + '-warning');
-
-    // set 'Enable' link in sitemap disable warning message on sitemap page.
-    var a = this.warning_.getElementsByTagName('a')[0];
-    _event(a, 'click', function() {
-      // equal to _getSetting().setEnable(id, true); and _hide(me.warning_);
-      me.setValue(true);
-    });
-    // call  _getPager().onSettingChange();
-    ValueChangeManage.util.regHandlerToElem(a, 'click', this);
+    this.warning_ = document.getElementById(this.sitemapId_ + '-warning');
+    if (this.warning_) {
+      // set 'Enable' link in sitemap disable warning message on sitemap page.
+      var a = this.warning_.getElementsByTagName('a')[0];
+      var me = this;
+      _event(a, 'click', function() {
+        // equal to _getSetting().setEnable(id, true); and _hide(me.warning_);
+        me.setValue(true);
+      });
+      // call  _getPager().onSettingChange();
+      this.attachElement(a, 'click');
+    }
   }
 }
 BoolHtmlInput.inheritsFrom(HtmlInput);
@@ -316,7 +345,7 @@ BoolHtmlInput.prototype.getValue = function() {
 function TextHtmlInput(id) {
   this.parent.constructor.call(this, id);
   this.prefix_ = null;
-  ValueChangeManage.util.regHandlerToElem(this.element_, 'change', this);
+  this.attachElement(this.element_, 'change');
 }
 TextHtmlInput.inheritsFrom(HtmlInput);
 
@@ -349,7 +378,7 @@ TextHtmlInput.prototype.getValue = function() {
  */
 function RadioHtmlInput(id) {
   this.parent.constructor.call(this, id);
-  ValueChangeManage.util.regHandlerToElem(this.element_, 'click', this);
+  this.attachElement(this.element_, 'click');
 }
 RadioHtmlInput.inheritsFrom(HtmlInput);
 
@@ -386,6 +415,7 @@ function RadioGroup(id) {
 
   // add input radios to this group
   this.radios_ = [];
+  this.validator_ = null;
   var inputs = _gel(id).getElementsByTagName('input');
   var len = inputs.length;
   var n = 0;
@@ -395,14 +425,23 @@ function RadioGroup(id) {
       input.id = id + '-' + (n++);
       var r = new RadioHtmlInput(input.id);
       this.radios_.push(r);
-      ValueChangeManage.util.propagateChangeEvent(r, this);
+      this.attachObject(r);
     } else if (input.type == 'text') {
       if (this.customInput_)
         _err('unexpect input html');
       input.id = id + '-c';
       this.customInput_ = new TextHtmlInput(input.id);
-      ValueChangeManage.util.propagateChangeEvent(this.customInput_, this);
-      this.radios_[n - 1].clearValueChangeHandlers();
+      this.customInput_.addHandler(this, function(listener) {
+        var value = listener.customInput_.getValue();
+        if (!listener.validator_.check(value)) {
+          listener.customInput_.setValid(false);
+        } else {
+          listener.customInput_.setValid(true);          
+        }
+        // Let setting object know.
+        listener.dispatch();
+      });
+      this.radios_[n - 1].clearHandlers();
     } else {
       _err('invalid input type');
     }
@@ -410,12 +449,27 @@ function RadioGroup(id) {
 
   Component.regist(this);
 }
-RadioGroup.inheritsFrom(ValueChangeManage);
+RadioGroup.inheritsFrom(ChangeEventExtension);
 RadioGroup.borrowFrom(CustomNotify);
 RadioGroup.borrowFrom(ValidNotify);
 
 RadioGroup.prototype.setValid = function(isValid) {
-  // Not sure which style is good for this type of input.
+  // If isValid is true, set it to customInput_ will have no side effect.
+  // If isValid is false, then customInput_ must be invalid.
+  if (this.customInput_)
+    this.customInput_.setValid(isValid);
+};
+
+RadioGroup.prototype.validate = function() {
+  if (this.customInput_ && this.radios_[this.radios_.length - 1].getChecked()) {
+    return this.validator_.check(this.customInput_.getValue());
+  } else {
+    return true;
+  }
+};
+
+RadioGroup.prototype.setValidator = function(v) {
+  this.validator_ = v;
 };
 
 /**
@@ -457,6 +511,7 @@ RadioGroup.prototype.setValue = function(value) {
   // clean custom setting
   if (this.customInput_) {
     this.customInput_.setValue('');
+    this.customInput_.setValid(true);  
   }
   // compare to the preset values
   var len = this.radios_.length;
@@ -470,7 +525,11 @@ RadioGroup.prototype.setValue = function(value) {
   // set as custom value
   if (this.customInput_) {
     this.customInput_.setValue(value);
-    this.radios_[len - 1].setChecked(true);
+    this.radios_[len - 1].setChecked(true);    
+    if (!this.validator_.check(value)) {
+      alert(VALIDATING_FAIL_MSG);
+      this.customInput_.setValid(false);
+    }
   }
 };
 
@@ -528,12 +587,21 @@ function ListHtmlInput(id) {
   this.input_ = _gel(id + '-input');
   this.addButton_ = _gel(id + '-add');
   this.area_ = _gel(id + '-area');
+  this.noItemMsg_ = document.createElement('div');
+  this.noItemMsg_.innerHTML = NO_ITEM;
+  _hide(this.noItemMsg_);
+  this.area_.appendChild(this.noItemMsg_);
   /**
    * @type {Array.<UrlItem>}
    */
   this.items_ = [];
   this.validator_ = null;
   var me = this;
+  this.addHandler(this, function(listener) {
+    if (!listener.hasActiveItems()) {
+      _show(listener.noItemMsg_);
+    }
+  });
   function addComplete() {
     if (me.isElemOwner()) {
       var value = me.input_.value;
@@ -541,7 +609,6 @@ function ListHtmlInput(id) {
         return;
       }
       if (!me.validator_.check(value)) {
-        alert(VALIDATING_FAIL_MSG);
         me.setValid(false);
         return;
       } else {
@@ -551,19 +618,31 @@ function ListHtmlInput(id) {
       me.addItem(value);
       if (me.areaExt_) me.areaExt_.open();
       me.input_.value = '';
-      me.onValueChange_();
+      me.dispatch();
     }
   }
   _event(this.addButton_, 'click', addComplete);
   Util.event.addEnterKey(this.input_, addComplete);
   Component.regist(this);
 }
-ListHtmlInput.inheritsFrom(ValueChangeManage);
+ListHtmlInput.inheritsFrom(ChangeEventExtension);
 ListHtmlInput.borrowFrom(CustomNotify);
 ListHtmlInput.borrowFrom(ValidNotify);
 
 ListHtmlInput.prototype.setValid = function(isValid) {
   ValidateManager.setElementValidation_(this.input_, isValid);
+};
+
+ListHtmlInput.prototype.hasActiveItems = function() {
+  return Util.array.checkIfAny(this.items_, function(item) {
+    return !item.isDeleted();
+  });
+};
+
+ListHtmlInput.prototype.validate = function() {
+  return !Util.array.checkIfAny(this.items_, function(item) {
+    return !item.validate();
+  });
 };
 
 /**
@@ -609,8 +688,9 @@ ListHtmlInput.prototype.addItem = function(value, opt_status) {
   if (repeat) {
     if (repItem.isDeleted()) {
       repItem.recover();
+      _hide(this.noItemMsg_);
     } else {
-      alert('This value has existed in the list: ' + value);
+      alert(ERROR_MSG_QUERY_FIELD_DUPLICATE + value);
     }
     return;
   }
@@ -618,15 +698,17 @@ ListHtmlInput.prototype.addItem = function(value, opt_status) {
   var itemId = this.id_ + '-' + index;
 
   if (index == 0) {
-    // clear
+    // This is the first item, just clear the area before add it.
     this.area_.innerHTML = '';
-  }
+    this.area_.appendChild(this.noItemMsg_);
+  } 
+  _hide(this.noItemMsg_);
 
   // this function should be implemented by subclass
   var item = this.createItem_(itemId);
 
   // propagate the value change from subcomp to this.
-  ValueChangeManage.util.propagateChangeEvent(item, this);
+  this.attachObject(item);
   if (opt_status != null)
     item.setStatus(opt_status);
   item.setValue(value);
@@ -648,7 +730,9 @@ ListHtmlInput.prototype.createItem_ = function(itemId) {
 ListHtmlInput.prototype.setValue = function(value) {
   // clear value first
   this.items_ = [];
-  this.area_.innerHTML = 'no items';
+  this.area_.innerHTML = '';
+  this.area_.appendChild(this.noItemMsg_);
+  _show(this.noItemMsg_);
   var me = this;
   _arr(value, function(val) {
     me.addItem(val[0], val[1]);
@@ -718,7 +802,7 @@ function UrlList(id) {
   // set the name of the node
   UrlList.prototype.parent.constructor.call(this, id);
   this.areaExt_ = new ExpandHtml(_gel(id + '-s'), [this.area_],
-                                 {open: 'Show all', close: 'Hide all'});
+                                 {open: SHOW, close: HIDE});
   FLAG_LIST_AUTO_EXTEND ? this.areaExt_.open() : this.areaExt_.close();
 }
 UrlList.inheritsFrom(ListHtmlInput);
@@ -746,9 +830,9 @@ UrlList.prototype.createItem_ = function(itemId) {
                        '-input type=text class="item-input hidden">',
                        '<span class=actions>',
                        ' - <a id=', itemId,
-                       '-edit href=#>Edit</a>',
+                       '-edit href=#>', EDIT, '</a>',
                        ' - <a id=', itemId,
-                       '-disable href=#>Disable</a>',
+                       '-disable href=#>', DISABLE, '</a>',
                        ' - <img  id=', itemId,
                        '-del src=/images/del.gif>',
                        '</span>'].join('');
@@ -798,7 +882,6 @@ QueryFieldList.prototype.createItem_ = function(itemId) {
   Util.CSS.addClass(itembox, 'queryfield-name')
   itembox.innerHTML =
       '<input type=checkbox class=hidden id=' + itemId + '-chk checked>'
-      //+ '<label id=' + itemId + '-txt for=' + itemId + '-chk></label>'
       + '<span id=' + itemId + '-txt></span>'
       + ' - <img  id=' + itemId + '-del src=/images/del.gif>';
 
@@ -827,12 +910,12 @@ function ListItem(id) {
     if (!me.isElemOwner())
       return;
     me.del();
-    me.onValueChange_();
+    me.dispatch();
   });
 
   Component.regist(this);
 }
-ListItem.inheritsFrom(ValueChangeManage);
+ListItem.inheritsFrom(ChangeEventExtension);
 ListItem.borrowFrom(CustomNotify);
 ListItem.borrowFrom(ValidNotify);
 
@@ -872,6 +955,14 @@ ListItem.prototype.removeDefaultCSS_ = function() {
 
 ListItem.prototype.setValidator = function(v) {
   this.validator_ = v;
+};
+
+ListItem.prototype.validate = function() {
+  if (this.validator_) {
+    return this.validator_.check(this.getValueOnly_());
+  } else {
+    return true;
+  }
 };
 
 ListItem.prototype.setStatus = function(status) {
@@ -973,7 +1064,7 @@ function UrlItem(id) {
   var me = this;
   _event(this.disableLink_, 'click', function() {
     me.triggerEnable();
-    me.onValueChange_();
+    me.dispatch();
   });
   _event(this.editBtn_, 'click', function() {
     if (!me.isElemOwner())
@@ -986,7 +1077,7 @@ function UrlItem(id) {
       _hide(me.textbox_);
       _hide(me.editBtn_.parentNode);
 
-      me.editBtn_.innerHTML = 'Save';
+      me.editBtn_.innerHTML = SAVE;
       me.editBtn_.status_ = ListItem.status.EDIT;
       me.editbox_.focus();
     }
@@ -994,8 +1085,7 @@ function UrlItem(id) {
   function editComplete() {
     if (me.editBtn_.status_ == ListItem.status.EDIT) {
       if (!me.validator_.check(me.editbox_.value)) {
-        ValidateManager.setElementValidation_(me.editbox_, false);
-        return;
+        ValidateManager.setElementValidation_(me.textbox_, false);
       }
       me.setValueOnly_(me.editbox_.value);
       me.setName(me.editbox_.value);
@@ -1004,9 +1094,9 @@ function UrlItem(id) {
       _show(me.textbox_);
       _show(me.editBtn_.parentNode);
 
-      me.editBtn_.innerHTML = 'Edit';
+      me.editBtn_.innerHTML = EDIT;
       me.editBtn_.status_ = ListItem.status.DISPLAY;
-      me.onValueChange_();
+      me.dispatch();
     }
   }
   _event(this.editbox_, 'blur', editComplete);
@@ -1043,11 +1133,11 @@ UrlItem.prototype.focus = function() {
 
 UrlItem.prototype.enable = function() {
   UrlItem.prototype.parent.enable.call(this);
-  this.disableLink_.innerHTML = 'Disable';
+  this.disableLink_.innerHTML = DISABLE;
 };
 UrlItem.prototype.disable = function() {
   UrlItem.prototype.parent.disable.call(this);
-  this.disableLink_.innerHTML = 'Enable';
+  this.disableLink_.innerHTML = ENABLE;
 };
 /**
  * Sets access right to the HTML element of the setting.
@@ -1158,12 +1248,12 @@ function TimeHtmlInput(id) {
   TimeHtmlInput.prototype.parent.constructor.call(this);
   this.date_ = _gel(id + '-date');
   this.time_ = _gel(id + '-time');
-  ValueChangeManage.util.regHandlerToElem(this.date_, 'change', this);
-  ValueChangeManage.util.regHandlerToElem(this.time_, 'change', this);
+  this.attachElement(this.date_, 'change');
+  this.attachElement(this.time_, 'change');
 
   Component.regist(this);
 }
-TimeHtmlInput.inheritsFrom(ValueChangeManage);
+TimeHtmlInput.inheritsFrom(ChangeEventExtension);
 TimeHtmlInput.borrowFrom(CustomNotify);
 TimeHtmlInput.borrowFrom(ValidNotify);
 

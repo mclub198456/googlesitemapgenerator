@@ -1,4 +1,4 @@
-// Copyright 2008 Google Inc.
+// Copyright 2009 Google Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -25,8 +25,6 @@
 /**
  * @fileoverview This file contains const values. We also put some
  *     brower-dependant code here.
- *
- * @author chaiying@google.com (Ying Chai)
  */
 // default vars
 var DEFAULT_PAGE = 'dashboard';
@@ -42,23 +40,26 @@ var GLOBAL_SETTING_ID = 'g';
 var TAB_COOKIE = 'gsg'; // should keep consistent with server side.
 var KILO_UNIT_NUM = 1024;
 
-// HTML attribute names
+// Customized HTML attribute names
 var TRANSMARK_ATTRNAME = 'tm';
+
+// CSS class name. If the CSS class name is used more than once, define it here,
+// else, directly use it in js file.
+var ACTIVETAB_CSS = 'active';
+var INACTIVETAB_CSS = 'inactive';
+var INVALID_CSS = 'invalid';
+var HIDDEN_CSS = 'hidden';
+var READONLY_CSS = 'readonly';
+var CLICKABLE_CSS = 'clickable';
+var ERR_CSS = 'error';
 
 // server actions, should keep consistent with server side.
 var CONFIG_XML_GET_ACTION = '/cgi-bin/admin-console.cgi?action=getxml';
 var RUNTIME_XML_GET_ACTION = '/cgi-bin/admin-console.cgi?action=getruntimeinfo';
 var XML_SET_ACTION = '/cgi-bin/admin-console.cgi?action=postxml';
-var RELOAD_ACTION = '/cgi-bin/admin-console.cgi?action=reload';
 var LOGOUT_ACTION = '/cgi-bin/admin-console.cgi?action=logout';
 var LOGIN_ACTION = '/cgi-bin/admin-console.cgi?action=login';
 var CHPSWD_ACTION = '/cgi-bin/admin-console.cgi?action=chpswd';
-
-// server response messages
-var SAVE_FAIL_MSG_FROM_SERVER = 'Save Failed';
-var SAVE_WARN_MSG_FROM_SERVER = 'Settings is out-of-date';
-var RELOAD_FAIL_MSG_FROM_SERVER = 'Reload Failed';
-var RELOAD_WARN_MSG_FROM_SERVER = 'Need reload webserver';
 
 // post param names, should keep consistent with server side.
 var LANGUAGE_PARAM_NAME = 'hl';
@@ -70,37 +71,18 @@ var NEW_PASSWORD_PARAM_NAME = 'npswd';
 var TS_PARAM_NAME = 'ts';
 var FORCE_PARAM_NAME = 'force';
 
-
-/* If the CSS classname is used more than once, define it here, else, directly
- * use it in js file.
- */
-var ACTIVETAB_CSS = 'active';
-var INACTIVETAB_CSS = 'inactive';
-
-var INVALID_CSS = 'invalid';
-var HIDDEN_CSS = 'hidden';
-var READONLY_CSS = 'readonly';
-var CLICKABLE_CSS = 'clickable';
-var ERR_CSS = 'error';
-
-var XML_FILE_INDENT = '    ';
+// server response messages
+// TODO: use HTTP status code to replace it.
+var SAVE_WARN_MSG_FROM_SERVER = 'Settings is out-of-date';
 
 /**
- * @constructor
+ * Namespace for some const variable groups.
  */
-function ConstVars() {}
+var ConstVars = {}
 
-/**
- * The sitemap type definition.
- *
- * GENERAL means the site setting, treat it as a special sitemap called general.
- * WEB means the web sitemap setting.
- * NEWS means the news sitemap setting.
- *
- * @enum {number}
- */
+// Three types of setting fields.
 ConstVars.settingFieldType = {TEXT: 1, LIST: 2, BOOL: 3};
-
+// Default search engines for web sitemap automatically submission.
 ConstVars.defaultSearchEngines = [
   {name: 'Microsoft', url: 'http://webmaster.live.com/ping.aspx?siteMap='},
   {name: 'Moreover.com', url: 'http://api.moreover.com/ping?u='},
@@ -111,7 +93,6 @@ ConstVars.defaultSearchEngines = [
    url: 'http://www.google.com/webmasters/sitemaps/ping?sitemap='}
 ];
 
-//////////////////////////////////////////////////////
 ///////////////////for IE////////////////////////////
 if (!window.Node) {
   window.Node = {

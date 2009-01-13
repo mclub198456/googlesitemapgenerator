@@ -1,4 +1,4 @@
-// Copyright 2008 Google Inc.
+// Copyright 2009 Google Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@
 #include "common/fileutil.h"
 
 #include "sitemapservice/websitemapservice.h"
-#include "sitemapservice/newssitemapservice.h"
+#include "sitemapservice/newsdatamanager.h"
 #include "sitemapservice/videositemapservice.h"
 #include "sitemapservice/codesearchsitemapservice.h"
 #include "sitemapservice/mobilesitemapservice.h"
@@ -48,11 +48,6 @@ SiteManager::~SiteManager() {
     delete services_.front();
     services_.pop_front();
   }
-
-  for (int i = 0; i < static_cast<int>(replacers_.size()); ++i) {
-    delete replacers_[i];
-  }
-  replacers_.clear();
 }
 
 bool SiteManager::Initialize(const std::string& site_id,
@@ -95,23 +90,19 @@ void SiteManager::Unload() {
     services_.pop_back();
   }
 
-  // Save data and delete data manager.
-  data_manager_->SaveMemoryData(true, true);
+  // Handle in memory data and delete data manager.
+  if (data_manager_->GetNewsDataManager()->UpdateData()) {
+    Logger::Log(EVENT_ERROR, "Failed to unload data manager.");
+  }
   delete data_manager_;
   data_manager_ = NULL;
 
-  // Delete replacers.
-  for (int i = 0; i < static_cast<int>(replacers_.size()); ++i) {
-    delete replacers_[i];
-  }
-  replacers_.clear();
-
-  // Remove robotstxt_filter_. (not necessary)
-  // Remove querystring_filter_. (not necessary)
-
+  /*
+  // Remove the site from runtime info manager.
   RuntimeInfoManager::Lock(true);
   RuntimeInfoManager::application_info()->RemoveSiteInfo(setting_.site_id());
   RuntimeInfoManager::Unlock();
+  */
 }
 
 bool SiteManager::Load(const SiteSetting& setting) {
@@ -129,27 +120,6 @@ bool SiteManager::Load(const SiteSetting& setting) {
   RuntimeInfoManager::Lock(true);
   RuntimeInfoManager::application_info()->AddSiteInfo(setting_.site_id());
   RuntimeInfoManager::Unlock();
-
-  // Create filter for robots.txt.
-  std::string robotstxt_path(setting.physical_path());
-  robotstxt_path.append("/robots.txt");
-  robotstxt_filter_.Initialize(robotstxt_path.c_str());
-
-  // Initialize query string filter.
-  querystring_filter_.Initialize(setting_.included_queryfields());
-
-  // Build URL replacer for this site.
-  const std::vector<UrlReplacement>& replacements = setting.url_replacements().items();
-  for (int i = 0; i < static_cast<int>(replacements.size()); ++i) {
-    UrlReplacer* replacer = new UrlReplacer();
-    if (!replacer->Initialize(replacements[i].find(), replacements[i].replace())) {
-      delete replacer;
-      Logger::Log(EVENT_ERROR, "Failed to initialize replacer. Find:%s, Replace:%s",
-                replacements[i].find().c_str(), replacements[i].replace().c_str());
-      return false;
-    }
-    replacers_.push_back(replacer);
-  }
 
   // Create and initialize data_manager_.
   data_manager_ = new SiteDataManagerImpl();
@@ -181,6 +151,9 @@ bool SiteManager::Load(const SiteSetting& setting) {
     }
   }
 
+  // DO NOT UNCOMMENT THIS CODE BLOCK!!!
+  // News Sitemap Service is not guranteed to working properly.
+  /*
   if (setting_.news_sitemap_setting().enabled()) {
     BaseSitemapService* service = new NewsSitemapService();
     if (!service->Initialize(data_manager_, setting_)) {
@@ -191,6 +164,7 @@ bool SiteManager::Load(const SiteSetting& setting) {
       services_.push_back(service);
     }
   }
+  */
 
   if (setting_.video_sitemap_setting().enabled()) {
     BaseSitemapService* service = new VideoSitemapService();
@@ -260,14 +234,6 @@ bool SiteManager::Load(const SiteSetting& setting) {
     }
   }
 
-  // Try to update robots.txt
-   std::string filename(setting.web_sitemap_setting().file_name());
-   if (setting.web_sitemap_setting().compress()) {
-     filename.append(".gz");
-   }
-   UpdateRobotsTxt(setting.web_sitemap_setting().included_in_robots_txt(),
-                   filename.c_str());
-
   return true;
 }
 
@@ -297,147 +263,10 @@ int SiteManager::ScheduleService() {
 
 int SiteManager::ProcessRecord(UrlRecord& record) {
   if (data_manager_ != NULL) {
-    // Keep it safe!
-    record.url[kMaxUrlLength - 1] = '\0';
-
-    // Simply ignore URLs containing invalid chars.
-    if (!Url::ValidateUrlChars(record.url) || record.url[0] != '/') {
-      DLog(EVENT_CRITICAL, "Url contains invalid chars. [%s].", record.url);
-      return 0;
-    }
-
-    // Ignore url prevented by robots.txt
-    if (!robotstxt_filter_.Accept(record.url)) {
-      DLog(EVENT_CRITICAL, "Url ignored by robots.txt. [%s].", record.url);
-      return 0;
-    }
-
-    // Replace the URLs.
-    for (int i = 0; i < static_cast<int>(replacers_.size()); ++i) {
-      if (replacers_[i]->Replace(record.url, kMaxUrlLength)) {
-        break;
-      }
-    }
-
-    // Filter the query string.
-    querystring_filter_.Filter(record.url);
-
     return data_manager_->ProcessRecord(record);
   } else {
     return 0;
   }
 }
 
-// This method may harm robots.txt, please take care.
-bool SiteManager::UpdateRobotsTxt(bool include_sitemap, const char* sitemap) {
-  if (data_manager_ == NULL) return false;
 
-  // Create a temporary file to store new robots.txt.
-  std::string temp_file;
-  if (!FileUtil::MakeTemp(&temp_file)) {
-    Logger::Log(EVENT_ERROR, "Failed to create temp file for robots.txt.");
-    return false;
-  }
-
-  // Construct old robots.txt name and a temp file name.
-  std::string robotstxt_path(setting_.physical_path());
-  robotstxt_path.append("/robots.txt");
-
-  bool robots_exist = FileUtil::Exists(robotstxt_path.c_str());
-
-  // Copy lines in old robots.txt into a temp file.
-  bool old_flag = false;
-  std::string old_name;
-  std::ofstream fout(temp_file.c_str());
-  std::ifstream fin(robotstxt_path.c_str());
-
-  const char* kAddFlag = "# Added by Google Sitemap Generator";
-  if (robots_exist) {
-    std::string line;
-    while (getline(fin, line) != NULL && fout.good()) {
-      std::string::size_type pos = line.find(kAddFlag);
-      if (pos != std::string::npos) {
-        line.erase(pos);
-        pos = line.find_last_not_of(" \t");
-        if (pos != std::string::npos) {
-          line.erase(pos + 1);
-        }
-
-        pos = line.find_last_of("/");
-        if (pos != std::string::npos) {
-          line.erase(line.begin(), line.begin() + pos + 1);
-        }
-
-        old_name = line;
-        old_flag = true;
-      } else {
-        fout << line << std::endl;
-      }
-    }
-  }
-
-  // Same value as old one.
-  if (old_flag == include_sitemap) {
-    if (old_flag == false || old_name == std::string(sitemap)) {
-      fin.close();
-      fout.close();
-      FileUtil::DeleteFile(temp_file.c_str());
-      return true;
-    }
-  }
-
-  // Check the copy result.
-  bool result = false;
-  do {
-    if (robots_exist) {
-      if (fin.eof()) {
-        fin.close();
-      } else {
-        Logger::Log(EVENT_ERROR, "Failed to read from old robots.txt.");
-        break;
-      }
-    }
-
-    if (include_sitemap == true) {
-      std::string sitemap_url;
-      if (!data_manager_->GetHostName(&sitemap_url)) {
-        Logger::Log(EVENT_ERROR, "Failed to get host name to update robots.txt");
-        break;
-      }
-      sitemap_url.append("/").append(sitemap);
-      fout << "Sitemap: " << sitemap_url << " " << kAddFlag << std::endl;
-    }
-
-    result = true;
-  } while (false);
-
-  if (fout.fail()) {
-    Logger::Log(EVENT_ERROR, "Failed to write temp robots.txt.");
-    FileUtil::DeleteFile(temp_file.c_str());
-    result = false;
-  }
-  fout.close();
-
-  if (result && (include_sitemap || old_flag)) {
-    if (robots_exist) {
-      // Make a backup for robots.txt.
-      std::string backup(robotstxt_path);
-      backup.append("_sitemap_backup");
-      if (!FileUtil::CopyFile(robotstxt_path.c_str(), backup.c_str())) {
-        Logger::Log(EVENT_ERROR, "Failed to backup robots.txt.");
-        FileUtil::DeleteFile(temp_file.c_str());
-        return false;
-      }
-    }
-
-    if (!FileUtil::MoveFile(temp_file.c_str(), robotstxt_path.c_str())) {
-      Logger::Log(EVENT_ERROR, "Failed to create new robots.txt.");
-      FileUtil::DeleteFile(temp_file.c_str());
-      return false;
-    }
-  }
-
-  // Remove file if possible.
-  FileUtil::DeleteFile(temp_file.c_str());
-  return true;
-}

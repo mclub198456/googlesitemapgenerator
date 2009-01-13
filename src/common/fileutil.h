@@ -1,4 +1,4 @@
-// Copyright 2008 Google Inc.
+// Copyright 2009 Google Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -51,6 +51,11 @@ class FileUtil {
   // Load/write given contents to the file
   static bool LoadFile(const char* filename, std::string* content);
   static bool WriteFile(const char* filename, const std::string& content);
+
+  // Load/save file contents as lines.
+  static bool LoadLines(const char* filename, std::vector<std::string>* lines);
+  static bool SaveLines(const char* filename,
+                        const std::vector<std::string>& lines);
 
   // Get file attribute.
   // The path could be a common file or a directory.

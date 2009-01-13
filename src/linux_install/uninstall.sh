@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Copyright 2008 Google Inc.
+# Copyright 2009 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -9,7 +9,9 @@
 #      http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS, # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  # See the License for the specific language governing permissions and
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
 # limitations under the License.
 
 set -e
@@ -35,9 +37,10 @@ APP_DIR="./"
 GLOBAL_CONF_DIR="/etc/google-sitemap-generator"
 GLOBAL_CONF_HOME="home"
 
+APACHE_INFO="apache.info"
+
 APACHE_SCRIPT="apache.sh"
 UNINSTALL_SCRIPT="uninstall.sh"
-RESTART_SCRIPT="restart.sh"
 
 APACHE="_APACHE_BIN_"
 
@@ -82,13 +85,18 @@ GetAppDir()
 
 CheckApache()
 {
-  if test "x$APACHE" = "x_APACHE_BIN_"; then
-    echo "This uninstall script is only a template."
+#  if test "x$APACHE" = "x_APACHE_BIN_"; then
+#    echo "This uninstall script is only a template."
+#    exit 1
+#  fi
+
+  if test -f "$APP_DIR/$APACHE_INFO"; then :; else
+    echo "Failed to find apache.info in installation directory."
     exit 1
   fi
 
-  if AnalyzeApache "$APACHE"; then :; else
-    echo "($APACHE) is not a supported Apache binary."
+  if LoadApacheInfo "$APP_DIR/$APACHE_INFO"; then :; else
+    echo "Failed to load apache.info from installation directory."
     exit 1
   fi
 }
@@ -98,20 +106,24 @@ StopSitemapDaemon()
 {
   # stop sitemap service
   if [ -f "$APP_DIR/$RUN_DIR/$PID_FILE" ]; then
-    echo "The Google Sitemap Generator daemon is running."
-    echo -n "Do you want to stop the Google Sitemap Generator daemon? [Y/n]"
-    read answer
-    if [ "$answer" = "N" -o "$answer" = "n" ]; then
-      echo "The Google Sitemap Generator uninstallation has beed aborted."
-      exit 1
+    echo "The Google Sitemap Generator daemon is running. Stopping the daemon..."
+    if "$APP_DIR/$BIN_DIR/$DAEMON_BIN" service stop 1>/dev/null 2>/dev/null; then
+      echo "Google Sitemap Generator daemon successfully stopped."
     else
-      if "$APP_DIR/$BIN_DIR/$DAEMON_BIN" -stop 1>/dev/null 2>/dev/null; then
-        echo "Google Sitemap Generator daemon successfully stopped."
-      else
-        echo "Failed to stop sitemap daemon."
-        exit 1
-      fi
+      echo "Failed to stop Sitemap daemon."
+      exit 1
     fi
+  fi
+
+  return 0
+}
+
+CleanRobotsTxt()
+{
+  if "$APP_DIR/$BIN_DIR/$DAEMON_BIN" clean_robots 1>/dev/null 2>/dev/null; then
+    echo "Sitemap lines successfully removed from robots.txt."
+  else
+    echo "Failed to remove Sitemap lines from robots.txt."
   fi
 
   return 0
@@ -205,17 +217,21 @@ UninstallProgramFiles()
   ExecCmd 0 rm -f "$GLOBAL_CONF_DIR/$GLOBAL_CONF_HOME"
 
   echo "Program files successfully removed."
+  echo ""
   return 0
 }
 
 PostUninstall()
 {
   # Remove data base files.
-  echo "The URL database and application settings file can be saved and used \
-when you reinstall. If you decide to save the files and later want to remove \
-them, you can run this script again."
+  cat <<HERE_POST_UNINSTALL
+The URL database and application settings file can be saved and used when you
+reinstall. If you choose to save the files now, but later you want to remove
+them, you can run this script again.
+HERE_POST_UNINSTALL
 echo -n "Do you want to save the URL database and application settings file ? [Y/n]"
   read answer
+  echo ""
   if [ "$answer" = "n" -o "$answer" = "N" ]; then
     ExecCmd 0 rm -rf "$APP_DIR"
     echo "URL database and application settings successfully cleaned."
@@ -223,16 +239,16 @@ echo -n "Do you want to save the URL database and application settings file ? [Y
     echo "You can run this script again to remove those files."
   fi
 
-  # Restart apache if desired.
-  ApacheStatus
-
-  if test $APACHE_RUNNING -eq 1; then
-    echo "Apache is running and Google Sitemap Generator module still works until Apache is restarted."
+  echo "Google Sitemap Generator module still works until Apache is restarted."
+  if [ "x$APACHE_CTL" = "x" ]; then
+    echo "You should restart Apache manually to disable the Google Sitemap Generator module."
+  else
     echo -n "Do you want to restart Apache now? [N/y]"
     read answer
+    echo ""
     if [ "$answer" = "Y" -o "$answer" = "y" ]; then
       if RestartApache; then :; else
-        echo "Failed to restart Apache."
+        echo "Failed to restart Apache. You need to restart it manually."
       fi
     fi
   fi
@@ -244,7 +260,7 @@ echo -n "Do you want to save the URL database and application settings file ? [Y
 # ---------------------------------------------------------
 # ensure user is root
 if [ `id -u` != "0" ]; then
-  echo "Permission denied: require superuser"
+  echo "Permission denied. Uninstallation script must be run with superuser privileges."
   exit 1
 fi
 
@@ -264,6 +280,8 @@ ModifyApacheConf
 UninstallInitScript
 
 StopSitemapDaemon
+
+CleanRobotsTxt
 
 UninstallProgramFiles
 

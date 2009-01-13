@@ -1,4 +1,4 @@
-// Copyright 2008 Google Inc.
+// Copyright 2009 Google Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -372,7 +372,7 @@ std::string BaseSitemapService::BuildPath(int index, bool fullpath) {
 
 bool BaseSitemapService::FilterUrl(const char* url) {
   int urllen = static_cast<int>(strlen(url));
-  if (includefilter_ != NULL && !includefilter_->Accept(url, urllen)) {
+  if (includefilter_ == NULL || !includefilter_->Accept(url, urllen)) {
     // Not an included url.
     return false;
   }
@@ -385,17 +385,21 @@ bool BaseSitemapService::FilterUrl(const char* url) {
 }
 
 void BaseSitemapService::InformSearchEngine() {
-  // Construct the url of sitemap, like:
+  std::string sitemap_path = BuildSitemapUrl();
+  // Notify every informers
+  std::vector<Informer*>::iterator itr = informers_.begin();
+  for ( ; itr != informers_.end(); ++itr) {
+    (*itr)->Inform(sitemap_path);
+  }
+}
+
+std::string BaseSitemapService::BuildSitemapUrl() {
+    // Construct the url of sitemap, like:
   // http://www.example.com/sitemap.xml
   std::string sitemap_path(host_);
   sitemap_path.append("/").append(sitemapsetting_->file_name());
   if (sitemapsetting_->compress()) {
     sitemap_path.append(".gz");
   }
-
-  // Notify every informers
-  std::vector<Informer*>::iterator itr = informers_.begin();
-  for ( ; itr != informers_.end(); ++itr) {
-    (*itr)->Inform(sitemap_path);
-  }
+  return sitemap_path;
 }

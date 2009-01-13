@@ -1,4 +1,4 @@
-// Copyright 2008 Google Inc.
+// Copyright 2009 Google Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -27,7 +27,6 @@
 #include "sitemapservice/serviceinterface.h"
 #include "sitemapservice/urlfilter.h"
 #include "sitemapservice/sitedatamanager.h"
-#include "sitemapservice/newsdatamanager.h"
 #include "sitemapservice/blogsearchpingserviceinfo.h"
 
 
@@ -52,11 +51,13 @@ class BlogSearchPingService : public ServiceInterface {
   bool Ping(const char* url);
 
  private:
+  // Max number of pings per minutes.
+  static const int kMaxPingPerMin;
+
+  int max_ping_per_run_;
+
   // Setting for this service.
   BlogSearchPingSetting ping_setting_;
-
-  // Data manager used to get latest blog URL.
-  NewsDataManager* newsdata_manager_;
 
   // Url of blog ping service server.
   Url ping_url_;

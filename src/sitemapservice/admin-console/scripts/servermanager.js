@@ -1,4 +1,4 @@
-// Copyright 2008 Google Inc.
+// Copyright 2009 Google Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -23,33 +23,17 @@
 
 
 /**
- * @fileoverview
- *
- * @author chaiying@google.com (Ying Chai)
+ * @fileoverview  The ajax communication logic module.
  */
 
+/**
+ * The namespace of this module.
+ */
 var ServerManager = {};
 
-/**
- * Informs user that the request to server has been success.
- * @param {String} msg  The message to user
- */
-ServerManager.informUserServerReturnSuccess = function(msg) {
-  if (msg)
-    alert(msg);
-};
-
-/**
- * Informs user that the request to server has been failed.
- * @param {String} msg  The message to user
- */
-ServerManager.informUserServerReturnFail = function(msg) {
-  if (msg)
-    alert(msg);
-};
 ////////////////////////////// From server tunnel ////////////////////////////
 /**
- * Get XML content from server.
+ * Gets XML content from server.
  * @param {String} cmd  The URI of the 'GET' request
  * @return {Document?} The XML document
  */
@@ -90,7 +74,7 @@ ServerManager.getXml = function(cmd) {
 
 ////////////////////////////// To server tunnel ////////////////////////////
 /**
- * Send logout request.
+ * Sends logout request.
  * @return {Boolean} If the request is successful
  */
 ServerManager.requestLogout = function() {
@@ -129,7 +113,7 @@ ServerManager.requestSave = function(xmlstring, ts, opt_force){
         ret = ServerManager.requestSave.rets.OUTOFDATE;
       } else {
         ret = ServerManager.requestSave.rets.SUCCESS;
-        ServerManager.informUserServerReturnSuccess(SAVE_SUCCESS_MSG);
+        alert(SAVE_SUCCESS_MSG);
         ts.value = msgFromServer;
       }
     },
@@ -151,28 +135,7 @@ ServerManager.requestSave = function(xmlstring, ts, opt_force){
 ServerManager.requestSave.rets = {SUCCESS: 0, FAILED: 1, OUTOFDATE: 2};
 
 /**
- * Send reload request.
- * @return {Boolean} If the request is successful
- */
-ServerManager.requestReload = function() {
-  var action = new ResponseAction(
-    function(responser) {
-      ServerManager.informUserServerReturnSuccess(RELOAD_SUCCESS_MSG);
-      var msgFromServer = AjaxUtil.getResponseContent(responser);
-      if (msgFromServer == RELOAD_WARN_MSG_FROM_SERVER) {
-        alert(RELOAD_WARNING_MSG);
-      }
-    },
-    function() {
-      ServerManager.informUserServerReturnFail(RELOAD_FAIL_MSG);
-    }
-  );
-  return ServerManager.post_(
-      RELOAD_ACTION + '&sid=' + _getSession().id(), action);
-};
-
-/**
- * Send login request.
+ * Sends login request.
  * @param {String} username  The login username
  * @param {String} password  The login password
  * @return {Boolean} If the request is successful
@@ -185,7 +148,7 @@ ServerManager.requestLogin = function(username, password) {
   var action = new ResponseAction(
     function() {},
     function() {
-      ServerManager.informUserServerReturnFail(LOGIN_FAIL_MSG);
+      alert(LOGIN_FAIL_MSG);
     }
   );
 
@@ -193,7 +156,7 @@ ServerManager.requestLogin = function(username, password) {
 };
 
  /**
- * Send change password request.
+ * Sends change password request.
  * @param {String} oldpswd  The old password
  * @param {String} newpswd  The new password
  */
@@ -204,7 +167,7 @@ ServerManager.requestChangePassword = function(oldpswd, newpswd) {
 
   var action = new ResponseAction(
     function() {
-      ServerManager.informUserServerReturnSuccess(CHPSWD_SUCCESS_MSG);
+      alert(CHPSWD_SUCCESS_MSG);
     },
     function() {
       if (ServerManager.statusCode == 401) {
@@ -221,7 +184,7 @@ ServerManager.requestChangePassword = function(oldpswd, newpswd) {
       CHPSWD_ACTION + '&sid=' + _getSession().id(), action, param);
 };
 
-////////////////////////////////////// POST methods ////////////////////////////
+////////////////////////////// POST methods ////////////////////////////
 /**
  * Post with default action that inform user the success/fail message.
  * @param {String} cmd  The command to server
@@ -236,10 +199,10 @@ ServerManager.postWithDefaultAction_ = function(cmd, opt_msg, opt_param,
                                                 opt_typeval) {
   var action = opt_msg ? new ResponseAction(
     function() {
-      ServerManager.informUserServerReturnSuccess(opt_msg.success());
+      alert(opt_msg.success());
     },
     function() {
-      ServerManager.informUserServerReturnFail(opt_msg.failed());
+      alert(opt_msg.failed());
     }
   ) : null;
   return ServerManager.post_(cmd, action, opt_param, opt_typeval);
@@ -297,7 +260,7 @@ ServerManager.post_ = function(cmd, opt_action, opt_param, opt_typeval) {
   return ret;
 };
 
-//////////////////////////////////////////////////////////////////////
+//////////////////////////Some help classes /////////////////////////////
 /**
  * @constructor
  * @param {String} success  The server response success message to user
@@ -322,7 +285,6 @@ ResponseMessage.prototype.failed = function() {
   return this.failMsg_;
 };
 
-//////////////////////////////////////////////////////////////////////
 /**
  * @constructor
  * @param {Function} success  The action on server response success

@@ -1,4 +1,4 @@
-// Copyright 2008 Google Inc.
+// Copyright 2009 Google Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -73,6 +73,11 @@ class NewsSitemapService : public BaseSitemapService {
   static time_t GetPublicationDate(const VisitingRecord& record) {
     return std::min<time_t>(record.first_appear, record.last_change);
   }
+
+  // Get last modification time or the url's corresponding file.
+  time_t GetFileModifiedTime(const char* url);
+
+  static bool IsStaticPage(const char* page);
 
   // The directory name used to store news database.
   // It is a sub-directory of site's data directory.

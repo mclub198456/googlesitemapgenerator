@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Copyright 2008 Google Inc.
+# Copyright 2009 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,68 +17,99 @@
 APACHE_BIN=""
 APACHE_CONF=""
 APACHE_VERSION=""
-APACHE_PIDFILE=""
 APACHE_HTTPD_ROOT=""
 APACHE_SERVER_ROOT=""
 APACHE_ARCH=32
+APACHE_GROUP=""
+APACHE_CTL=""
 CHECK_FLAG=1
 
+# Param1: file to load config
+# Param2: directive name
+# Param3: name of return value
+ParseDirective()
+{
+  local file="$1"
+  local name="$2"
+  local result=""
 
-APACHE_PID=0
-APACHE_RUNNING=0
+  pd_temp_str=`cat "$file" | grep "^[[:blank:]]*$name"`
+  if test "x$pd_temp_str" != "x" ; then
+    result=`echo "$pd_temp_str" | \
+    grep "^[[:blank:]]*$name[[:blank:]]*" | awk -F'"' ' { print $2 } '`
+    if test "x$result" = "x" ; then
+      result=`echo "$pd_temp_str" | awk ' { print $2 } '`
+    fi
+    result=`echo $result | tr -d '\r'`
+  fi
+
+  eval "$3=\"$result\""
+  return 0
+}
+
+# Param1: var name
+# Param2: var value
+SetApacheVar()
+{
+  eval "$1=\"$2\""
+  return 0
+}
 
 AnalyzeApache()
 {
-  APACHE_BIN="$1"
+  APACHE_CMD="$1"
 
-  if test "x$APACHE_BIN" = "x"; then
-    echo "Apache bin shouldn't be empty"
+  if test "x$APACHE_CMD" = "x"; then
+    echo "Apache binary or control script shouldn't be empty."
     return 1
   fi
 
-  if test -x "$APACHE_BIN"; then :; else
-    echo "[$APACHE_BIN] should be an executable file."
+  if test -x "$APACHE_CMD"; then :; else
+    echo "[$APACHE_CMD] should be an executable file."
     return 2
   fi
 
-  if "$APACHE_BIN" -V 1>/dev/null 2>/dev/null; then :; else
-    echo "[$APACHE_BIN] should support -V option."
+  if "$APACHE_CMD" -V 1>/dev/null 2>/dev/null; then :; else
+    echo "[$APACHE_CMD] should support -V option."
     return 3
   fi
 
-  APACHE_VERSION=`"$APACHE_BIN" -V | sed 's/[://]/ /g' \
+  APACHE_VERSION=`"$APACHE_CMD" -V | sed 's/[://]/ /g' \
     | awk '/version/ { print $4 }' | awk -F. '{ printf("%s.%s", $1, $2) }'`
 
   if test "x$APACHE_VERSION" != "x1.3" && \
     test "x$APACHE_VERSION" != "x2.0" && \
     test "x$APACHE_VERSION" != "x2.2"; then
-    echo "[$APACHE_BIN] is not a supported apache binary."
+    echo "[$APACHE_CMD] doesn't point to a supported Apache instance."
     return 4
   fi
 
   if test "x$APACHE_VERSION" = "x1.3" ; then
-    EAPI=`"$APACHE_BIN" -V | awk '/EAPI/ { print $2 }'`
+    EAPI=`"$APACHE_CMD" -V | awk '/EAPI/ { print $2 }'`
     if test "x$EAPI" = "xEAPI" ; then
       APACHE_VERSION="1.3.e"
     fi
   fi
 
   # Retrieve -D HTTPD_ROOT=".."
-  APACHE_HTTPD_ROOT=`"$APACHE_BIN" -V | sed 's/=/ /g' \
+  APACHE_HTTPD_ROOT=`"$APACHE_CMD" -V | sed 's/=/ /g' \
     | awk '/HTTPD_ROOT/ { print $3 }' | sed 's/"//g'`
 
-  # Retrieve -D SERVER_CONFIG_FILE=".."
-  APACHE_CONF=`"$APACHE_BIN" -V | sed 's/=/ /g' \
-    | awk '/SERVER_CONFIG_FILE/ { print $3 }' | sed 's/"//g'`
+  # Get value for APACHE_CONF
   if test "x$APACHE_CONF" = "x"; then
-    echo "[$APACHE_BIN -V] doens't contain SERVER_CONFIG_FILE value."
-    return 5
-  fi
+    # Retrieve -D SERVER_CONFIG_FILE=".."
+    APACHE_CONF=`"$APACHE_CMD" -V | sed 's/=/ /g' \
+      | awk '/SERVER_CONFIG_FILE/ { print $3 }' | sed 's/"//g'`
+    if test "x$APACHE_CONF" = "x"; then
+      echo "[$APACHE_CMD -V] doens't contain SERVER_CONFIG_FILE value."
+      return 5
+    fi
 
-  # Make APACHE_CONF as an absolute path.
-  local temp_str=`echo "$APACHE_CONF" | grep '^/'`
-  if test "x$temp_str" = "x" ; then
-    APACHE_CONF="$APACHE_HTTPD_ROOT/$APACHE_CONF"
+    # Make APACHE_CONF as an absolute path.
+    local temp_str=`echo "$APACHE_CONF" | grep '^/'`
+    if test "x$temp_str" = "x" ; then
+      APACHE_CONF="$APACHE_HTTPD_ROOT/$APACHE_CONF"
+    fi
   fi
 
   if cat "$APACHE_CONF" 1>/dev/null 2>/dev/null; then :; else
@@ -87,50 +118,28 @@ AnalyzeApache()
   fi
 
   # Determine ServerRoot directive.
-  temp_str=`cat "$APACHE_CONF" | grep '^[[:blank:]]*ServerRoot'`
-  if test "x$temp_str" != "x" ; then
-    APACHE_SERVER_ROOT=`echo "$temp_str" | \
-    grep '^[[:blank:]]*ServerRoot[[:blank:]]*' | awk -F'"' ' { print $2 } '`
-    if test "x$APACHE_SERVER_ROOT" = "x" ; then
-      APACHE_SERVER_ROOT=`echo "$temp_str" | awk ' { print $2 } '`
-    fi
-  fi
+  ParseDirective "$APACHE_CONF" "ServerRoot" "APACHE_SERVER_ROOT"
   if test "x$APACHE_SERVER_ROOT" = "x" ; then
     APACHE_SERVER_ROOT="$APACHE_HTTPD_ROOT"
   fi
   temp_str=`echo "$APACHE_SERVER_ROOT" | grep '^/'`
   if test "x$temp_str" = "x" ; then
-    echo "[$APACHE_SERVER_ROOT] is not an absolute path"
+    echo "ServerRoot [$APACHE_SERVER_ROOT] is not an absolute path."
     return 7
   fi
 
-  # Determine PidFile directive.
-  temp_str=`cat "$APACHE_CONF" | grep '^[[:blank:]]*PidFile'`
-  if test "x$temp_str" != "x" ; then
-    APACHE_PIDFILE=`echo "$temp_str" | \
-    grep '^[[:blank:]]*PidFile[[:blank:]]*' | awk -F'"' ' { print $2 } '`
-    if test "x$APACHE_PIDFILE" = "x" ; then
-      APACHE_PIDFILE=`echo "$temp_str" | awk ' { print $2 } '`
+  # Get value for APACHE_GROUP
+  if test "x$APACHE_GROUP" = "x"; then
+    ParseDirective "$APACHE_CONF" "Group" "APACHE_GROUP"
+    if test "x$APACHE_GROUP" = "x" ; then
+      echo "Can't determine Group directive for Apache."
     fi
   fi
-  if test "x$APACHE_PIDFILE" = "x" ; then
-    APACHE_PIDFILE=`"$APACHE_BIN" -V | sed 's/=/ /g' \
-      | awk '/DEFAULT_PIDLOG/ { print $3 }' | sed 's/"//g'`
-  fi
 
-  # Check and normalize PidFile directive.
-  if test "x$APACHE_PIDFILE" = "x" ; then
-    echo "Can't determine PidFile directive for apache."
-    return 8
-  fi
-  temp_str=`echo "$APACHE_PIDFILE" | grep '^/'`
-  if test "x$temp_str" = "x" ; then
-    APACHE_PIDFILE="$APACHE_SERVER_ROOT/$APACHE_PIDFILE"
-  fi
-
+  # Get value for APACHE_ARCH
   APACHE_ARCH=32
-  if "$APACHE_BIN" -V | grep Architecture | grep 64 1>/dev/null 2>/dev/null; then
-    line=`"$APACHE_BIN" -V | grep Architecture | grep 64`
+  if "$APACHE_CMD" -V | grep Architecture | grep 64 1>/dev/null 2>/dev/null; then
+    line=`"$APACHE_CMD" -V | grep Architecture | grep 64`
     if test "x$line" != "x"; then
       APACHE_ARCH=64
     fi
@@ -140,117 +149,65 @@ AnalyzeApache()
   return 0
 }
 
-ApacheStatus()
+RestartApache()
 {
-  if test $CHECK_FLAG -eq 1; then
-    echo "Please run AnalyzeApache first"
-    return 1
+  if test "x$APACHE_CTL" = "x" ; then
+    echo "Unable to find Apache control script."
+    return 2
   fi
 
-  if test -f "$APACHE_PIDFILE"; then
-    APACHE_PID=`cat "$APACHE_PIDFILE"`
-    if test "x$APACHE_PID" != "x" && kill -0 $APACHE_PID 2>/dev/null ; then
-      APACHE_RUNNING=1
+  if test "x$APACHE_VERSION" = "x1.3" ||
+    test "x$APACHE_VERSION" = "x.1.3.e" ; then
+    if "$APACHE_CTL" graceful; then
+      return 0
     else
-      APACHE_RUNNING=0
+      return 1
     fi
   else
-    APACHE_RUNNING=0
+    if "$APACHE_CTL" -k graceful; then
+      return 0
+    else
+      return 1
+    fi
   fi
+}
+
+SaveApacheInfo()
+{
+  local info_file="$1"
+  echo "APACHE_CONF $APACHE_CONF" > $info_file
+  echo "APACHE_VERSION $APACHE_VERSION" >> $info_file
+  echo "APACHE_ARCH $APACHE_ARCH" >> $info_file
+  echo "APACHE_BIN $APACHE_BIN" >> $info_file
+  echo "APACHE_GROUP $APACHE_GROUP" >> $info_file
+  echo "APACHE_CTL $APACHE_CTL" >> $info_file
 
   return 0
 }
 
-StartApache()
+LoadApacheInfo()
 {
-  if ApacheStatus ; then :; else
-    return 1
-  fi
+  local info_file="$1"
+  ParseDirective "$info_file" "APACHE_CTL" "APACHE_CTL"
+  ParseDirective "$info_file" "APACHE_CONF" "APACHE_CONF"
+  ParseDirective "$info_file" "APACHE_VERSION" "APACHE_VERSION"
+  ParseDirective "$info_file" "APACHE_ARCH" "APACHE_ARCH"
+  ParseDirective "$info_file" "APACHE_BIN" "APACHE_BIN"
+  ParseDirective "$info_file" "APACHE_GROUP" "APACHE_GROUP"
 
-  if test "x$APACHE_VERSION" = "x1.3" ||
-    test "x$APACHE_VERSION" = "x1.3.e" ; then
-    if test $APACHE_RUNNING -eq 1; then
-      echo "Apache already running."
-      return 0;
-    fi
-    if "$APACHE_BIN" ; then
-      echo "Apache started."
-      return 0;
-    else
-      echo "Apache could not be started."
-      return 2;
-    fi
-  else
-    "$APACHE_BIN" -k start
-    return $?
-  fi
+  CHECK_FLAG=0
+  return 0
 }
 
-StopApache()
-{
-  if ApacheStatus ; then :; else
-    return 1
-  fi
 
-  if test "x$APACHE_VERSION" = "x1.3" ||
-    test "x$APACHE_VERSION" = "x1.3.e" ;  then
-    if test $APACHE_RUNNING -eq 0; then
-      echo "Apache is not running."
-      return 0;
-    fi
-    if kill $APACHE_PID ; then
-      echo "Apache is stopped."
-      return 0;
-    else
-      echo "Apache could not be stopped."
-      return 2;
-    fi
-  else
-    "$APACHE_BIN" -k stop
-    return $?
-  fi
+PrintApacheInfo()
+{
+  echo "HTTPD_ROOT: $APACHE_HTTPD_ROOT"
+  echo "ServerRoot: $APACHE_SERVER_ROOT"
+  echo "ConfigFile: $APACHE_CONF"
+  echo "Apache Arch: $APACHE_ARCH"
+  echo "Apache Version: $APACHE_VERSION"
+  echo "Apache Bin: $APACHE_BIN"
+  echo "Apache Group: $APACHE_GROUP"
 }
 
-RestartApache()
-{
-  if ApacheStatus ; then :; else
-    return 1
-  fi
-
-  if test "x$APACHE_VERSION" = "x1.3" ||
-    test "x$APACHE_VERSION" = "x1.3.e" ; then
-    if [ $APACHE_RUNNING -eq 0 ]; then
-      if $APACHE_BIN ; then
-        echo "Apache was not running, and is started"
-        return 0
-      else
-        echo "Apache couldn't be started."
-        return 2
-      fi
-    else
-      if kill -USR1 $APACHE_PID ; then
-        echo "Apache is restarted successfully."
-        return 0
-      else
-        echo "Failed to restart Apache."
-        return 3
-      fi
-    fi
-  else
-    if "$APACHE_BIN" -k graceful; then
-      echo "Apache is restarted successfully."
-      return 0
-    else
-      echo "Failed to restart Apache."
-      return 2
-    fi
-    return $?
-  fi
-}
-
-# AnalyzeApache "/usr/sbin/httpd"
-# echo "HTTPD_ROOT: $APACHE_HTTPD_ROOT"
-# echo "ServerRoot: $APACHE_SERVER_ROOT"
-# echo "PidFile: $APACHE_PIDFILE"
-# echo "ConfigFile: $APACHE_CONF"
-# echo "Apache Arch: $APACHE_ARCH"

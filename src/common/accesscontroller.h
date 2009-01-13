@@ -1,4 +1,4 @@
-// Copyright 2008 Google Inc.
+// Copyright 2009 Google Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -52,6 +52,9 @@ class AccessController {
   // Change current process' effective group to apache group.
   static bool RunWithApacheGroup();
 
+  static void set_apache_group(const std::string& apache_group) {
+    apache_group_ = apache_group;
+  }
 #endif
 
  private:
@@ -73,6 +76,9 @@ class AccessController {
 #else
   // Apache group id.
   static gid_t apache_gid_;
+
+  // Apache group name.
+  static std::string apache_group_;
 #endif
 
   AccessController() {}

@@ -1,4 +1,4 @@
-// Copyright 2008 Google Inc.
+// Copyright 2009 Google Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -30,20 +30,21 @@
  */
 var languageFlag = 'en-us';
 
-// server response inform messages
-var DIRTY_WARNING_MSG = 'Haven\'t saved your edits, continue to reload?';
-var PASSWD_WRONG_MSG = 'Password is not correct!';
+// Save-setting messages
+var CHANGE_UNSAVE_WARNING = 'You have not yet saved your changes.';
 var SAVE_SUCCESS_MSG = 'Settings saved';
 var SAVE_FAIL_MSG = 'Failed to save settings';
-var SAVE_WARNING_MSG = 'Settings are out-of-date, do you want to save anyway?';
-var REFRESH_MSG = 'Do you want to refresh the page to get latest settings?';
+var SAVE_WARNING_MSG = 
+    'Another user changed these settings and you have not ' +
+    'yet seen the new values. Do you still want to save settings, overwriting' +
+    ' the other user\'s work?';
+var REFRESH_MSG = 'Do you want to refresh the page to get the latest settings?';
+var REFRESH_DONE_MSG = 'Current settings have been refreshed.';
 
-var RELOAD_SUCCESS_MSG =
-    'Reload success, your editing will take effect at next running cycle.';
-var RELOAD_FAIL_MSG = 'Reload failed';
-var RELOAD_WARNING_MSG =
-    'Please reload webserver manually to put the change into effect';
-
+// Password-change messages
+var NEW_PASSWORDS_CONFLICT = 'The new passwords do not match.';
+var NEW_PASSWORD_INVALID = 'The new password must have 5 or more characters.';
+var OLD_PASSWORD_INVALID = 'The old password is invalid.';
 var CHPSWD_SUCCESS_MSG = 'Your password has been changed.';
 var CHPSWD_FAIL_MSG =
     'Your password failed to changed due to some unknown reason.';
@@ -51,310 +52,257 @@ var CHPSWD_FAIL_MSG1 = 'The old password is not correct.';
 var CHPSWD_FAIL_MSG2 =
     'A server problem occurred and your password was not changed.';
 
-var LOGOUT_SUCCESS_MSG = 'Sign out success';
-var LOGOUT_FAIL_MSG = 'Sign out failed';
-
-var LOGIN_SUCCESS_MSG = 'Sign in success';
+// Login messages
 var LOGIN_FAIL_MSG = 'Sign in failed.';
 
-// guide messages
-var NEWS_ENABLE_MSG = 'Be sure that your site is already authorized to ' +
-    'send news content to Google News. ';
-var REMOTE_ENABLE_MSG =
-    'Remote access is only supported under "https" protocol!';
-var NEED_RELOAD_WEBSERVER_CONFIRM_MSG = 'Your change to this setting ' +
-    'will take effect only after the web server is reloaded. Continue?';
-var ROBOTS_INCLUDE_CONFIRM_MSG = 'This function modifies your robots.txt' +
-    ' file.\nAre you sure to continue?';
+// Data fetch messages
+var SETTING_FETCH_ERROR = 'Error: Cannot get the setting data from server.';
+var RUNTIME_FETCH_ERROR = 
+    'Warning: Cannot get runtime information from server.';
+
+// Status page messages
 var SITE_NOT_RUNNING = 'Service components for this site are not running';
-var SERVER_NOT_REACHABLE = 'Server is unreachable!';
 
-var BROWSER_REQUIRE_MSG = 'The browser you\'re using is not on the support' +
-    'list, please use one of the following browser: ';
+// Special setting related messages 
+var NEWS_ENABLE_MSG = 
+    'Your site must be authorized to submit content to Google News. ' +
+    'If necessary, submit your request at ' +
+    'http://www.google.com/support/news_pub/bin/request.py?';
+var REMOTE_ENABLE_MSG =
+    'Remote access is supported only under HTTPS';
+var ROBOTS_INCLUDE_CONFIRM_MSG = 
+    'This function modifies your robots.txt ' +
+    ' file.\nAre you sure you want to continue?';
+var PRIVACY_WARNING = 
+    'You have changed the default settings which were ' +
+    'designed to protect user privacy.  Your changes could result ' +
+    'in sending user information to search engines. Make sure that any ' +
+    'information you send complies with the commitments made to your ' +
+    'users under your privacy policy.';
+var ERROR_MSG_QUERY_FIELD_DUPLICATE = 
+    'This query field has already been specified: ';
+var REVERT_MSG = 'Changes to query fields have been reverted.';
+var NO_URL_INCLUDE = 
+    'Your Sitemap URL filter excludes all URLs from this Sitemap.';
 
-var REFRESH_DONE_MSG = 'Current setting values have been refreshed.';
-
+// Revert-to-default messages
 var CANCEL_CUSTOMIZE_SETTING_MSG =
     'Are you sure you want to abandon your customized settings?';
 
-var NEW_PASSWORDS_CONFLICT =
-    'The new passwords don\'t match.';
-var NEW_PASSWORD_INVALID =
-    'The new password must have 5 or more characters.';
-var OLD_PASSWORD_INVALID =
-    'The old password is invalid.';
-
-var VALIDATING_ONSAVE_FAIL_MSG =
-    'The site settings are incomplete or incorrec\n' +
+// Validating messages
+var VALIDATING_ONSAVE_FAIL_MSG = 
+    'Site settings are incomplete or incorrect\n' +
     'Correct the highlighted fields and try again.'
+var VALIDATING_FAIL_MSG = 'Input validation failed. Please correct the error.';
 
-var VALIDATING_FAIL_MSG = 'Input validation failed! Please correct the error.';
-var DISCARD_CHANGE_TO_CURRENT_TAB = 'One or more settings are invalid, and ' +
-    'edits to this page cannot be saved until invalid settings are corrected.' +
-    ' If you continue to another tab, all edits to this tab will be ' +
-    'discarded. Still continue?';
+// Other messages
+var SERVER_NOT_REACHABLE = 'Server is unreachable!';
+var BROWSER_REQUIRE_MSG = 
+    'This browser is not supported. ' +
+    'Please use one of the following browsers: ';
+var INVALID_PAGE = 'Invalid page!';
 
-var CHANGE_UNSAVE_WARNING = 'You haven\'t saved your changes!';
-var PRIVACY_WARNING = 'You have changed the default settings which were ' +
-    'designed to protect your users\' privacy.  Your changes may enable ' +
-    'sending user information to search engines. Make sure that any ' +
-    'information you send complies with any commitments you make to your ' +
-    'users under your privacy policy.';
-
+// Here's some text strings in UI.
 // setting labels
 var GLOBAL_SETTING_NAME = 'Defaults for All Sites';
+// The title of the browser window.
+var WINDOW_TITLE =
+    'Administration Console - Google Sitemap Generator Beta';
+// For dashboard page table.
+var ENABLED_SITES = 'Registered Sites';
+var NO_ENABLED_SITES = 
+    'No site is enabled. To add or remove sites, ' +
+    'go to <a id=siteMngLink href=#>this page</a>';
+// For status page
+var STATE_SUCCESS = 'Success';
+var STATE_FAILED = 'Failed';
+var STATE_DISABLE = 'Disabled';
+var STATE_RUNNING = 'Running';
+var STATE_READY = 'Haven\'t run';
+// This means no item is set in the setting, for url patterns and query fields
+// settings.
+var NO_ITEM = 'no items';
+var SHOW = 'Show all';
+var HIDE = 'Hide all';
+var EDIT = 'Edit';
+var SAVE = 'Save';
+var ENABLE = 'Enable';
+var DISABLE = 'Disable';
+// For sitemap table in "site configuration" page.
+var SITEMAP_CUSTOM = 'custom';
+var SITEMAP_DEFAULT = 'default';
 
 //////////////////////////////////////////////////////////////////////
-var SettingEditorLanguage = {};
-
-/**
- * The title of the browser window.
- */
-SettingEditorLanguage.title =
-    'Administration Console - Google Sitemap Generator Beta';
+var GSGLang = {};
 
 /**
  * The 'value' attributes of the buttons.
  */
-SettingEditorLanguage.values = {
-  confirm: 'OK',
-  cancel: 'Cancel',
-  updateRuntime: 'Refresh',
-  submit: 'Save',
-  reload: 'Reload',
-  logout: 'Sign out',
+GSGLang.values = {
   login: 'Sign in',
-  add: 'Add rule',
-  del: 'Delete'
+  submit: 'Save',
+  cancel: 'Cancel',
+  revert: 'Revert to default settings',
+  change: 'Change',
+  close: 'Close',
+  add: 'Add'
 };
 
 /**
- * The tooltips of the settings.
+ * The tooltips for settings.
  */
-SettingEditorLanguage.tips = {
-  addGeneratorInfo: 'Add version information of Google Sitemap Generator ' +
-      'into the generated Sitemap file',
-  logPath: 'Pathname of the web server log file for this site. The log parser' +
-      ' component of Google Sitemap Generator uses data in the log file to' +
-      ' generate Sitemaps for this site.',
-  host: 'Host name of the site',
-  robotsIncluded: 'Submit Sitemaps through the robots.txt file',
-  updateRuntime: 'Refresh the runtime information',
-  urlInDatabase: 'Number of URLs in the Google Sitemap Generator database',
-  urlInTempfile: 'Number of URLs in the temporary files',
-  urlInMemory: 'Number of URLs in memory',
-  hostName: 'Host name of the site. If the site has multiple names, choose ' +
-      'the most commonly used. Google Sitemap Generator will set all URLs ' +
-      'to this site name, to reduce duplication.',
-  memoryUsageForSite:
-      'Memory used by Google Sitemap Generator for processing this site.',
-  diskUsageForSite:
-      'Disk space used by Google Sitemap Generator for processing this site.',
-  memoryUsage:
-      'Amount of memory used by the internal URL database',
-  diskUsage:
-      'Amount of disk space used by the internal URL database',
-  startTime: 'Application start time',
-  ServiceInfoSuccess: 'Completion status of last Sitemap generation.',
-  ServiceInfoLastUpdate: 'Last running end time for this component',
-  ServiceInfoUrlsCount:
-      'Number of URLs in current generated Sitemap files by this component',
-  changeLoginPassword: 'Change the Sign in password',
-  changePassword: 'Enter new password',
-  remoteAccess: 'Allow a remote computer to access the administration console',
-  loginPassword: 'Sign in password',
-  login: 'Sign in',
-  autoAdd:
-      'Allow the administration console to automatically add websites ' +
-      'that are defined on the web server. If the sites on the web server ' +
-      'change, you must reload the Google Sitemap Generator service to  ' +
-      'view the changes in this administration console.',
-  InAndExUrlPattern:
-      'A pattern must start with a slash (/) and can include ' +
-      'asterisk (*) wildcards.<br>' +
-      'URLs that match inclusion patterns will be included into Sitemap.<br>' +
-      'URLs that match exclusion patterns will be excluded.<br>' +
-      'URLs that match both patterns will be excluded.<br>' +
-      'If no patterns have been defined, URLs will be included by default.<br>',
+GSGLang.tips = {
   NotifyUrl: 'HTTP URL for submitting a Web Sitemap.',
-  ReplaceUrlPattern:
-      '\'Find\' field specifies a pattern for finding URLs that ' +
-      'must be transformed. Content in brackets ([]) will be replaced ' +
-      'by content in brackets ([]) in \'Replace\' field.',
-  deleteRule: 'Delete this rule.',
-  addRule: 'Add a new rule.',
-  backupDuration: 'Backup interval for in-memory URLs.',
-  settingPort: 'Port on which Google Sitemap Generator listens ' +
-      'for its configuration.',
-  siteEnabled: 'Control Google Sitemap Generator service components ' +
-      'for this site.',
-  webserverFilterEnabled: 'Allow Google Sitemap Generator to use a ' +
-      'web server filter to collect URLs for this site.',
-  fileScannerEnabled: 'Allow Google Sitemap Generator to use a file scanner ' +
-      'to collect URLs for this site.',
-  logParserEnabled: 'Allow Google Sitemap Generator to use a log parser ' +
-      'to collect URLs for this site.',
-  blogSearchPingEnabled: 'If checked, Google Sitemap Generator will send ' +
-      'ping to search engine for new blog URL.',
+  hostName: 
+      'Host name of the site. If the site has multiple names, choose ' +
+      'the most commonly used. Google Sitemap Generator sets all URLs ' +
+      'to this site name, to reduce duplication.',
+  InAndExUrlPattern:  
+      'Start each pattern with a slash (/) and use asterisk (*) wildcards as ' +
+      'needed. A URL is included if it matches an inclusion pattern, or ' +
+      'excluded if it matches an exclusion pattern or if it matches both ' +
+      'types of patterns. If no patterns are defined, all URLs are excluded. ',  
   sitemapEnabled:
-      'Allow Google Sitemap Generator to generate this type of Sitemap for ' +
-      'this site.',
-  compress: 'Enables compression of generated Sitemap files.',
-  filename: 'A Sitemap file name can consist of any ASCII alphanumeric ' +
-      'characters and an .xml suffix. If there are multiple Sitemap files, ' +
-      'this field specifies the Sitemap index file name.',
-  UpdateStartTime:
-      'Time at which this Sitemap generation should run. Use 24-hour time, ' +
-      'in this format: yyyy-mm-dd hh:mm:ss Example: 2008-08-31 12:34:56',
-  UpdateDuration: 'Pause time between Sitemap regenerations.',
-  UpdateDurationForBlogSearchPing:
-      'Pause time between pings to search engines.',
-  maxFileUrl: 'Limit on number of URLs in a Sitemap file.',
-  maxFileSize: 'Limit on file size of each Sitemap file.',
-  newsExpireDuration:
-      'Maximum age of URLs that will be included in News Sitemap files. ' +
-      'URL age is equal to the time elapsed since the last access.',
-  customize:
-      'Whether all the configurations in this sitemap are using default value.'
-//submit: 'Save the current settings. You\'ll need to click Reload in order ' +
-//      'to apply the changes.',
-//reload: 'Reload Google Sitemap Generator service to apply the change ' +
-//      'you\'ve saved.',
+      'Allow Google Sitemap Generator to generate this type of Sitemap.',
+  filename: 
+      'The file name contains ASCII alphanumeric ' +
+      'characters and an .xml suffix.'
 };
 
 /**
  * The text labels' display contents.
  */
-SettingEditorLanguage.texts = {
-  noEnableSites: 'No site is enabled. To add/subtract sites, ' +
-      'go to <a id=siteMngLink href=#>this page</a>',
-  enabledSitesTitle: 'Registered Sites',
-  queryFieldGuide: 'Please add names of the URL query fields that you want to' +
-      ' be included in Sitemap file. Use comma to seperate the input names.',
-  privacyNote: 'Note: In order to protect web user\'s privacy, all the query ' +
-      'fields in URLs that included in sitemaps will be eliminated except ' +
-      'what have been specified here. By default  the Sitemap Generator drops' +
-      ' all parameters. If you change the default settings, keep in mind that' +
-      ' you should only add query fields that are necessary for search engine' +
-      ' to know and not related to user\'s privacy information.  You should ' +
-      'ensure that all information sent to search engines using the Sitemap ' +
-      'Generator complies with your commitments to your users set out in your' +
-      ' privacy policy.',
-  maxUrlLifeTip:
-      'Explain: URL age is measured by the time elapsed since the last access.',
-  fileLimits: 'Settings for Sitemap file',
-  ServiceInfoUrlPing: 'Last sent URL',
-  promptPassword:
-      'The page has been refreshed, need your password to save configuration.' +
-      '<br>Please input login password again',
-  passwordHints:
-      'Hint: Length of new password should be<br />  at least six',
-  URLSources: 'Sources of URLs',
-  appSettingsLink: 'Application settings',
-  siteSettingsLink: 'Site settings',
+GSGLang.texts = {
+  // Message on top of the "login" page.
+  welcome: 'Welcome to Google Sitemap Generator',
+  // Text message on the loading page.
+  loading: 'Loading...',
+  // Links texts to different setting pages.
+  pref: 'Preferences',
   projHomeLink: 'Online Home',
   logoutLink: 'Sign out',
+  dashboard: 'Dashboard',
+  siteMng: 'Manage sites',
+  defaultSetting: 'Default site settings',
+  defaultSitemap: 'Default Sitemap settings',
+  // Labels for password-change on "preferences" page.
+  pswd: 'Password:',
+  chpswd: 'Change password',
+  // Labels on "dashboard" page.
+  applicationInfoTitle: 'Application Runtime Information',
+  appStart: 'Application start time',
+  allMem: 'Memory used for internal database',
+  allDisk: 'Disk used for internal database',
+  siteMngSubTitle: 'Manage Site Activation',
+  // Labels on "preferences" page.
   addGeneratorInfo: 'Include Google Sitemap Generator version in Sitemap file',
-  webserverFilterEnabled: 'Webserver filter',
-  webserverFilterEnabled_true: 'Enable',
-  webserverFilterEnabled_false: 'Disable',
-  fileScannerEnabled: 'File scanner',
-  fileScannerEnabled_true: 'Enable',
-  fileScannerEnabled_false: 'Disable',
-  logParserEnabled: 'Log parser',
-  logParserEnabled_true: 'Enable',
-  logParserEnabled_false: 'Disable',
-  logPath: 'Pathname for log file(s)',
-  host: 'Host name',
-  robotsIncluded: 'Include Sitemap URL in robots.txt',
+  remoteAccess: 'Allow remote access to the Administration Console',
   inputOldPassword: 'Current password:',
   inputNewPassword: 'New password:',
   inputPasswordAgain: 'Confirm new password:',
-  loggingLevel: 'Logging level',
-  loggingLevelNormal: 'Normal',
-  loggingLevelImportant: 'Important',
-  loggingLevelCritical: 'Critical',
-  loggingLevelError: 'Error',
-  runtimeInfo: 'Runtime Info',
+  // Labels on "site manage" page.
+  select: 'Select: ',
+  all: 'All',
+  none: 'None',
+  // Left navigation bar.
+  siteStat: 'Site status',
+  siteConf: 'Site configuration',
+  sm: 'Sitemap types', 
+  web: 'Web',
+  mobile: 'Mobile',
+  csrch: 'Code Search',
+  bsrch: 'Blog Search',
+  news: 'News',
+  // Labels on "site status" page.
   runtimeInfoTitle: 'Runtime Info for Site',
-  applicationInfoTitle: 'Application Runtime Information',
-  webSitemapServiceInfoTitle: 'Web Sitemap Creator',
-  newsSitemapServiceInfoTitle: 'News Sitemap Creator',
-  mobileSitemapServiceInfoTitle: 'Mobile Sitemap Creator',
-  codeSearchSitemapServiceInfoTitle: 'Code Search Sitemap Creator',
-  blogSearchPingServiceInfoTitle: 'Blog Search Ping',
-  webServerFilterServiceInfoTitle: 'Webserver Filter',
-  fileScannerServiceInfoTitle: 'File Scanner',
-  logParserServiceInfoTitle: 'Log Parser',
-  ServiceInfoSuccess: 'Last running result',
-  ServiceInfoLastUpdate: 'Last running time',
-  ServiceInfoUrlsCount: 'Last update URLs count',
+  sMem: 'Memory used',
+  sDisk: 'Disk used',
   urlInDatabase: 'URLs in database',
   urlInTempfile: 'URLs in temporary file',
   urlInMemory: 'URLs in memory',
   hostName: 'Host name',
-  memoryUsageForSite: 'Memory used by the service components for this site',
-  diskUsageForSite: 'Disk used by the service components for this site',
-  memoryUsage: 'Memory used for internal database',
-  diskUsage: 'Disk used for internal database',
-  startTime: 'Start running time',
-  appTitle: 'Application Settings',
-  blogSearchPingTitle: 'Blog Search Ping Settings',
-  password: 'Sign in password',
-  changePassword: 'change',
-  remoteAccess: 'Allow remote administration',
-  loginUsername: 'Username',
-  loginPassword: 'Password',
-  siteTitle: 'General Settings',
-  customize_false: 'Use default settings',
-  customize_true: 'Customize the settings',
-  autoAdd: 'Automatically add websites from webserver',
-  backupDuration: 'URLs auto save interval',
-  secondUnit: 'seconds',
-  minuteUnit: 'minutes',
-  settingPort: 'Remote administration port',
-  urlPattern: 'URL pattern',
-  url: 'URL',
-  find: 'Find',
-  replace: 'Replace',
+  sc: 'Sitemap creators',
+  statTitle: 'Status',
+  urlInSitemap: 'URLs in Sitemap',  
+  setting: 'Settings',
+  wf: 'Webserver filter',
+  fs: 'File scanner',
+  lp: 'Log parser',
+  smInfoTime: 'Time of most recent Sitemap file generation',
+  fsInfoTime: 'Time of most recent file system scan',
+  lpInfoTime: 'Time of most recent log process',
+  smInfoUrls: 'Number of URLs in most recent generated Sitemap file',
+  srcInfoUrls: 'Number of collected URLs',
+  pingTime: 'Last ping time',
+  pingUrl: 'Last ping url',
+  // Labels on "site configuration" page.
+  host: 'Host name',
+  logPath: 'Pathname for log file(s)',
+  ex: 'Example:',
+  rsLim: 'Resource limits',
   maxUrlLife: 'Maximum age of URLs included in Sitemap file',
-  dayUnit: 'days',
-  maxUrlInMemory: 'Maximum number of URLs in memory cache',
-  equal: 'Space required: about ',
-  maxUrlInDisk: 'Maximum number of URLs stored on disk',
-  UrlReplaceList: 'Replaced URLs',
-  webSitemapTitle: 'Web Sitemap Settings',
-  videoSitemapTitle: 'Video Sitemap Settings',
-  mobileSitemapTitle: 'Mobile Sitemap Settings',
-  codeSearchSitemapTitle: 'Code Search Sitemap Settings',
-  compress: 'Compress Sitemap file',
+  muMem: 'Maximum number of URLs in memory',
+  muDisk: 'Maximum number of URLs on disk',
+  spaceEst: 'Approximate space required:',
+  collector: 'URL collectors',
+  duration: 'Execution interval',
+  qField: 'URL query fields',
+  qFieldGuide: 
+      'Specify the URL query fields to include in ' +
+      'generated Sitemaps. Use a comma to separate multiple entries.',
+  exQueryField: 'name1, name2, name3',
+  privacyNote: 
+      '<b>Notice:</b> By default, Google Sitemap Generator excludes all query' +
+      ' fields from URLs in generated Sitemaps, to prevent the transmission ' +
+      'of user-identifiable data. To override this policy, you can specify ' +
+      'any query field that you want Google Sitemap Generator to include. ' +
+      'However, be careful to add a query field here only if it is required ' +
+      'by search engines and does not violate user privacy. You must ensure ' +
+      'that all information sent to search engines using Google Sitemap ' +
+      'Generator complies with your commitments to your users, as stated in ' +
+      'your privacy policy.',
+  smTypes: 'Sitemap types',
+  smType: 'Sitemap type',
+  enable: ENABLE,
+  settingStat: 'Setting status',
+  edit: EDIT,
+  // Warning messages.
+  sCustomWarn: 'This site configuration is customized.',
+  smDisable: 'This Sitemap type is disabled.', 
+  smCustom: 'This Sitemap type has been customized.', 
+  smNoUrl: NO_URL_INCLUDE,
+  // Labels on "sitemap types" pages.
+  update: 'Sitemap generation schedule',
+  startTime: 'Start date and time',
+  interval: 'Interval',
+  custom: 'custom value: ',
+  smFile: 'Sitemap file settings',
+  smFileCompress: 'Compress Sitemap file',
   filename: 'Sitemap file name',
-  UpdateStartTime: 'Update start time',
-  UpdateDuration: 'Update interval',
-  UpdateDurationForBlogSearchPing: 'Ping interval',
-  UpdateDurationForFileScanner: 'Execution interval',
-  UpdateDurationForLogParser: 'Execution interval',
   maxFileUrl: 'Maximum number of URLs',
   maxFileSize: 'Maximum file size',
+  smSubmit: 'Sitemap file submission',
+  robotsIncluded: 'Include Sitemap URL in robots.txt',
+  notifyUrl: 'Search engine notification URLs',
+  smUrlFilter: 'Sitemap URL filter',
+  inUrlPattern: 'Included URL patterns',
+  exUrlPattern: 'Excluded URL patterns',
+  // Blogsearch sitemap page.
+  ping: 'Ping schedule',
+  // News sitemap page.
+  newsExpireDuration: 'Time-to-live for URLs',
+  // Time Units.
+  mmUnit: 'minutes',
+  hUnit: 'hour',  
+  hhUnit: 'hours',  
+  dUnit: 'day',
+  ddUnit: 'days',
+  wUnit: 'week',
+  monUnit: 'month',
+  // Space Units.
   byteUnit: ' bytes',
   kiloByteUnit: ' KB',
   megaByteUnit: ' MB',
   gigaByteUnit: ' GB',
-  teraByteUnit: ' TB',
-  IncludedUrlList: 'Included URLs',
-  ExcludedUrlList: 'Excluded URLs',
-  NotifyUrlList: 'Search Engine Notification',
-  newsSitemapTitle: 'News Sitemap Settings',
-  newsExpireDuration: 'Time to live for news URLs',
-  editorTitle: 'Administration Console',
-  siteList: 'Site List',
-  generalSitemap: 'General Settings',
-  webSitemap: 'Web',
-  mobileSitemap: 'Mobile',
-  codeSearchSitemap: 'Code Search',
-  blogSearchPing: 'Blog Search',
-  videoSitemap: 'Video',
-  newsSitemap: 'News',
-  sitemap: 'Sitemaps',
-  dateExample: 'Example: 2008-08-31 12:34:56'
+  teraByteUnit: ' TB'
 };

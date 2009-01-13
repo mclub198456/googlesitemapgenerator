@@ -1,4 +1,4 @@
-// Copyright 2008 Google Inc.
+// Copyright 2009 Google Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -24,10 +24,7 @@
 #include <list>
 
 #include "common/sitesetting.h"
-#include "common/urlreplacer.h"
 
-#include "sitemapservice/robotstxtfilter.h"
-#include "sitemapservice/querystringfilter.h"
 #include "sitemapservice/sitedatamanager.h"
 #include "sitemapservice/serviceinterface.h"
 #include "sitemapservice/servicerunner.h"
@@ -53,12 +50,6 @@ public:
   // Load setting for this site.
   bool Load(const SiteSetting& setting);
 
-  // Update robots file.
-  // A sitemap submission entry will be added (removed) from robots.txt.
-  // The line looks like:
-  // Sitemap: http://www.example.com/sitemap.xml
-  bool UpdateRobotsTxt(bool include_sitemap, const char* sitemap);
-
   // Process a new url visiting record.
   int ProcessRecord(UrlRecord& record);
 
@@ -78,18 +69,6 @@ private:
 
   SiteSetting setting_;
   CriticalSection lock_;
-
-  // The filter constructed from robots.txt.
-  // All coming URLs will be filtered by it before sent to data manager.
-  RobotsTxtFilter robotstxt_filter_;
-
-  // Used to filter querystring in url.
-  // All coming URLs will be filtered before sent to data manager.
-  QueryStringFilter querystring_filter_;
-
-  // Replacer to act on the coming URLs.
-  std::vector<UrlReplacer*> replacers_;
 };
 
 #endif // SITEMAPSERVICE_SITEMANAGER_H__
-

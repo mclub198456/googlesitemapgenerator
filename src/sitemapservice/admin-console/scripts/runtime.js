@@ -1,4 +1,4 @@
-// Copyright 2008 Google Inc.
+// Copyright 2009 Google Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -24,8 +24,6 @@
 
 /**
  * @fileoverview
- *
- * @author chaiying@google.com (Ying Chai)
  */
 
 ////////////////////////////RuntimeManager////////////////////////////
@@ -45,16 +43,19 @@ function RuntimeManager() {
 }
 
 /**
- * Gets the RuntimeManager singleton object.
- * @return {RuntimeManager} The RuntimeManager singleton object
+ * Singleton access function.
  */
-var _getRuntime = function() {
+function _getRuntime() {
   if (_getRuntime.instance_ == null) {
     _getRuntime.instance_ = new RuntimeManager();
   }
   return _getRuntime.instance_;
-};
+}
 
+/**
+ * Use this function to add a handler when runtime information is refreshed.
+ * @param {Object} listener
+ */
 RuntimeManager.prototype.registOnLoad = function(listener) {
   if (this.onloadListeners_ == null)
     this.onloadListeners_ = new ListenerManager(this);
@@ -88,11 +89,11 @@ RuntimeManager.prototype.setData = function(dom) {
   // always load global(app) runtime.
   this.setApp_();
 
-  this.loadCurSite();
+  this.loadCurSite_();
 };
 
 /**
- *
+ * Loads runtime information for 'siteIdx' site.
  * @param {String} siteIdx  include GLOBAL_SETTING_ID
  */
 RuntimeManager.prototype.loadSite = function(siteIdx) {
@@ -106,18 +107,29 @@ RuntimeManager.prototype.loadSite = function(siteIdx) {
   }
   this.currentSiteId_ = siteId;
 
-  this.loadCurSite();
+  this.loadCurSite_();
 };
 
-RuntimeManager.prototype.error = function(msg) {
+/**
+ * Show error to user.
+ * @param {Object} msg
+ */
+RuntimeManager.prototype.error_ = function(msg) {
   _gel('rt-err-txt').innerHTML = msg;
   _show(_gel('rt-err-box'));
 };
-RuntimeManager.prototype.clearErr = function() {
+
+/**
+ * Clear error message.
+ */
+RuntimeManager.prototype.clearErr_ = function() {
   _hide(_gel('rt-err-box'));
 };
 
-RuntimeManager.prototype.loadCurSite = function() {
+/**
+ * Loads runtime information for current site.
+ */
+RuntimeManager.prototype.loadCurSite_ = function() {
   if (!this.currentSiteId_ || this.currentSiteId_ == GLOBAL_SETTING_ID) {
     return;
   }
@@ -125,31 +137,23 @@ RuntimeManager.prototype.loadCurSite = function() {
   var xml = this.sites_[this.currentSiteId_];
   if (!xml) {
     // show warning
-    this.error(SITE_NOT_RUNNING);
+    this.error_(SITE_NOT_RUNNING);
     _hide(_gel('status-area'));
   } else {
-    this.clearErr();
+    this.clearErr_();
     _show(_gel('status-area'));
     // show site info
     this.setSite_(xml);
     // show services info
-    var me = this;
-    _arr(RuntimeManager.fields_.site.services,
-         function(service){me.setService_(service, xml);});
-    // hack
-    var elem = _gel('wf-status');
-    if (_getSetting().cursite_().getService(
-        SettingOperator.services.enums.WEBSERVERFILTER).isEnabled()) {
-      elem.innerHTML = 'Running';
-      Util.CSS.changeClass(elem, 'status-disabled', 'status-success');
-    } else {
-      elem.innerHTML = 'Disabled';
-      Util.CSS.changeClass(elem, 'status-success', 'status-disabled');
-    }
+    for (var service in SettingOperator.services.enums)
+      this.setService_(SettingOperator.services.enums[service], xml);
     this.onloadListeners_.inform();
   }
 };
 
+/**
+ * Loads application runtime information.
+ */
 RuntimeManager.prototype.setApp_ = function() {
   this.set_(RuntimeManager.fields_.global, this.global_);
   var ttlMemSize = 0;
@@ -165,6 +169,11 @@ RuntimeManager.prototype.setApp_ = function() {
   this.setSpaceInfo_('app-diskUsage',
       parseInt(this.global_.getAttribute('disk_used')), ttlDiskSize);
 };
+
+/**
+ * Loads current site information.
+ * @param {Object} xml
+ */
 RuntimeManager.prototype.setSite_ = function(xml) {
   this.set_(RuntimeManager.fields_.site.general, xml);
   var me = this;
@@ -174,8 +183,36 @@ RuntimeManager.prototype.setSite_ = function(xml) {
   this.setSpaceInfo_('diskUsage', parseInt(xml.getAttribute('disk_used')),
       _getSetting().curDiskLimit() * avgsize);
 };
-RuntimeManager.prototype.setService_ = function(rtInfos, xml) {
+
+/**
+ * Loads one service information.
+ * @param {Object} service One object defined in SettingOperator.services.enums
+ * @param {Object} xml
+ */
+RuntimeManager.prototype.setService_ = function(service, xml) {
+  var rtInfos = RuntimeManager.fields_.site.services[service.xmltag];
+  // Set 'status' element.
+  var elem = _gel(rtInfos[0].id);
+  if (_getSetting().cursite_().getService(service).isEnabled()) {
+    RuntimeManager.setStatus_(elem, RuntimeManager.serviceState.RUNNING);
+  } else {
+    RuntimeManager.setStatus_(elem, RuntimeManager.serviceState.DISABLE);
+  }
   this.set_(rtInfos, xml);
+};
+
+RuntimeManager.serviceState = {
+  DISABLE: {html: STATE_DISABLE, css: 'status-disabled'},
+  RUNNING: {html: STATE_RUNNING, css: 'status-success'},
+  FAILED: {html: STATE_FAILED, css: 'status-failed'}
+};
+
+RuntimeManager.setStatus_ = function(elem, state) {
+  elem.innerHTML = state.html;
+  if (elem.state)
+    Util.CSS.removeClass(elem, elem.state.css);
+  Util.CSS.addClass(elem, state.css);
+  elem.state = state;
 };
 
 /**
@@ -184,58 +221,85 @@ RuntimeManager.prototype.setService_ = function(rtInfos, xml) {
  * @param {XMLNode} xml  The XML that has the informations
  */
 RuntimeManager.prototype.set_ = function(rtInfos, xml) {
-  var subxml = xml;
+  var serviceStateRuntimeInfo = rtInfos[0];
+  if (serviceStateRuntimeInfo.elem == null) {
+    serviceStateRuntimeInfo.elem = _gel(serviceStateRuntimeInfo.id);
+  }
+  var isEnabled = true;
+  if (serviceStateRuntimeInfo.elem.state == 
+          RuntimeManager.serviceState.DISABLE) {
+    isEnabled = false;
+  }
+  
+  var curXml = xml;
   _arr(rtInfos, function(rtInfo) {
     if (rtInfo.elem == null) {
       rtInfo.elem = _gel(rtInfo.id);
     }
-    if (rtInfo.nodeX) {
-      subxml = xml.getElementsByTagName(rtInfo.nodeX)[0];
+    if (rtInfo.nodeX) { // Change current Xml node
+      curXml = xml.getElementsByTagName(rtInfo.nodeX)[0];
     }
-    var value = subxml.getAttribute(rtInfo.tag);
-    // special code for some runtime info
+    var value = '';
+    if (rtInfo.tag)
+      value = curXml.getAttribute(rtInfo.tag);
     switch (rtInfo.tag) {
       case 'success':
-        if (/-s/.test(rtInfo.id)) {
-          if (value == 'true') {
-            Util.CSS.changeClass(
-                rtInfo.elem, 'status-failed', 'status-success');
-          } else {
-            Util.CSS.changeClass(
-                rtInfo.elem, 'status-success', 'status-failed');
-          }
+        if (isEnabled && value == 'false') {
+          RuntimeManager.setStatus_(rtInfo.elem, 
+                                    RuntimeManager.serviceState.FAILED);          
         }
-        value = value == 'true' ? 'success' : 'failed';
         break;
       case 'last_update':
       case 'last_ping':
         if (value == '-1') {
-          value = 'N/A';
-          rtInfos[0].elem.innerHTML = 'N/A'; // success
-          rtInfos[1].elem.innerHTML = 'Disabled'; // success-s
-          Util.CSS.removeClass(rtInfos[1].elem, 'status-success');
-          Util.CSS.removeClass(rtInfos[1].elem, 'status-failed');
-          Util.CSS.addClass(rtInfos[1].elem, 'status-disabled');
+          rtInfo.elem.innerHTML = 'N/A';
+          if (isEnabled && serviceStateRuntimeInfo.elem.state == 
+                  RuntimeManager.serviceState.FAILED) {
+            // Revert to 'running' state.        
+            RuntimeManager.setStatus_(serviceStateRuntimeInfo.elem,
+                                      RuntimeManager.serviceState.RUNNING);
+          }
+        } else {
+          rtInfo.elem.innerHTML = value;
         }
         break;
       case 'memory_used':
       case 'disk_used':
-        value = Util.getSpaceString(value);
+        rtInfo.elem.innerHTML = Util.getSpaceString(value);
+        break;
+      case '':
+        break;
+      default:
+        rtInfo.elem.innerHTML = value;
         break;
     }
-    rtInfo.elem.innerHTML = value;
   });
 };
 
+/**
+ * Sets space information which has a percentage bar.
+ * @param {Object} id
+ * @param {Object} cost
+ * @param {Object} ttl
+ */
 RuntimeManager.prototype.setSpaceInfo_ = function(id, cost, ttl) {
-    var usage = (cost * 100 / ttl).toFixed(5) + '%';
-    var graph = document.getElementById(id + '-graph');
-    if (graph) graph.style.width = usage;
-    _gel(id + '-cost').innerHTML = Util.getSpaceString(cost);
-    _gel(id + '-ttl').innerHTML = Util.getSpaceString(ttl);
-    _gel(id + '-txt').innerHTML = usage;
+  var used = cost * 100 / ttl;
+  var used2 = used.toFixed(3);
+  if (used2 == 0 && used > 0) used2 = 0.001;
+  var usage = used2 + '%';
+  var graph = document.getElementById(id + '-graph');
+  if (graph) graph.style.width = usage;
+  _gel(id + '-cost').innerHTML = 
+      Util.getSpaceString(cost) + (Browser.isIE ? ' ' : '');
+  _gel(id + '-ttl').innerHTML = 
+      Util.getSpaceString(ttl) + (Browser.isIE ? ' ' : '');
+  _gel(id + '-txt').innerHTML = usage;
 };
 
+/**
+ * Calculate average url size.
+ * @param {Object} opt_site
+ */
 RuntimeManager.prototype.avgUrlSize = function(opt_site) {
   // Default URL size in Bytes.
   var defSize = 100;
@@ -270,7 +334,8 @@ RuntimeManager.prototype.avgUrlSize = function(opt_site) {
 
 ////////////////////////////////////
 /**
- * Runtime information fields, each has its HTML id and XML xpath.
+ * The map for runtime information fields, which groups the HTML id and 
+ * XML xpath for each field.
  * @private
  */
 RuntimeManager.fields_ = {
@@ -308,140 +373,123 @@ RuntimeManager.fields_ = {
         tag: 'disk_used'
       }
     ],
-    // for services
-    services: [
-      // webserver filter
+    // For services. Use xml tag name for the service property name.
+    services: {
+      'webServerFilter':
       [{
-        id: 'webServerFilterServiceInfoUrlsCount',
-        tag: 'urls_count',
+        id: 'wf-status',
+        tag: '',
         nodeX: 'WebServerFilterInfo'
+      },
+      {
+        id: 'webServerFilterInfoUrls',
+        tag: 'urls_count'
       }],
-      // log parser
+      'logParser':
       [{
-        id: 'logParserServiceInfoSuccess',
+        id: 'logParserInfoStat',
         tag: 'success',
         nodeX: 'LogParserInfo'
-      }, {
-        id: 'logParserServiceInfoSuccess-s',
-        tag: 'success'
       },
       {
-        id: 'logParserServiceInfoLastUpdate',
+        id: 'logParserInfoTime',
         tag: 'last_update'
       },
       {
-        id: 'logParserServiceInfoUrlsCount',
+        id: 'logParserInfoUrls',
         tag: 'urls_count'
       }],
-      // file scanner
+      'fileScanner':
       [{
-        id: 'fileScannerServiceInfoSuccess',
+        id: 'fileScannerInfoStat',
         tag: 'success',
         nodeX: 'FileScannerInfo'
-      }, {
-        id: 'fileScannerServiceInfoSuccess-s',
-        tag: 'success'
       },
       {
-        id: 'fileScannerServiceInfoLastUpdate',
+        id: 'fileScannerInfoTime',
         tag: 'last_update'
       },
       {
-        id: 'fileScannerServiceInfoUrlsCount',
+        id: 'fileScannerInfoUrls',
         tag: 'urls_count'
       }],
-      // web sitemap
+      'webSitemap':
       [{
-        id: 'webSitemapServiceInfoSuccess',
+        id: 'webSitemapInfoStat',
         tag: 'success',
         nodeX: 'WebSitemapServiceInfo'
-      }, {
-        id: 'webSitemapServiceInfoSuccess-s',
-        tag: 'success'
       },
       {
-        id: 'webSitemapServiceInfoLastUpdate',
+        id: 'webSitemapInfoTime',
         tag: 'last_update'
       },
       {
-        id: 'webSitemapServiceInfoUrlsCount',
+        id: 'webSitemapInfoUrls',
         tag: 'urls_count'
       },
       {
-        id: 'webSitemapServiceInfoUrlsCount-s',
+        id: 'webSitemapInfoUrls-s',
         tag: 'urls_count'
       }],
-      // news sitemap
+      'newsSitemap':
       [{
-        id: 'newsSitemapServiceInfoSuccess',
+        id: 'newsSitemapInfoStat',
         tag: 'success',
         nodeX: 'NewsSitemapServiceInfo'
-      }, {
-        id: 'newsSitemapServiceInfoSuccess-s',
-        tag: 'success'
       },
       {
-        id: 'newsSitemapServiceInfoLastUpdate',
+        id: 'newsSitemapInfoTime',
         tag: 'last_update'
       },
       {
-        id: 'newsSitemapServiceInfoUrlsCount-s',
+        id: 'newsSitemapInfoUrls-s',
         tag: 'urls_count'
       },
       {
-        id: 'newsSitemapServiceInfoUrlsCount',
+        id: 'newsSitemapInfoUrls',
         tag: 'urls_count'
       }],
-      // mobile sitemap
+      'mobileSitemap':
       [{
-        id: 'mobileSitemapServiceInfoSuccess',
+        id: 'mobileSitemapInfoStat',
         tag: 'success',
         nodeX: 'MobileSitemapServiceInfo'
-      }, {
-        id: 'mobileSitemapServiceInfoSuccess-s',
-        tag: 'success'
       },
       {
-        id: 'mobileSitemapServiceInfoLastUpdate',
+        id: 'mobileSitemapInfoTime',
         tag: 'last_update'
       },
       {
-        id: 'mobileSitemapServiceInfoUrlsCount-s',
+        id: 'mobileSitemapInfoUrls-s',
         tag: 'urls_count'
       },
       {
-        id: 'mobileSitemapServiceInfoUrlsCount',
+        id: 'mobileSitemapInfoUrls',
         tag: 'urls_count'
       }],
-      // code search sitemap
+      'codeSearchSitemap':
       [{
-        id: 'codesearchSitemapServiceInfoSuccess',
+        id: 'codesearchSitemapInfoStat',
         tag: 'success',
         nodeX: 'CodeSearchSitemapServiceInfo'
-      }, {
-        id: 'codesearchSitemapServiceInfoSuccess-s',
-        tag: 'success'
       },
       {
-        id: 'codesearchSitemapServiceInfoLastUpdate',
+        id: 'codesearchSitemapInfoTime',
         tag: 'last_update'
       },
       {
-        id: 'codesearchSitemapServiceInfoUrlsCount-s',
+        id: 'codesearchSitemapInfoUrls-s',
         tag: 'urls_count'
       },
       {
-        id: 'codesearchSitemapServiceInfoUrlsCount',
+        id: 'codesearchSitemapInfoUrls',
         tag: 'urls_count'
       }],
-      // blog search sitemap
+      'blogSearchPing':
       [{
-        id: 'blogsearchSitemapServiceInfoSuccess',
+        id: 'blogsearchSitemapInfoStat',
         tag: 'success',
         nodeX: 'BlogSearchPingServiceInfo'
-      }, {
-        id: 'blogsearchSitemapServiceInfoSuccess-s',
-        tag: 'success'
       },
       {
         id: 'blogsearchSitemapServiceInfoLastPing',
@@ -451,6 +499,6 @@ RuntimeManager.fields_ = {
         id: 'blogsearchSitemapServiceInfoLastUrl',
         tag: 'last_url'
       }]
-    ]
+    }
   }
 };

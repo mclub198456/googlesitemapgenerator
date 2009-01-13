@@ -1,4 +1,4 @@
-// Copyright 2008 Google Inc.
+// Copyright 2009 Google Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -20,24 +20,54 @@
 #include "common/logger.h"
 #include "common/fileutil.h"
 #include "sitemapservice/runtimeinfomanager.h"
+#include "sitemapservice/newsdatamanager.h"
 
 SiteDataManagerImpl::SiteDataManagerImpl() {
   recordtable_ = NULL;
   hosttable_ = NULL;
   recordmerger_ = NULL;
-
   siteinfo_ = NULL;
+  news_data_manager_ = NULL;
 }
 
 SiteDataManagerImpl::~SiteDataManagerImpl() {
   if (recordtable_ != NULL) delete recordtable_;
   if (recordmerger_ != NULL) delete recordmerger_;
   if (hosttable_ != NULL) delete hosttable_;
+  if (news_data_manager_ != NULL) delete news_data_manager_;
+
+  for (int i = 0; i < static_cast<int>(replacers_.size()); ++i) {
+    delete replacers_[i];
+  }
+  replacers_.clear();
+
 }
 
 bool SiteDataManagerImpl::Initialize(const SiteSetting& setting) {
   setting_ = setting;
 
+  // Create filter for robots.txt.
+  std::string robotstxt_path(setting.physical_path());
+  robotstxt_path.append("/robots.txt");
+  robotstxt_filter_.Initialize(robotstxt_path.c_str());
+
+  // Initialize query string filter.
+  querystring_filter_.Initialize(setting_.included_queryfields());
+
+  // Build URL replacer for this site.
+  const std::vector<UrlReplacement>& replacements = setting.url_replacements().items();
+  for (int i = 0; i < static_cast<int>(replacements.size()); ++i) {
+    UrlReplacer* replacer = new UrlReplacer();
+    if (!replacer->Initialize(replacements[i].find(), replacements[i].replace())) {
+      delete replacer;
+      Logger::Log(EVENT_ERROR, "Failed to initialize replacer. Find:%s, Replace:%s",
+                replacements[i].find().c_str(), replacements[i].replace().c_str());
+      return false;
+    }
+    replacers_.push_back(replacer);
+  }
+
+ 
   // Create record merger and table.
   recordmerger_ = new RecordMerger();
   recordtable_ = new RecordTable(setting.site_id(),
@@ -91,6 +121,12 @@ bool SiteDataManagerImpl::Initialize(const SiteSetting& setting) {
     GetHostName(&host_name);
 
     time(&last_update_info_);
+  }
+
+  news_data_manager_ = new NewsDataManager();
+  if (!news_data_manager_->Initialize(this, "news")) {
+    Logger::Log(EVENT_ERROR, "Failed to initialize news data manager.");
+    return false;
   }
 
   last_table_save_ = time(NULL);
@@ -179,8 +215,9 @@ RecordFileStat SiteDataManagerImpl::GetRecordFileStata() {
 
 
 bool SiteDataManagerImpl::UpdateDatabase() {
-  // First, save records memory to disk.
-  if (!SaveMemoryData(true, true)) {
+  // First, update news entries.
+  if (!news_data_manager_->UpdateData()) {
+    Logger::Log(EVENT_ERROR, "Failed to update news data.");
     return false;
   }
 
@@ -253,10 +290,35 @@ bool SiteDataManagerImpl::GetHostName(std::string* host) {
 
 
 int SiteDataManagerImpl::ProcessRecord(UrlRecord& record) {
+  // Keep it safe!
+  record.url[kMaxUrlLength - 1] = '\0';
+
+  // Simply ignore URLs containing invalid chars.
+  if (!Url::ValidateUrlChars(record.url) || record.url[0] != '/') {
+    DLog(EVENT_CRITICAL, "Url contains invalid chars. [%s].", record.url);
+    return 0;
+  }
+
+  // Ignore url prevented by robots.txt
+  if (!robotstxt_filter_.Accept(record.url)) {
+    DLog(EVENT_CRITICAL, "Url ignored by robots.txt. [%s].", record.url);
+    return 0;
+  }
+
+  // Replace the URLs.
+  for (int i = 0; i < static_cast<int>(replacers_.size()); ++i) {
+    if (replacers_[i]->Replace(record.url, kMaxUrlLength)) {
+      break;
+    }
+  }
+
+  // Filter the query string.
+  querystring_filter_.Filter(record.url);
+
   // Process the url record.
   if (record.statuscode == 200) {
     bool result = AddRecord(record.host, record.url, record.contentHashCode,
-      record.last_modified, record.last_filewrite);
+                            record.last_modified, record.last_filewrite);
 
     // Update runtime info every 60 seconds
     if (result && siteinfo_ != NULL) {
@@ -274,7 +336,7 @@ int SiteDataManagerImpl::ProcessRecord(UrlRecord& record) {
 
     return result ? 0 : 1;
   } else if (record.statuscode == 404 || record.statuscode == 301
-      || record.statuscode == 302 || record.statuscode == 307) {
+             || record.statuscode == 302 || record.statuscode == 307) {
     memory_cs_.Enter(true);
     if (static_cast<int>(obsoleted_.size()) < kMaxObsoletedUrl) {
       obsoleted_.insert(Url::FingerPrint(record.url));
@@ -319,3 +381,8 @@ void SiteDataManagerImpl::UnlockDiskData() {
 RecordfileManager* SiteDataManagerImpl::GetFileManager() {
   return &filemanager_;
 }
+
+NewsDataManager* SiteDataManagerImpl::GetNewsDataManager() {
+  return news_data_manager_;
+}
+

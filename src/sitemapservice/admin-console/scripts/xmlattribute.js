@@ -1,10 +1,29 @@
-// Copyright 2007 Google Inc.
-// All Rights Reserved.
+// Copyright 2009 Google Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// This is the top level setting class. It contains all the setting values for
+// this application. Besides site specific settings, this class also includes
+// application level configuration, like back-up duration, remote admin port,
+// admin account, and etc. Especially, there is global setting field, which
+// contains default values for site settings. Please see the member fields
+// doc for details.
+// Besides the xml setting load/save/validate functions, it provides functions
+// to load values from file, as well as save value to a file.
+// This class is not thread-safe.
+
 
 /**
- * @fileoverview Class 'XmlAttr' is for getting/setting xml value.
- *
- * @author chaiying@google.com
+ * @fileoverview Defines classes for getting/setting xml value.
  */
 //////////////////////////////////XmlAttr//////////////////////////////
 /**
@@ -13,26 +32,6 @@
  */
 function XmlAttr(name) {
   this.attrname_ = name;
-  // hack code for sitemap@enable
-  if (this.attrname_.indexOf('@enabled') != -1) {
-    function tn(id) {
-      switch (id) {
-        case 'web':
-          return 'WebSitemapSetting';
-        case 'news':
-          return 'NewsSitemapSetting';
-        case 'mobile':
-          return 'MobileSitemapSetting';
-        case 'codesearch':
-          return 'CodeSearchSitemapSetting';
-        case 'blogsearch':
-          return 'BlogSearchPingSetting';
-      }
-    }
-    var strs = this.attrname_.split('@');
-    this.attrname_ = strs[1];
-    this.subTagname_ = tn(strs[0]);
-  }
 
   /**
    * This is the node that contain the attribute.
@@ -45,8 +44,6 @@ XmlAttr.prototype.setNode = function(xml) {
   // TODO: remove it when integrate with new backend
   if (this.attrname_ == 'add_generator_info') {
     this.xmlnode_ = this.xmlnode_.getElementsByTagName('GlobalSetting')[0];
-  } else if (this.subTagname_) {
-    this.xmlnode_ = this.xmlnode_.getElementsByTagName(this.subTagname_)[0];
   }
 };
 
@@ -157,12 +154,13 @@ ListXmlAttr.prototype.setValue = function(value) {
   var listNode = this.getListNode_();
   if (!listNode) {
     listNode = Util.XML.createElement(this.listname_);
-
-    ListXmlAttr.appendNodeWithSeparator_(this.xmlnode_, listNode);
+    this.xmlnode_.appendChild(listNode);
   }
 
   // remove the old listItems
-  Util.DOM.removeAllChildren(listNode);
+  for (var i = 0; i < listNode.childNodes.length;) {
+    listNode.removeChild(listNode.childNodes[i]);
+  }
 
   // save listValue into listNode
   var me = this;
@@ -172,7 +170,7 @@ ListXmlAttr.prototype.setValue = function(value) {
       listItem.setAttribute(attr, v);
     });
 
-    ListXmlAttr.appendNodeWithSeparator_(listNode, listItem);
+    listNode.appendChild(listItem);
   });
 };
 
@@ -184,24 +182,4 @@ ListXmlAttr.prototype.removeValue = function() {
 
 ListXmlAttr.prototype.getListNode_ = function() {
   return Util.checkUniqueOrNullAndReturn(this.xmlnode_, this.listname_);
-};
-
-ListXmlAttr.appendNodeWithSeparator_ = function(node, subnode) {
-  function genSep(node, indent) {
-    var prevNode = node.previousSibling;
-    if (Util.DOM.isTextNode(prevNode)){
-      return Util.XML.createTextNode(prevNode.nodeValue + indent);
-    } else {
-      return Util.XML.createTextNode('\n'); // maybe return null is better.
-    }
-  }
-  // first list
-  if (node.childNodes.length == 0) {
-    node.appendChild(genSep(node, XML_FILE_INDENT));
-    node.appendChild(subnode);
-    node.appendChild(genSep(node, ''));
-  } else {
-    node.insertBefore(genSep(node, XML_FILE_INDENT), node.lastChild);
-    node.insertBefore(subnode, node.lastChild);
-  }
 };

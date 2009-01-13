@@ -1,4 +1,4 @@
-// Copyright 2008 Google Inc.
+// Copyright 2009 Google Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ class HttpConst {
  public:
   // Status code constants.
   static const char* kStatus200;
+  static const char* kStatus303;
   static const char* kStatus304;
   static const char* kStatus401;
   static const char* kStatus404;
@@ -44,6 +45,7 @@ class HttpConst {
   static const char* kHeaderAcceptLanguage;
   static const char* kHeaderIfModifiedSince;
   static const char* kHeaderCacheControl;
+  static const char* kHeaderLocation;
 
  private:
   HttpConst() {}

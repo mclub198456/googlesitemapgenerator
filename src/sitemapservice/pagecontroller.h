@@ -1,4 +1,4 @@
-// Copyright 2008 Google Inc.
+// Copyright 2009 Google Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -39,6 +39,8 @@ public:
 
   bool Initialize();
 
+  // Process HttpRequest in this context,
+  // and save result in HttpResponse in this context.
   void Process(HttpContext* context);
 
   HttpSettingManager* setting_manager() {
@@ -50,6 +52,7 @@ public:
   }
 
 private:
+  // All supported http action.
   static const std::string kRuntimeInfoAction;
   static const std::string kXmlGetAction;
   static const std::string kXmlSetAction;
@@ -60,6 +63,9 @@ private:
   static const std::string kMainAction;
   static const std::string kMessageBundleAction;
 
+  // Register an HTTP handler.
+  // The "handler" will be used to handle request from the "path".
+  // If this handler is private, the user should be authenticated.
   void RegisterHandler(const std::string& path, PageHandler* handler,
                        bool is_private);
 

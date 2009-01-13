@@ -1,4 +1,4 @@
-// Copyright 2008 Google Inc.
+// Copyright 2009 Google Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,6 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// ApacheConfig represents configuration of Apache webserver.
+// It provides method to parse configuration values from Apache configuraton
+// files. The parsing method is provided "as is" with no guarantee to parse
+// any valid Apache config.
 
 #ifndef COMMON_APACHECONFIG_H__
 #define COMMON_APACHECONFIG_H__
@@ -25,13 +29,15 @@
 
 class ApacheConfig : public WebserverConfig {
  public:
+  // Represents configuration of <VirtualHost> directive.
   struct VHostConfig {
-    // from ServerName, if this value not present,
+    // from "ServerName" directive,
+    // if this value not present,
     // and this vhost contains _default_ or * addresss,
     // ServerName for mainserver will be used as default
     std::string servername;
 
-    // from DocumentRoot
+    // from "DocumentRoot" directive,
     // if not present, DocumentRoot from mainserver is used as default
     std::string documentroot;
 
@@ -39,23 +45,28 @@ class ApacheConfig : public WebserverConfig {
     // So it may represent zero or more single address
     std::string address;
 
-    // From CustomLog directive, represents the log path.
+    // from "CustomLog" directive,
+    // represents the log path.
     std::string customlog;
   };
 
   ApacheConfig() {}
   virtual ~ApacheConfig() {}
 
+  // Accessor for "Group" directive.
   const std::string& group_name() const { return group_name_; }
   void set_group_name(const std::string& group_name) {
     group_name_ = group_name;
   }
 
-  // Load configuration from IIS
+  // Load configuration from Apache. 
+  // SetConfFilePath should be called before this method is invoked.
   virtual bool Load();
 
+  // Load configuration from a particular configFile.
   bool Load(const char* configfile);
 
+  // Accessor for Apache root configuration path.
   static void SetConfFilePath(const char* path) { conf_file_path_ = path; }
   static std::string GetConfFilePath() { return conf_file_path_; }
 
