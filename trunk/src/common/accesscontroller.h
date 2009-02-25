@@ -72,7 +72,14 @@ class AccessController {
   // while IIS has control of "iis_mask".
   static bool CreateSecurityDescriptor(SECURITY_ATTRIBUTES* sa,
                                        SECURITY_DESCRIPTOR* sd,
-                                       PACL* pacl, DWORD iis_mask);
+                                       PACL* pacl, DWORD iis_mask,
+                                       bool inherited);
+  // Allow IIS to access a file.
+  // "masks" could be common Windows access control mask value.
+  // "inherited" represents whether ACE in ACL should be marked as inherited.
+  static bool AllowIISAccessFile(const std::string& file, DWORD masks,
+                                 bool inherited);
+
 #else
   // Apache group id.
   static gid_t apache_gid_;

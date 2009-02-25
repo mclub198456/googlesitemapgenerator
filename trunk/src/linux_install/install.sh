@@ -305,7 +305,7 @@ HERE_APACHE_MESSAGE
         echo -n "New location for the Apache binary or control script:"
         read answer
       done
-      arg_apache_binary="$answer"
+      apache_cmd="$answer"
     fi
   done
 

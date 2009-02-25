@@ -28,6 +28,7 @@
 
 #include "common/logger.h"
 #include "common/settingmanager.h"
+#include "common/fileutil.h"
 
 #ifdef WIN32
 
@@ -120,10 +121,14 @@ bool AccessController::AddIISAccountsToACL(PACL acl, DWORD mask) {
 
 bool AccessController::AllowIISAccessFile(const std::string& file,
                                           DWORD access_mask) {
+  return AllowIISAccessFile(file, access_mask, false);
+}
+bool AccessController::AllowIISAccessFile(const std::string& file,
+                                          DWORD access_mask, bool inherited) {
   SECURITY_DESCRIPTOR sd;
   SECURITY_ATTRIBUTES sa;
   PACL pacl;
-  if (!CreateSecurityDescriptor(&sa, &sd, &pacl, access_mask)) {
+  if (!CreateSecurityDescriptor(&sa, &sd, &pacl, access_mask, inherited)) {
     Logger::Log(EVENT_ERROR, "Failed to build security descriptor.");
     return false;
   }
@@ -135,8 +140,39 @@ bool AccessController::AllowIISAccessFile(const std::string& file,
     LocalFree(pacl);
     return false;
   }
-  
+
   LocalFree(pacl);
+
+  FileAttribute fileAttr;
+  if (!FileUtil::GetFileAttribute(file.c_str(), &fileAttr)) {
+    Logger::Log(EVENT_ERROR, "Failed to get attribute of [%s].", file.c_str());
+    return false;
+  }
+
+  if (fileAttr.is_dir) {
+    std::vector<std::string> childDirs, childFiles;
+    if (!FileUtil::ListDir(file.c_str(), false, &childDirs, &childFiles)) {
+      Logger::Log(EVENT_ERROR, "Failed to scan dir [%s].", file.c_str());
+      return false;
+    }
+
+    for (int i = 0; i < static_cast<int>(childDirs.size()); ++i) {
+      if (!AllowIISAccessFile(childDirs[i], access_mask, true)) {
+        Logger::Log(EVENT_ERROR, "Failed to change permission of child dir [%s].",
+                    childDirs[i].c_str());
+        return false;
+      }
+    }
+
+    for (int i = 0; i < static_cast<int>(childFiles.size()); ++i) {
+      if (!AllowIISAccessFile(childFiles[i], access_mask, true)) {
+        Logger::Log(EVENT_ERROR, "Failed to change permission of child file [%s].",
+                    childFiles[i].c_str());
+        return false;
+      }
+    }
+  }
+  
   return true;
 }
 
@@ -156,13 +192,14 @@ bool AccessController::AllowWebserverAccess(const std::string& file,
 bool AccessController::BuildIPCSecurityDescriptor(SECURITY_ATTRIBUTES* sa,
                                                   SECURITY_DESCRIPTOR* sd,
                                                   PACL* ppacl) {
-  return CreateSecurityDescriptor(sa, sd, ppacl, GENERIC_ALL);
+  return CreateSecurityDescriptor(sa, sd, ppacl, GENERIC_ALL, false);
 }
 
 bool AccessController::CreateSecurityDescriptor(SECURITY_ATTRIBUTES* sa,
                                                 SECURITY_DESCRIPTOR* sd,
                                                 PACL* ppacl,
-                                                DWORD iis_mask) {
+                                                DWORD iis_mask,
+                                                bool inherited) {
   // Initialize security descriptor.
   if (!InitializeSecurityDescriptor(sd, SECURITY_DESCRIPTOR_REVISION)) {
     Logger::Log(EVENT_ERROR, "Failed to initialize SD.");
@@ -180,21 +217,11 @@ bool AccessController::CreateSecurityDescriptor(SECURITY_ATTRIBUTES* sa,
   }
 
   // Retrieve seucrity identifier for Adminsitrators group.
-  char adm_sid_buffer[SECURITY_MAX_SID_SIZE];
-  DWORD adm_sid_size = SECURITY_MAX_SID_SIZE;
-  PSID adm_sid = adm_sid_buffer;
-  if (!CreateWellKnownSid(WinBuiltinAdministratorsSid, NULL, adm_sid, &adm_sid_size)) {
-    Logger::Log(EVENT_ERROR, "Failed to get wellknown sid for adm. (%d)",
-                GetLastError());
-    return false;
-  }
-
-  // Retrieve seucrity identifier for Local System account.
-  char system_sid_buffer[SECURITY_MAX_SID_SIZE];
-  DWORD system_sid_size = SECURITY_MAX_SID_SIZE;
-  PSID system_sid = system_sid_buffer;
-  if (!CreateWellKnownSid(WinLocalSystemSid, NULL, system_sid, &system_sid_size)) {
-    Logger::Log(EVENT_ERROR, "Failed to get wellknown sid for system. (%d)",
+  char everyone_sid_buffer[SECURITY_MAX_SID_SIZE];
+  DWORD everyone_sid_size = SECURITY_MAX_SID_SIZE;
+  PSID everyone_sid = everyone_sid_buffer;
+  if (!CreateWellKnownSid(WinWorldSid, NULL, everyone_sid, &everyone_sid_size)) {
+    Logger::Log(EVENT_ERROR, "Failed to get wellknown sid for everyone. (%d)",
                 GetLastError());
     return false;
   }
@@ -208,6 +235,11 @@ bool AccessController::CreateSecurityDescriptor(SECURITY_ATTRIBUTES* sa,
     return false;
   }
 
+  DWORD ace_flags = CONTAINER_INHERIT_ACE | OBJECT_INHERIT_ACE;
+  if (inherited) {
+    ace_flags |= INHERITED_ACE;
+  }
+
   bool result = false;
   do {
     if (!InitializeAcl(*ppacl, kACLSize, ACL_REVISION)) {
@@ -217,36 +249,20 @@ bool AccessController::CreateSecurityDescriptor(SECURITY_ATTRIBUTES* sa,
 
     // Allow owner to full control.
     if (!AddAccessAllowedAceEx(*ppacl, ACL_REVISION,
-                               CONTAINER_INHERIT_ACE | OBJECT_INHERIT_ACE,
+                               ace_flags,
                                GENERIC_ALL, owner_sid)) {
       Logger::Log(EVENT_ERROR, "Failed to add permission for owner. (%d)",
                   GetLastError());
       break;
     }
 
-    // Allow Administrators to full control.
+    // Allow Everyone to full control.
     if (!AddAccessAllowedAceEx(*ppacl, ACL_REVISION,
-                               CONTAINER_INHERIT_ACE | OBJECT_INHERIT_ACE,
-                               GENERIC_ALL, adm_sid)) {
-      Logger::Log(EVENT_ERROR, "Failed to add permission for adm. (%d)",
+                               ace_flags,
+                               GENERIC_ALL, everyone_sid)) {
+      Logger::Log(EVENT_ERROR, "Failed to add permission for everyone. (%d)",
                   GetLastError());
       break;
-    }
-
-    // Allow Local System to full control.
-    if (!AddAccessAllowedAceEx(*ppacl, ACL_REVISION,
-                               CONTAINER_INHERIT_ACE | OBJECT_INHERIT_ACE,
-                               GENERIC_ALL, system_sid)) {
-      Logger::Log(EVENT_ERROR, "Failed to add permission for system. (%d)",
-                  GetLastError());
-      break;
-    }
-
-    if (iis_mask != 0) {
-      if (!AddIISAccountsToACL(*ppacl, iis_mask)) {
-        Logger::Log(EVENT_ERROR, "Failed to add IIS accounts to ACL");
-        break;
-      }
     }
 
     // Set ACL to the Security Descriptor.

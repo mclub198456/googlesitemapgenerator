@@ -288,17 +288,19 @@ AppGroup.inheritsFrom(SettingGroup);
 function SiteSwitcher() {
   // init site switcher
   this.elem_ = _gel('site-s');
+  this.elem_.obj = this;
   this.sites_ = [];
 
   // add handler for site switch.
   _event(this.elem_, 'change', function(e, t){
-    _getPager().gotoSite(t.selectedIndex);
+    _getPager().gotoSite(t.obj.curSite());
     _getPager().checkCustomize();
   });
   Component.regist(this);
 }
 
 SiteSwitcher.prototype.release = function() {
+  this.elem_.obj = null;
   this.elem_ = null;
 };
 
@@ -338,16 +340,31 @@ SiteSwitcher.prototype.hide = function(i) {
 };
 
 /**
- * switch from js, not user input.
+ * Switch the select box to the 'index' site. Convert the site index (all sites)
+ * to the select box index (active sites). 
  * @param {Object} index
  */
-SiteSwitcher.prototype.switchTo = function(index){
-  for (var i = 0, j = 0; i < index; i++) {
+SiteSwitcher.prototype.switchTo = function(index) {
+  for (var i = 0, j = 0; i <= index; i++) {
     var site = this.sites_[i];
-    if (site.isEnabled)
-      j++;
+    if (site.isEnabled) j++;
   }
-  this.elem_.selectedIndex = j;
+  this.elem_.selectedIndex = j - 1;
+};
+
+/**
+ * Return the site index of current selected site.
+ */
+SiteSwitcher.prototype.curSite = function() {
+  var index = this.elem_.selectedIndex + 1;
+  var size = this.sites_.length;
+  
+  for (var i = 0, j = 0; i < size; i++) {
+    var site = this.sites_[i];
+    if (site.isEnabled) j++;
+    if (j == index) return i;
+  }
+  _err('Could not find site index for current select site.')
 };
 
 /////////////////////////////////////////////////////////////////////
