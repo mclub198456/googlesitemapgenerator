@@ -419,7 +419,7 @@ ValidateManager.patterns_ = {
   // Any ASCII word character. Equivalent to [a-zA-Z0-9_].
   xmlfilename: /^[\w]+\.xml$/,
   // Any ASCII words, plus dot.
-  host: /^http:\/\/[\w\.]*$/,
+  host: /^http:\/\/[\w-\.]*$/,
   // Any characters except newline or another Unicode line terminator.
   logPath: /^.*$/,
   //

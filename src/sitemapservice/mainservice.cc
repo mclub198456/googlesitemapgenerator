@@ -410,41 +410,11 @@ int MainService::StartConfig() {
 }
 
 int MainService::SetPermission() {
-  // Set access permissions for IIS plugins.
+  // Change permissions for all program files.
   DWORD access_mask = GENERIC_READ | GENERIC_EXECUTE;
-  std::string filename(Util::GetApplicationDir());
-  filename.append("\\IIS6_Filter_Win32.dll");
-  if (!AccessController::AllowIISAccessFile(filename, access_mask)) {
-    Logger::Log(EVENT_ERROR, "Failed to set permission IIS6_Filter_Win32.dll.");
-    return 1;
-  }
-
-  filename.assign(Util::GetApplicationDir());
-  filename.append("\\IIS6_Filter_x64.dll");
-  if (!AccessController::AllowIISAccessFile(filename, access_mask)) {
-    Logger::Log(EVENT_ERROR, "Failed to set permission IIS6_Filter_x64.dll.");
-    return 2;
-  }
-
-  filename.assign(Util::GetApplicationDir());
-  filename.append("\\IIS7_Module_Win32.dll");
-  if (!AccessController::AllowIISAccessFile(filename, access_mask)) {
-    Logger::Log(EVENT_ERROR, "Failed to set permission IIS7_Module_Win32.dll.");
-    return 3;
-  }
-
-  filename.assign(Util::GetApplicationDir());
-  filename.append("\\IIS7_Module_x64.dll");
-  if (!AccessController::AllowIISAccessFile(filename, access_mask)) {
-    Logger::Log(EVENT_ERROR, "Failed to set permission IIS7_Module_x64.dll.");
-    return 4;
-  }
-
-  // Change permissions for admin console site.
-  std::string site_dir(Util::GetApplicationDir());
-  site_dir.append("\\admin-console");
-  if (!AccessController::AllowIISAccessFile(site_dir, access_mask)) {
-    Logger::Log(EVENT_ERROR, "Failed to set permission for admin-console.");
+  std::string dir(Util::GetApplicationDir());
+  if (!AccessController::AllowIISAccessFile(dir, access_mask)) {
+    Logger::Log(EVENT_ERROR, "Failed to set permission for [%s].", dir.c_str());
     return 5;
   }
 

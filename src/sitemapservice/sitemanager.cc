@@ -91,7 +91,7 @@ void SiteManager::Unload() {
   }
 
   // Handle in memory data and delete data manager.
-  if (data_manager_->GetNewsDataManager()->UpdateData()) {
+  if (!data_manager_->GetNewsDataManager()->UpdateData()) {
     Logger::Log(EVENT_ERROR, "Failed to unload data manager.");
   }
   delete data_manager_;
