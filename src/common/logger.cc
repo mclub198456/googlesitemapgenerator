@@ -174,7 +174,7 @@ bool Logger::CreateLogFile() {
 
   // Try to create the file.
   int filed = open(log_file_name_.c_str(), O_WRONLY | O_CREAT | O_APPEND,
-                   S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
+                   GSG_SHARE_WRITE);
   if (filed == -1) {
     fprintf(stderr, "Can't open log file (%s).", log_file_name_.c_str());
     return false;

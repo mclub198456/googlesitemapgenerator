@@ -114,7 +114,7 @@ bool InterProcLock::Lock(int wait_ms) {
 
   // Open lock file.
   descriptor_ = open(file_.c_str(),
-                     O_CREAT | O_RDWR, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
+                     O_CREAT | O_RDWR, GSG_SHARE_WRITE);
   if (descriptor_ == -1) {
     Logger::Log(EVENT_ERROR, "Failed to open lock file [%s] (%d).",
               file_.c_str(), errno);
@@ -155,7 +155,7 @@ bool InterProcLock::Unlock() {
     if (with_webserver_) {
       if (is_server_) {
         if (!AccessController::AllowApacheAccessFile(file_,
-                                                     S_IRGRP | S_IWGRP)) {
+            AccessController::kAllowWrite | AccessController::kAllowRead)) {
           Logger::Log(EVENT_ERROR, "Failed to change file mode in Unlock.");
           return false;
         }

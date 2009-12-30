@@ -6,7 +6,7 @@ See doc/gsg-installation.html
 --- Build under Linux ---
 Users can build a binary from source by themselves. There are two steps.
 0) Prerequisite:
-  a) gcc-4.0+ (including g++) is the supported building tool.
+  a) gcc-3.4 (including g++) is the supported building tool.
   b) GNU Make 3.81 is required. Others are not verified.
 
 1) Generate Makefile with configure script.

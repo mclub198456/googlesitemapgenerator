@@ -18,6 +18,9 @@
 #ifndef COMMON_ACCESSCONTROLLER_H__
 #define COMMON_ACCESSCONTROLLER_H__
 
+#define GSG_SHARE_WRITE (S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH)
+#define GSG_SHARE_READ (S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH )
+
 #include <string>
 
 class AccessController {
@@ -46,8 +49,8 @@ class AccessController {
 
 #else
   // Allow Apache access a file.
-  // "mode" should be combination of S_IRGRP, S_IWGRP and S_IXGRP.
-  static bool AllowApacheAccessFile(const std::string& file, mode_t mode);
+  // "permission" should be combination of kAllowRead and kAllowWrite.
+  static bool AllowApacheAccessFile(const std::string& file, int permission);
 
   // Change current process' effective group to apache group.
   static bool RunWithApacheGroup();

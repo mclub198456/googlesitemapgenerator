@@ -149,8 +149,7 @@ bool SharedMemory::Create(const std::string& name, size_t size,
   // Open and lock the file.
   int lockfd = -1;
   if (server) {
-    lockfd = open(lock_file_.c_str(), O_CREAT | O_RDWR,
-         S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
+    lockfd = open(lock_file_.c_str(), O_CREAT | O_RDWR, GSG_SHARE_WRITE);
   } else {
     lockfd = open(lock_file_.c_str(), O_RDONLY);
   }
@@ -172,7 +171,7 @@ bool SharedMemory::Create(const std::string& name, size_t size,
     if (server) {
       // Get a new shm if it is server.
       shm_id_ = shmget(IPC_PRIVATE, size,
-                       S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | IPC_CREAT);
+                       GSG_SHARE_WRITE | IPC_CREAT);
       if (shm_id_ < 0) {
         Logger::Log(EVENT_ERROR, "Failed to get shm id. (%d).", errno);
         break;
@@ -214,7 +213,8 @@ bool SharedMemory::Create(const std::string& name, size_t size,
 
   // Change file permission to allow Apache access.
   if (result && server_) {
-    if (!AccessController::AllowApacheAccessFile(lock_file_, S_IRGRP)) {
+    if (!AccessController::AllowApacheAccessFile(lock_file_,
+                                                 AccessController::kAllowRead)) {
       Logger::Log(EVENT_ERROR, "Failed to allow Apache allow lock file.");
       return false;
     }
