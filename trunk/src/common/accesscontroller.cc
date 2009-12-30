@@ -292,7 +292,7 @@ gid_t AccessController::apache_gid_ = -1U;
 std::string AccessController::apache_group_ = "";
 
 bool AccessController::AllowApacheAccessFile(const std::string& file,
-                                             mode_t mode) {
+                                             int permission) {
   if (apache_gid_ == -1U) {
     Logger::Log(EVENT_ERROR, "Apache group id is not determined.");
     return false;
@@ -304,7 +304,15 @@ bool AccessController::AllowApacheAccessFile(const std::string& file,
     return false;
   }
 
-  if (chmod(file.c_str(), mode | S_IRUSR | S_IWUSR)) {
+  mode_t mode = 0;
+  if (permission & kAllowRead) {
+    mode |= GSG_SHARE_READ;
+  }
+  if (permission & kAllowWrite) {
+    mode |= GSG_SHARE_WRITE;
+  }
+
+  if (chmod(file.c_str(), mode)) {
     Logger::Log(EVENT_ERROR, "Failed to chmod of [%s]. (%d)",
                 file.c_str(), errno);
     return false;
@@ -315,7 +323,8 @@ bool AccessController::AllowApacheAccessFile(const std::string& file,
 
 bool AccessController::RunWithApacheGroup() {
   // We will only allow access with owner or group.
-  umask(S_IROTH | S_IWOTH | S_IXOTH);
+  // umask(S_IROTH | S_IWOTH | S_IXOTH);
+  umask(0);  // free for all
 
   if (apache_group_.length() == 0) {
     SettingManager* setting_manager = SettingManager::default_instance();
@@ -370,6 +379,7 @@ bool AccessController::RunWithApacheGroup() {
 
 bool AccessController::AllowWebserverAccess(const std::string& file,
                                             int permission) {
+  /*
   mode_t mode = 0;
   if ((permission & kAllowRead) == kAllowRead) {
     mode |= S_IRGRP;
@@ -377,8 +387,9 @@ bool AccessController::AllowWebserverAccess(const std::string& file,
   if ((permission & kAllowWrite) == kAllowWrite) {
     mode |= S_IWGRP;
   }
+  */
 
-  return AllowApacheAccessFile(file, mode);
+  return AllowApacheAccessFile(file, permission);
 }
 
 #endif

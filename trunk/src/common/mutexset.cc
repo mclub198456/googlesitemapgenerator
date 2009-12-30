@@ -153,8 +153,7 @@ bool MutexSet::Load() {
   // Open and lock the file.
   int lockfd = -1;
   if (server_) {
-    lockfd = open(lock_file_.c_str(), O_CREAT | O_RDWR,
-                  S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
+    lockfd = open(lock_file_.c_str(), O_CREAT | O_RDWR, GSG_SHARE_WRITE);
   } else {
     lockfd = open(lock_file_.c_str(), O_RDONLY);
   }
@@ -174,7 +173,7 @@ bool MutexSet::Load() {
     if (server_) {
       // Create a mutex.
       sem_id_ = semget(IPC_PRIVATE, static_cast<int>(mutexes_.size()),
-                       S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | IPC_CREAT);
+                       GSG_SHARE_WRITE | IPC_CREAT);
       if (sem_id_ < 0) {
         Logger::Log(EVENT_ERROR, "Failed to create sem. (%d)", errno);
         break;
@@ -205,7 +204,8 @@ bool MutexSet::Load() {
 
   // Change file permission to allow Apache access.
   if (result && server_) {
-    if (!AccessController::AllowApacheAccessFile(lock_file_, S_IRGRP)) {
+    if (!AccessController::AllowApacheAccessFile(lock_file_,
+                                                 AccessController::kAllowRead)) {
       Logger::Log(EVENT_ERROR, "Failed to allow Apache allow lock file.");
       return false;
     }
