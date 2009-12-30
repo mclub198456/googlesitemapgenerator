@@ -88,13 +88,13 @@ bool SecurityManager::CheckRemoteClient(const HttpRequest& request) {
       return false;
     }
 
-#ifndef GSG_LOW_SECURITY
+#ifdef GSG_HIGH_SECURITY
     // Check if SSL is used.
     if (request.https() != HttpRequest::kHttpsOn) {
       Logger::Log(EVENT_ERROR, "Remote connection is unsecured.");
       return false;
     }
-#endif // GSG_LOW_SECURITY
+#endif // GSG_HIGH_SECURITY
   }
   return true;
 }
