@@ -22,6 +22,7 @@
 #include "common/logger.h"
 #include "common/util.h"
 #include "common/timesupport.h"
+#include "common/accesscontroller.h"
 
 XmlSitemapWriter::XmlSitemapWriter() {
   add_generator_info_ = true;
@@ -71,6 +72,10 @@ int XmlSitemapWriter::WriteSitemap(const std::string& file_name,
   // Close the urlset.
   fputs("</urlset>\n", file);
   fclose(file);
+  if (!AccessController::AllowWebserverAccess(file_name,
+                                              AccessController::kAllowRead)) {
+    Logger::Log(EVENT_ERROR, "Writer can't chmod: %s.", file_name.c_str());
+  }
 
   return written_urls;
 }
@@ -103,7 +108,13 @@ int XmlSitemapWriter::WriteSitemapIndex(
   }
 
   fputs("</sitemapindex>", file);
-  return fclose(file);
+  fclose(file);
+  if (!AccessController::AllowWebserverAccess(file_name,
+                                              AccessController::kAllowRead)) {
+    Logger::Log(EVENT_ERROR, "Writer can't chmod: %s.", file_name.c_str());
+    return 1;
+  }
+  return 0;
 }
 
 bool XmlSitemapWriter::WriteUrlElement(const UrlElement &url, FILE *file) {

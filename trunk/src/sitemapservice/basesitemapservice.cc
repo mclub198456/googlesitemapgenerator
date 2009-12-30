@@ -24,6 +24,7 @@
 #include "common/util.h"
 #include "common/fileutil.h"
 #include "common/port.h"
+#include "common/accesscontroller.h"
 #include "sitemapservice/sitemapwriter.h"
 #include "sitemapservice/urlfilterbuilder.h"
 #include "sitemapservice/runtimeinfomanager.h"
@@ -329,6 +330,10 @@ bool BaseSitemapService::CompressFile(const std::string& file) {
   if (Util::GZip(file.c_str(), compressed.c_str())) {
     // Remove uncompressed file, ignore error.
     remove(file.c_str());
+    if (!AccessController::AllowWebserverAccess(compressed,
+                                                AccessController::kAllowRead)) {
+      Logger::Log(EVENT_ERROR, "Writer can't chmod: %s.", compressed.c_str());
+    }
     return true;
   } else {
     Logger::Log(EVENT_ERROR, "Failed to compress file: [%s]. (%d)",
