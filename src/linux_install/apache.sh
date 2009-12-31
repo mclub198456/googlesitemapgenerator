@@ -133,6 +133,7 @@ AnalyzeApache()
     ParseDirective "$APACHE_CONF" "Group" "APACHE_GROUP"
     if test "x$APACHE_GROUP" = "x" ; then
       echo "Can't determine Group directive for Apache."
+      return 8
     fi
   fi
 
